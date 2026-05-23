@@ -24,20 +24,26 @@
     position: sticky;
     top: 0;
     z-index: 10;
+    gap: 8px;
   }
 
-  header h1 { font-size: 1.2rem; color: #ff0000; letter-spacing: 1px; }
+  header h1 { font-size: 1.2rem; color: #ff0000; letter-spacing: 1px; flex: 1; }
 
-  #add-btn {
-    background: #ff0000;
-    color: #fff;
+  .header-btn {
     border: none;
-    padding: 8px 16px;
+    padding: 8px 14px;
     border-radius: 20px;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     cursor: pointer;
     white-space: nowrap;
   }
+
+  #refresh-btn { background: #222; color: #ccc; border: 1px solid #444; }
+  #refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  #refresh-btn.spinning { animation: spin 1s linear infinite; }
+  #add-btn { background: #ff0000; color: #fff; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
 
   #search-bar {
     padding: 12px 16px;
@@ -48,7 +54,7 @@
     border-bottom: 1px solid #2a2a2a;
   }
 
-  #search-bar input {
+  #search-input {
     width: 100%;
     padding: 9px 14px;
     background: #2a2a2a;
@@ -58,7 +64,7 @@
     font-size: 0.9rem;
     outline: none;
   }
-  #search-bar input:focus { border-color: #ff0000; }
+  #search-input:focus { border-color: #ff0000; }
 
   #stats {
     text-align: center;
@@ -67,10 +73,20 @@
     padding: 10px 0 2px;
   }
 
+  #refresh-status {
+    text-align: center;
+    font-size: 0.75rem;
+    padding: 4px 0;
+    min-height: 20px;
+  }
+  #refresh-status.error { color: #ff4444; }
+  #refresh-status.success { color: #27ae60; }
+  #refresh-status.info { color: #888; }
+
   #list {
     max-width: 600px;
-    margin: 12px auto;
-    padding: 0 16px;
+    margin: 8px auto;
+    padding: 0 16px 24px;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -79,7 +95,7 @@
   .channel-row {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
     background: #1a1a1a;
     border-radius: 10px;
     padding: 10px 12px;
@@ -89,13 +105,12 @@
     transition: border-color 0.2s;
     position: relative;
   }
-
   .channel-row:hover { border-color: #ff0000; }
   .channel-row:active { opacity: 0.8; }
 
   .channel-icon {
-    width: 42px;
-    height: 42px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     flex-shrink: 0;
     object-fit: cover;
@@ -103,8 +118,8 @@
   }
 
   .channel-icon-fallback {
-    width: 42px;
-    height: 42px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     flex-shrink: 0;
     display: flex;
@@ -117,24 +132,52 @@
 
   .channel-info { flex: 1; min-width: 0; }
 
+  .channel-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
   .channel-name {
     font-size: 0.95rem;
     font-weight: 500;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    flex: 1;
+  }
+
+  .new-badge {
+    background: #ff0000;
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 10px;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 
   .channel-meta {
     font-size: 0.72rem;
     color: #666;
     margin-top: 3px;
-    display: flex;
-    gap: 8px;
   }
 
-  .channel-handle { color: #666; }
-  .channel-visited { color: #555; }
+  .channel-handle { color: #555; }
+
+  .latest-video {
+    display: block;
+    font-size: 0.75rem;
+    color: #888;
+    margin-top: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-decoration: none;
+  }
+  .latest-video:hover { color: #ff0000; }
+  .latest-video .video-age { color: #555; margin-left: 4px; }
 
   .delete-btn {
     background: none;
@@ -145,10 +188,11 @@
     padding: 4px 6px;
     border-radius: 4px;
     flex-shrink: 0;
+    align-self: flex-start;
   }
   .delete-btn:hover { color: #ff4444; }
 
-  #empty {
+  #empty, .no-results {
     text-align: center;
     color: #555;
     padding: 60px 20px;
@@ -193,19 +237,9 @@
   }
   #modal input:focus { border-color: #ff0000; }
 
-  .modal-hint {
-    font-size: 0.75rem;
-    color: #888;
-    margin-bottom: 16px;
-    line-height: 1.5;
-  }
+  .modal-hint { font-size: 0.75rem; color: #888; margin-bottom: 16px; line-height: 1.5; }
 
-  .modal-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-  }
-
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
   .modal-actions button {
     padding: 8px 18px;
     border-radius: 20px;
@@ -213,23 +247,16 @@
     cursor: pointer;
     font-size: 0.9rem;
   }
-
   #cancel-btn { background: #333; color: #ccc; }
   #save-btn { background: #ff0000; color: #fff; }
-
-  .no-results {
-    text-align: center;
-    color: #555;
-    padding: 40px 20px;
-    font-size: 0.9rem;
-  }
 </style>
 </head>
 <body>
 
 <header>
   <h1>▶ My Channels</h1>
-  <button id="add-btn">+ Add</button>
+  <button id="refresh-btn" class="header-btn">⟳ Refresh</button>
+  <button id="add-btn" class="header-btn">+ Add</button>
 </header>
 
 <div id="search-bar">
@@ -237,6 +264,7 @@
 </div>
 
 <div id="stats"></div>
+<div id="refresh-status"></div>
 <div id="list"></div>
 
 <div id="modal-overlay">
@@ -257,16 +285,23 @@
 </div>
 
 <script>
-  const STORAGE_KEY = 'yt_channels';
-  const VISITED_KEY = 'yt_visited';
+  // ─── CONFIG ─────────────────────────────────────────────
+  const API_KEY = 'AIzaSyCkzxnGe4KeX34xBTlR4WxlxpJ89ZuDVg;
+  // ────────────────────────────────────────────────────────
+
+  const STORAGE_KEY  = 'yt_channels';
+  const VISITED_KEY  = 'yt_visited';
+  const CACHE_KEY    = 'yt_video_cache';
   const COLORS = ['#c0392b','#8e44ad','#2980b9','#16a085','#d35400','#27ae60','#2c3e50','#e74c3c'];
 
-  const listEl   = document.getElementById('list');
-  const statsEl  = document.getElementById('stats');
-  const overlay  = document.getElementById('modal-overlay');
-  const searchEl = document.getElementById('search-input');
-  const inputName = document.getElementById('input-name');
-  const inputUrl  = document.getElementById('input-url');
+  const listEl      = document.getElementById('list');
+  const statsEl     = document.getElementById('stats');
+  const statusEl    = document.getElementById('refresh-status');
+  const overlay     = document.getElementById('modal-overlay');
+  const searchEl    = document.getElementById('search-input');
+  const inputName   = document.getElementById('input-name');
+  const inputUrl    = document.getElementById('input-url');
+  const refreshBtn  = document.getElementById('refresh-btn');
 
   const DEFAULTS = [
     { name: 'Content Machine',        url: 'https://www.youtube.com/@content_machine' },
@@ -287,6 +322,7 @@
     { name: 'Vikatan Web TV',         url: 'https://www.youtube.com/@Vikatanwebtv' },
   ];
 
+  // ─── STORAGE ────────────────────────────────────────────
   function loadChannels() {
     try {
       const s = JSON.parse(localStorage.getItem(STORAGE_KEY));
@@ -294,34 +330,26 @@
       saveChannels(DEFAULTS); return DEFAULTS;
     } catch { return DEFAULTS; }
   }
-
   function saveChannels(ch) { localStorage.setItem(STORAGE_KEY, JSON.stringify(ch)); }
 
   function loadVisited() {
-    try { return JSON.parse(localStorage.getItem(VISITED_KEY)) || {}; }
-    catch { return {}; }
+    try { return JSON.parse(localStorage.getItem(VISITED_KEY)) || {}; } catch { return {}; }
   }
-
   function markVisited(url) {
-    const v = loadVisited();
-    v[url] = Date.now();
+    const v = loadVisited(); v[url] = Date.now();
     localStorage.setItem(VISITED_KEY, JSON.stringify(v));
   }
 
-  function timeAgo(ts) {
-    const diff = Math.floor((Date.now() - ts) / 1000);
-    if (diff < 60) return 'just now';
-    if (diff < 3600) return Math.floor(diff/60) + 'm ago';
-    if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
-    if (diff < 604800) return Math.floor(diff/86400) + 'd ago';
-    return new Date(ts).toLocaleDateString();
+  function loadCache() {
+    try { return JSON.parse(localStorage.getItem(CACHE_KEY)) || {}; } catch { return {}; }
   }
+  function saveCache(c) { localStorage.setItem(CACHE_KEY, JSON.stringify(c)); }
 
+  // ─── HELPERS ────────────────────────────────────────────
   function sorted(ch) { return [...ch].sort((a,b) => a.name.localeCompare(b.name)); }
 
   function handleFromUrl(url) {
-    const m = url.match(/@([\w_]+)/);
-    return m ? '@' + m[1] : '';
+    const m = url.match(/@([\w_]+)/); return m ? '@' + m[1] : '';
   }
 
   function normalizeUrl(raw) {
@@ -332,26 +360,124 @@
   }
 
   function colorFor(name) {
-    let h = 0;
-    for (let c of name) h = (h * 31 + c.charCodeAt(0)) & 0xffff;
+    let h = 0; for (let c of name) h = (h*31 + c.charCodeAt(0)) & 0xffff;
     return COLORS[h % COLORS.length];
   }
 
   function initials(name) {
-    return name.trim().split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2);
+    return name.trim().split(/\s+/).map(w=>w[0]).join('').toUpperCase().slice(0,2);
   }
 
   function avatarUrl(handle) {
     return `https://unavatar.io/youtube/${handle.replace('@','')}`;
   }
 
-  function render() {
-    const query = searchEl.value.trim().toLowerCase();
-    const all = sorted(loadChannels());
+  function timeAgo(isoOrTs) {
+    const ts = typeof isoOrTs === 'string' ? new Date(isoOrTs).getTime() : isoOrTs;
+    const diff = Math.floor((Date.now() - ts) / 1000);
+    if (diff < 60) return 'just now';
+    if (diff < 3600) return Math.floor(diff/60) + 'm ago';
+    if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
+    if (diff < 604800) return Math.floor(diff/86400) + 'd ago';
+    if (diff < 2592000) return Math.floor(diff/604800) + 'w ago';
+    return Math.floor(diff/2592000) + 'mo ago';
+  }
+
+  // ─── YOUTUBE API ────────────────────────────────────────
+  async function resolveChannelId(handle) {
+    const h = handle.replace('@','');
+    const res = await fetch(
+      `https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&q=${encodeURIComponent(h)}&key=${API_KEY}`
+    );
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    return data.items?.[0]?.id?.channelId || null;
+  }
+
+  async function fetchLatestVideo(channelId) {
+    const res = await fetch(
+      `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&order=date&maxResults=1&type=video&key=${API_KEY}`
+    );
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    const item = data.items?.[0];
+    if (!item) return null;
+    return {
+      videoId:     item.id.videoId,
+      title:       item.snippet.title,
+      publishedAt: item.snippet.publishedAt,
+    };
+  }
+
+  async function refreshAll() {
+    refreshBtn.disabled = true;
+    refreshBtn.textContent = '⟳';
+    refreshBtn.classList.add('spinning');
+    setStatus('Refreshing...', 'info');
+
+    const channels = loadChannels();
+    const cache = loadCache();
+    let updated = 0, errors = 0;
+
+    for (const ch of channels) {
+      const handle = handleFromUrl(ch.url);
+      try {
+        // Resolve channel ID if not cached
+        if (!cache[ch.url]) cache[ch.url] = {};
+        if (!cache[ch.url].channelId) {
+          cache[ch.url].channelId = await resolveChannelId(handle);
+        }
+        const cid = cache[ch.url].channelId;
+        if (!cid) { errors++; continue; }
+
+        const video = await fetchLatestVideo(cid);
+        if (video) {
+          cache[ch.url].latestVideo = video;
+          cache[ch.url].refreshedAt = Date.now();
+          updated++;
+        }
+      } catch(e) {
+        console.error(`Error fetching ${ch.name}:`, e);
+        errors++;
+      }
+    }
+
+    saveCache(cache);
+    render();
+
+    if (errors === 0) setStatus(`Updated ${updated} channels`, 'success');
+    else setStatus(`Updated ${updated} channels, ${errors} failed`, 'error');
+
+    setTimeout(() => setStatus('', ''), 4000);
+    refreshBtn.disabled = false;
+    refreshBtn.textContent = '⟳ Refresh';
+    refreshBtn.classList.remove('spinning');
+  }
+
+  function setStatus(msg, type) {
+    statusEl.textContent = msg;
+    statusEl.className = type ? `${type}` : '';
+  }
+
+  // ─── NEW VIDEO COUNT ─────────────────────────────────────
+  function newVideoCount(chUrl, latestVideo) {
+    if (!latestVideo) return 0;
     const visited = loadVisited();
+    const lastVisit = visited[chUrl];
+    if (!lastVisit) return 1; // never visited = treat latest as new
+    const publishedTs = new Date(latestVideo.publishedAt).getTime();
+    return publishedTs > lastVisit ? 1 : 0;
+    // Note: returns max 1 since we only fetch 1 video per channel.
+    // Can be extended to fetch more videos and count all newer ones.
+  }
+
+  // ─── RENDER ──────────────────────────────────────────────
+  function render() {
+    const query    = searchEl.value.trim().toLowerCase();
+    const all      = sorted(loadChannels());
+    const cache    = loadCache();
     const filtered = query ? all.filter(ch => ch.name.toLowerCase().includes(query)) : all;
 
-    // Stats
     statsEl.textContent = query
       ? `${filtered.length} of ${all.length} channels`
       : `${all.length} channel${all.length !== 1 ? 's' : ''}`;
@@ -366,17 +492,18 @@
     }
 
     filtered.forEach(ch => {
-      const handle = handleFromUrl(ch.url);
-      const lastVisit = visited[ch.url];
+      const handle     = handleFromUrl(ch.url);
+      const chCache    = cache[ch.url] || {};
+      const latest     = chCache.latestVideo || null;
+      const newCount   = newVideoCount(ch.url, latest);
 
       const row = document.createElement('a');
       row.className = 'channel-row';
       row.href = ch.url;
       row.rel = 'noopener';
+      row.addEventListener('click', () => { markVisited(ch.url); render(); });
 
-      // Track visit on click
-      row.addEventListener('click', () => markVisited(ch.url));
-
+      // Avatar
       const img = document.createElement('img');
       img.className = 'channel-icon';
       img.alt = ch.name;
@@ -389,23 +516,51 @@
         this.replaceWith(fb);
       };
 
+      // Info
       const info = document.createElement('div');
       info.className = 'channel-info';
-      info.innerHTML = `
-        <div class="channel-name">${ch.name}</div>
-        <div class="channel-meta">
-          <span class="channel-handle">${handle}</span>
-          ${lastVisit ? `<span class="channel-visited">· visited ${timeAgo(lastVisit)}</span>` : ''}
-        </div>
-      `;
 
+      const top = document.createElement('div');
+      top.className = 'channel-top';
+      top.innerHTML = `<span class="channel-name">${ch.name}</span>`;
+      if (newCount > 0) {
+        const badge = document.createElement('span');
+        badge.className = 'new-badge';
+        badge.textContent = `${newCount} new`;
+        top.appendChild(badge);
+      }
+
+      const meta = document.createElement('div');
+      meta.className = 'channel-meta';
+      meta.innerHTML = `<span class="channel-handle">${handle}</span>`;
+
+      info.appendChild(top);
+      info.appendChild(meta);
+
+      // Latest video line
+      if (latest) {
+        const vLink = document.createElement('a');
+        vLink.className = 'latest-video';
+        vLink.href = `https://www.youtube.com/watch?v=${latest.videoId}`;
+        vLink.rel = 'noopener';
+        vLink.addEventListener('click', e => { e.stopPropagation(); markVisited(ch.url); });
+        vLink.innerHTML = `▶ ${latest.title} <span class="video-age">${timeAgo(latest.publishedAt)}</span>`;
+        info.appendChild(vLink);
+      } else {
+        const hint = document.createElement('span');
+        hint.className = 'latest-video';
+        hint.style.color = '#444';
+        hint.textContent = 'Hit Refresh to load latest video';
+        info.appendChild(hint);
+      }
+
+      // Delete
       const del = document.createElement('button');
       del.className = 'delete-btn';
       del.title = 'Remove';
       del.textContent = '✕';
       del.addEventListener('click', e => {
-        e.preventDefault();
-        e.stopPropagation();
+        e.preventDefault(); e.stopPropagation();
         const all = loadChannels();
         const idx = all.findIndex(c => c.url === ch.url);
         if (idx > -1) { all.splice(idx, 1); saveChannels(all); render(); }
@@ -418,13 +573,13 @@
     });
   }
 
+  // ─── MODAL ───────────────────────────────────────────────
   function openModal() { overlay.classList.add('open'); inputName.focus(); }
   function closeModal() {
     overlay.classList.remove('open');
     inputName.value = ''; inputUrl.value = '';
     inputName.style.borderColor = '#444'; inputUrl.style.borderColor = '#444';
   }
-
   function saveChannel() {
     const name = inputName.value.trim();
     const raw  = inputUrl.value.trim();
@@ -433,13 +588,13 @@
     const channels = loadChannels();
     channels.push({ name, url: normalizeUrl(raw) });
     saveChannels(channels);
-    closeModal();
-    render();
+    closeModal(); render();
   }
 
   document.getElementById('add-btn').addEventListener('click', openModal);
   document.getElementById('cancel-btn').addEventListener('click', closeModal);
   document.getElementById('save-btn').addEventListener('click', saveChannel);
+  refreshBtn.addEventListener('click', refreshAll);
   overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
   searchEl.addEventListener('input', render);
   document.addEventListener('keydown', e => {
