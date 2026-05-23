@@ -36,11 +36,40 @@
     border-radius: 20px;
     font-size: 0.9rem;
     cursor: pointer;
+    white-space: nowrap;
+  }
+
+  #search-bar {
+    padding: 12px 16px;
+    background: #1a1a1a;
+    position: sticky;
+    top: 57px;
+    z-index: 9;
+    border-bottom: 1px solid #2a2a2a;
+  }
+
+  #search-bar input {
+    width: 100%;
+    padding: 9px 14px;
+    background: #2a2a2a;
+    border: 1px solid #333;
+    border-radius: 20px;
+    color: #fff;
+    font-size: 0.9rem;
+    outline: none;
+  }
+  #search-bar input:focus { border-color: #ff0000; }
+
+  #stats {
+    text-align: center;
+    font-size: 0.75rem;
+    color: #555;
+    padding: 10px 0 2px;
   }
 
   #list {
     max-width: 600px;
-    margin: 16px auto;
+    margin: 12px auto;
     padding: 0 16px;
     display: flex;
     flex-direction: column;
@@ -86,17 +115,26 @@
     color: #fff;
   }
 
+  .channel-info { flex: 1; min-width: 0; }
+
   .channel-name {
     font-size: 0.95rem;
     font-weight: 500;
-    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  .channel-handle {
-    font-size: 0.75rem;
-    color: #777;
-    margin-top: 2px;
+  .channel-meta {
+    font-size: 0.72rem;
+    color: #666;
+    margin-top: 3px;
+    display: flex;
+    gap: 8px;
   }
+
+  .channel-handle { color: #666; }
+  .channel-visited { color: #555; }
 
   .delete-btn {
     background: none;
@@ -178,15 +216,27 @@
 
   #cancel-btn { background: #333; color: #ccc; }
   #save-btn { background: #ff0000; color: #fff; }
+
+  .no-results {
+    text-align: center;
+    color: #555;
+    padding: 40px 20px;
+    font-size: 0.9rem;
+  }
 </style>
 </head>
 <body>
 
 <header>
   <h1>▶ My Channels</h1>
-  <button id="add-btn">+ Add Channel</button>
+  <button id="add-btn">+ Add</button>
 </header>
 
+<div id="search-bar">
+  <input id="search-input" type="search" placeholder="🔍  Search channels..." />
+</div>
+
+<div id="stats"></div>
 <div id="list"></div>
 
 <div id="modal-overlay">
@@ -208,59 +258,77 @@
 
 <script>
   const STORAGE_KEY = 'yt_channels';
+  const VISITED_KEY = 'yt_visited';
   const COLORS = ['#c0392b','#8e44ad','#2980b9','#16a085','#d35400','#27ae60','#2c3e50','#e74c3c'];
 
-  const listEl = document.getElementById('list');
-  const overlay = document.getElementById('modal-overlay');
+  const listEl   = document.getElementById('list');
+  const statsEl  = document.getElementById('stats');
+  const overlay  = document.getElementById('modal-overlay');
+  const searchEl = document.getElementById('search-input');
   const inputName = document.getElementById('input-name');
-  const inputUrl = document.getElementById('input-url');
+  const inputUrl  = document.getElementById('input-url');
 
   const DEFAULTS = [
-    { name: 'Content Machine', url: 'https://www.youtube.com/@content_machine' },
+    { name: 'Content Machine',        url: 'https://www.youtube.com/@content_machine' },
     { name: 'Desanthi Ripathippagam', url: 'https://www.youtube.com/@desanthiripathippagam' },
-    { name: 'Empty Hand Ajith Sri', url: 'https://www.youtube.com/@emptyhandajithsri' },
-    { name: 'Galatta Plus', url: 'https://www.youtube.com/@galattaplus' },
-    { name: 'Gameranx', url: 'https://www.youtube.com/@gameranx' },
-    { name: 'Makkal Pechu', url: 'https://www.youtube.com/@makkalpechu' },
-    { name: 'Moneypechu', url: 'https://www.youtube.com/@Moneypechu' },
-    { name: 'Moto Wagon', url: 'https://www.youtube.com/@motowagon' },
-    { name: 'Mr GK Tamil', url: 'https://www.youtube.com/@mrgktamil' },
-    { name: 'Muzhumai Arivu', url: 'https://www.youtube.com/@muzhumaiarivu' },
-    { name: 'Parithabangal', url: 'https://www.youtube.com/@parithabangal' },
-    { name: 'Patrick Boyle', url: 'https://www.youtube.com/@pboyle' },
-    { name: 'Plip Plip', url: 'https://www.youtube.com/@plipplip' },
-    { name: 'Polymatter', url: 'https://www.youtube.com/@polymatter' },
-    { name: 'Tiruppur Bulls', url: 'https://www.youtube.com/@tiruppurbulls' },
-    { name: 'Vikatan Web TV', url: 'https://www.youtube.com/@Vikatanwebtv' },
+    { name: 'Empty Hand Ajith Sri',   url: 'https://www.youtube.com/@emptyhandajithsri' },
+    { name: 'Galatta Plus',           url: 'https://www.youtube.com/@galattaplus' },
+    { name: 'Gameranx',               url: 'https://www.youtube.com/@gameranx' },
+    { name: 'Makkal Pechu',           url: 'https://www.youtube.com/@makkalpechu' },
+    { name: 'Moneypechu',             url: 'https://www.youtube.com/@Moneypechu' },
+    { name: 'Moto Wagon',             url: 'https://www.youtube.com/@motowagon' },
+    { name: 'Mr GK Tamil',            url: 'https://www.youtube.com/@mrgktamil' },
+    { name: 'Muzhumai Arivu',         url: 'https://www.youtube.com/@muzhumaiarivu' },
+    { name: 'Parithabangal',          url: 'https://www.youtube.com/@parithabangal' },
+    { name: 'Patrick Boyle',          url: 'https://www.youtube.com/@pboyle' },
+    { name: 'Plip Plip',              url: 'https://www.youtube.com/@plipplip' },
+    { name: 'Polymatter',             url: 'https://www.youtube.com/@polymatter' },
+    { name: 'Tiruppur Bulls',         url: 'https://www.youtube.com/@tiruppurbulls' },
+    { name: 'Vikatan Web TV',         url: 'https://www.youtube.com/@Vikatanwebtv' },
   ];
 
-  function load() {
+  function loadChannels() {
     try {
-      const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
-      if (stored && stored.length > 0) return stored;
-      save(DEFAULTS);
-      return DEFAULTS;
+      const s = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if (s && s.length > 0) return s;
+      saveChannels(DEFAULTS); return DEFAULTS;
     } catch { return DEFAULTS; }
   }
 
-  function save(channels) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(channels));
+  function saveChannels(ch) { localStorage.setItem(STORAGE_KEY, JSON.stringify(ch)); }
+
+  function loadVisited() {
+    try { return JSON.parse(localStorage.getItem(VISITED_KEY)) || {}; }
+    catch { return {}; }
   }
 
-  function sorted(channels) {
-    return [...channels].sort((a, b) => a.name.localeCompare(b.name));
+  function markVisited(url) {
+    const v = loadVisited();
+    v[url] = Date.now();
+    localStorage.setItem(VISITED_KEY, JSON.stringify(v));
   }
 
-  function handleToUrl(raw) {
-    raw = raw.trim();
-    if (raw.startsWith('http')) return raw;
-    if (raw.startsWith('@')) return 'https://www.youtube.com/' + raw;
-    return 'https://www.youtube.com/@' + raw;
+  function timeAgo(ts) {
+    const diff = Math.floor((Date.now() - ts) / 1000);
+    if (diff < 60) return 'just now';
+    if (diff < 3600) return Math.floor(diff/60) + 'm ago';
+    if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
+    if (diff < 604800) return Math.floor(diff/86400) + 'd ago';
+    return new Date(ts).toLocaleDateString();
   }
+
+  function sorted(ch) { return [...ch].sort((a,b) => a.name.localeCompare(b.name)); }
 
   function handleFromUrl(url) {
     const m = url.match(/@([\w_]+)/);
     return m ? '@' + m[1] : '';
+  }
+
+  function normalizeUrl(raw) {
+    raw = raw.trim();
+    if (raw.startsWith('http')) return raw;
+    if (raw.startsWith('@')) return 'https://www.youtube.com/' + raw;
+    return 'https://www.youtube.com/@' + raw;
   }
 
   function colorFor(name) {
@@ -274,34 +342,46 @@
   }
 
   function avatarUrl(handle) {
-    // Use unavatar.io as a proxy to get YouTube channel avatar
-    const h = handle.replace('@', '');
-    return `https://unavatar.io/youtube/${h}`;
+    return `https://unavatar.io/youtube/${handle.replace('@','')}`;
   }
 
   function render() {
-    const channels = sorted(load());
+    const query = searchEl.value.trim().toLowerCase();
+    const all = sorted(loadChannels());
+    const visited = loadVisited();
+    const filtered = query ? all.filter(ch => ch.name.toLowerCase().includes(query)) : all;
+
+    // Stats
+    statsEl.textContent = query
+      ? `${filtered.length} of ${all.length} channels`
+      : `${all.length} channel${all.length !== 1 ? 's' : ''}`;
+
     listEl.innerHTML = '';
 
-    if (channels.length === 0) {
-      listEl.innerHTML = `<div id="empty"><span>📺</span>No channels yet.<br>Tap <strong>+ Add Channel</strong> to get started.</div>`;
+    if (filtered.length === 0) {
+      listEl.innerHTML = all.length === 0
+        ? `<div id="empty"><span>📺</span>No channels yet.<br>Tap <strong>+ Add</strong> to get started.</div>`
+        : `<div class="no-results">No channels matching "<strong>${query}</strong>"</div>`;
       return;
     }
 
-    channels.forEach((ch, i) => {
+    filtered.forEach(ch => {
       const handle = handleFromUrl(ch.url);
+      const lastVisit = visited[ch.url];
+
       const row = document.createElement('a');
       row.className = 'channel-row';
       row.href = ch.url;
-      row.target = '_blank';
       row.rel = 'noopener';
+
+      // Track visit on click
+      row.addEventListener('click', () => markVisited(ch.url));
 
       const img = document.createElement('img');
       img.className = 'channel-icon';
       img.alt = ch.name;
       img.src = avatarUrl(handle);
       img.onerror = function() {
-        // Fallback to colored initials
         const fb = document.createElement('div');
         fb.className = 'channel-icon-fallback';
         fb.style.background = colorFor(ch.name);
@@ -310,8 +390,14 @@
       };
 
       const info = document.createElement('div');
-      info.style.flex = '1';
-      info.innerHTML = `<div class="channel-name">${ch.name}</div><div class="channel-handle">${handle}</div>`;
+      info.className = 'channel-info';
+      info.innerHTML = `
+        <div class="channel-name">${ch.name}</div>
+        <div class="channel-meta">
+          <span class="channel-handle">${handle}</span>
+          ${lastVisit ? `<span class="channel-visited">· visited ${timeAgo(lastVisit)}</span>` : ''}
+        </div>
+      `;
 
       const del = document.createElement('button');
       del.className = 'delete-btn';
@@ -320,9 +406,9 @@
       del.addEventListener('click', e => {
         e.preventDefault();
         e.stopPropagation();
-        const all = load();
+        const all = loadChannels();
         const idx = all.findIndex(c => c.url === ch.url);
-        if (idx > -1) { all.splice(idx, 1); save(all); render(); }
+        if (idx > -1) { all.splice(idx, 1); saveChannels(all); render(); }
       });
 
       row.appendChild(img);
@@ -341,12 +427,12 @@
 
   function saveChannel() {
     const name = inputName.value.trim();
-    const raw = inputUrl.value.trim();
+    const raw  = inputUrl.value.trim();
     if (!name) { inputName.style.borderColor = '#ff4444'; return; }
-    if (!raw) { inputUrl.style.borderColor = '#ff4444'; return; }
-    const channels = load();
-    channels.push({ name, url: handleToUrl(raw) });
-    save(channels);
+    if (!raw)  { inputUrl.style.borderColor  = '#ff4444'; return; }
+    const channels = loadChannels();
+    channels.push({ name, url: normalizeUrl(raw) });
+    saveChannels(channels);
     closeModal();
     render();
   }
@@ -355,12 +441,13 @@
   document.getElementById('cancel-btn').addEventListener('click', closeModal);
   document.getElementById('save-btn').addEventListener('click', saveChannel);
   overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+  searchEl.addEventListener('input', render);
   document.addEventListener('keydown', e => {
     if (e.key === 'Enter' && overlay.classList.contains('open')) saveChannel();
     if (e.key === 'Escape') closeModal();
   });
   inputName.addEventListener('input', () => inputName.style.borderColor = '#444');
-  inputUrl.addEventListener('input', () => inputUrl.style.borderColor = '#444');
+  inputUrl.addEventListener('input', () => inputUrl.style.borderColor  = '#444');
 
   render();
 </script>
