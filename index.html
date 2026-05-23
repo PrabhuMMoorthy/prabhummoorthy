@@ -26,11 +26,7 @@
     z-index: 10;
   }
 
-  header h1 {
-    font-size: 1.2rem;
-    color: #ff0000;
-    letter-spacing: 1px;
-  }
+  header h1 { font-size: 1.2rem; color: #ff0000; letter-spacing: 1px; }
 
   #add-btn {
     background: #ff0000;
@@ -41,6 +37,87 @@
     font-size: 0.9rem;
     cursor: pointer;
   }
+
+  #list {
+    max-width: 600px;
+    margin: 16px auto;
+    padding: 0 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .channel-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #1a1a1a;
+    border-radius: 10px;
+    padding: 10px 12px;
+    text-decoration: none;
+    color: #fff;
+    border: 1px solid #2a2a2a;
+    transition: border-color 0.2s;
+    position: relative;
+  }
+
+  .channel-row:hover { border-color: #ff0000; }
+  .channel-row:active { opacity: 0.8; }
+
+  .channel-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    object-fit: cover;
+    background: #2a2a2a;
+  }
+
+  .channel-icon-fallback {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #fff;
+  }
+
+  .channel-name {
+    font-size: 0.95rem;
+    font-weight: 500;
+    flex: 1;
+  }
+
+  .channel-handle {
+    font-size: 0.75rem;
+    color: #777;
+    margin-top: 2px;
+  }
+
+  .delete-btn {
+    background: none;
+    border: none;
+    color: #444;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .delete-btn:hover { color: #ff4444; }
+
+  #empty {
+    text-align: center;
+    color: #555;
+    padding: 60px 20px;
+    font-size: 0.95rem;
+    line-height: 2;
+  }
+  #empty span { display: block; font-size: 2rem; margin-bottom: 10px; }
 
   /* Modal */
   #modal-overlay {
@@ -101,94 +178,17 @@
 
   #cancel-btn { background: #333; color: #ccc; }
   #save-btn { background: #ff0000; color: #fff; }
-
-  /* Grid */
-  #grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 16px;
-    padding: 20px;
-  }
-
-  .channel-card {
-    background: #1a1a1a;
-    border-radius: 12px;
-    padding: 20px 12px;
-    text-align: center;
-    text-decoration: none;
-    color: #fff;
-    border: 1px solid #2a2a2a;
-    position: relative;
-    transition: border-color 0.2s, transform 0.1s;
-    display: block;
-  }
-
-  .channel-card:active { transform: scale(0.97); }
-  .channel-card:hover { border-color: #ff0000; }
-
-  .channel-avatar {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: #ff0000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.6rem;
-    font-weight: bold;
-    margin: 0 auto 12px;
-    color: #fff;
-  }
-
-  .channel-name {
-    font-size: 0.85rem;
-    font-weight: 600;
-    word-break: break-word;
-    line-height: 1.3;
-  }
-
-  .delete-btn {
-    position: absolute;
-    top: 6px;
-    right: 8px;
-    background: none;
-    border: none;
-    color: #555;
-    font-size: 1rem;
-    cursor: pointer;
-    line-height: 1;
-    padding: 2px 4px;
-    border-radius: 4px;
-  }
-  .delete-btn:hover { color: #ff4444; }
-
-  #empty {
-    grid-column: 1/-1;
-    text-align: center;
-    color: #555;
-    padding: 60px 20px;
-    font-size: 0.95rem;
-    line-height: 2;
-  }
-
-  #empty span { display: block; font-size: 2rem; margin-bottom: 10px; }
 </style>
 </head>
 <body>
 
 <header>
   <h1>▶ My Channels</h1>
-  <button id="add-btn" onclick="openModal()">+ Add Channel</button>
+  <button id="add-btn">+ Add Channel</button>
 </header>
 
-<div id="grid">
-  <div id="empty">
-    <span>📺</span>
-    No channels yet.<br>Tap <strong>+ Add Channel</strong> to get started.
-  </div>
-</div>
+<div id="list"></div>
 
-<!-- Modal -->
 <div id="modal-overlay">
   <div id="modal">
     <h2>Add a Channel</h2>
@@ -200,113 +200,167 @@
       or just the handle: <code>@veritasium</code>
     </p>
     <div class="modal-actions">
-      <button id="cancel-btn" onclick="closeModal()">Cancel</button>
-      <button id="save-btn" onclick="saveChannel()">Add</button>
+      <button id="cancel-btn">Cancel</button>
+      <button id="save-btn">Add</button>
     </div>
   </div>
 </div>
 
 <script>
   const STORAGE_KEY = 'yt_channels';
+  const COLORS = ['#c0392b','#8e44ad','#2980b9','#16a085','#d35400','#27ae60','#2c3e50','#e74c3c'];
+
+  const listEl = document.getElementById('list');
+  const overlay = document.getElementById('modal-overlay');
+  const inputName = document.getElementById('input-name');
+  const inputUrl = document.getElementById('input-url');
+
+  const DEFAULTS = [
+    { name: 'Content Machine', url: 'https://www.youtube.com/@content_machine' },
+    { name: 'Desanthi Ripathippagam', url: 'https://www.youtube.com/@desanthiripathippagam' },
+    { name: 'Empty Hand Ajith Sri', url: 'https://www.youtube.com/@emptyhandajithsri' },
+    { name: 'Galatta Plus', url: 'https://www.youtube.com/@galattaplus' },
+    { name: 'Gameranx', url: 'https://www.youtube.com/@gameranx' },
+    { name: 'Makkal Pechu', url: 'https://www.youtube.com/@makkalpechu' },
+    { name: 'Moneypechu', url: 'https://www.youtube.com/@Moneypechu' },
+    { name: 'Moto Wagon', url: 'https://www.youtube.com/@motowagon' },
+    { name: 'Mr GK Tamil', url: 'https://www.youtube.com/@mrgktamil' },
+    { name: 'Muzhumai Arivu', url: 'https://www.youtube.com/@muzhumaiarivu' },
+    { name: 'Parithabangal', url: 'https://www.youtube.com/@parithabangal' },
+    { name: 'Patrick Boyle', url: 'https://www.youtube.com/@pboyle' },
+    { name: 'Plip Plip', url: 'https://www.youtube.com/@plipplip' },
+    { name: 'Polymatter', url: 'https://www.youtube.com/@polymatter' },
+    { name: 'Tiruppur Bulls', url: 'https://www.youtube.com/@tiruppurbulls' },
+    { name: 'Vikatan Web TV', url: 'https://www.youtube.com/@Vikatanwebtv' },
+  ];
 
   function load() {
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
-    catch { return []; }
+    try {
+      const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if (stored && stored.length > 0) return stored;
+      save(DEFAULTS);
+      return DEFAULTS;
+    } catch { return DEFAULTS; }
   }
 
   function save(channels) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(channels));
   }
 
-  function normalizeUrl(raw) {
+  function sorted(channels) {
+    return [...channels].sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  function handleToUrl(raw) {
     raw = raw.trim();
     if (raw.startsWith('http')) return raw;
     if (raw.startsWith('@')) return 'https://www.youtube.com/' + raw;
     return 'https://www.youtube.com/@' + raw;
   }
 
-  function initials(name) {
-    return name.trim().split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  function handleFromUrl(url) {
+    const m = url.match(/@([\w_]+)/);
+    return m ? '@' + m[1] : '';
   }
 
-  // Random muted color per channel for avatar
-  const COLORS = ['#c0392b','#8e44ad','#2980b9','#16a085','#d35400','#27ae60','#2c3e50','#e74c3c'];
   function colorFor(name) {
     let h = 0;
     for (let c of name) h = (h * 31 + c.charCodeAt(0)) & 0xffff;
     return COLORS[h % COLORS.length];
   }
 
+  function initials(name) {
+    return name.trim().split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  }
+
+  function avatarUrl(handle) {
+    // Use unavatar.io as a proxy to get YouTube channel avatar
+    const h = handle.replace('@', '');
+    return `https://unavatar.io/youtube/${h}`;
+  }
+
   function render() {
-    const channels = load();
-    const grid = document.getElementById('grid');
-    grid.innerHTML = '';
+    const channels = sorted(load());
+    listEl.innerHTML = '';
 
     if (channels.length === 0) {
-      grid.innerHTML = `<div id="empty"><span>📺</span>No channels yet.<br>Tap <strong>+ Add Channel</strong> to get started.</div>`;
+      listEl.innerHTML = `<div id="empty"><span>📺</span>No channels yet.<br>Tap <strong>+ Add Channel</strong> to get started.</div>`;
       return;
     }
 
     channels.forEach((ch, i) => {
-      const card = document.createElement('a');
-      card.className = 'channel-card';
-      card.href = ch.url;
-      card.target = '_blank';
-      card.rel = 'noopener';
-      card.innerHTML = `
-        <button class="delete-btn" title="Remove">✕</button>
-        <div class="channel-avatar" style="background:${colorFor(ch.name)}">${initials(ch.name)}</div>
-        <div class="channel-name">${ch.name}</div>
-      `;
-      card.querySelector('.delete-btn').addEventListener('click', e => {
+      const handle = handleFromUrl(ch.url);
+      const row = document.createElement('a');
+      row.className = 'channel-row';
+      row.href = ch.url;
+      row.target = '_blank';
+      row.rel = 'noopener';
+
+      const img = document.createElement('img');
+      img.className = 'channel-icon';
+      img.alt = ch.name;
+      img.src = avatarUrl(handle);
+      img.onerror = function() {
+        // Fallback to colored initials
+        const fb = document.createElement('div');
+        fb.className = 'channel-icon-fallback';
+        fb.style.background = colorFor(ch.name);
+        fb.textContent = initials(ch.name);
+        this.replaceWith(fb);
+      };
+
+      const info = document.createElement('div');
+      info.style.flex = '1';
+      info.innerHTML = `<div class="channel-name">${ch.name}</div><div class="channel-handle">${handle}</div>`;
+
+      const del = document.createElement('button');
+      del.className = 'delete-btn';
+      del.title = 'Remove';
+      del.textContent = '✕';
+      del.addEventListener('click', e => {
         e.preventDefault();
         e.stopPropagation();
-        deleteChannel(i);
+        const all = load();
+        const idx = all.findIndex(c => c.url === ch.url);
+        if (idx > -1) { all.splice(idx, 1); save(all); render(); }
       });
-      grid.appendChild(card);
+
+      row.appendChild(img);
+      row.appendChild(info);
+      row.appendChild(del);
+      listEl.appendChild(row);
     });
   }
 
-  function deleteChannel(index) {
-    const channels = load();
-    channels.splice(index, 1);
-    save(channels);
-    render();
-  }
-
-  function openModal() {
-    document.getElementById('modal-overlay').classList.add('open');
-    document.getElementById('input-name').focus();
-  }
-
+  function openModal() { overlay.classList.add('open'); inputName.focus(); }
   function closeModal() {
-    document.getElementById('modal-overlay').classList.remove('open');
-    document.getElementById('input-name').value = '';
-    document.getElementById('input-url').value = '';
+    overlay.classList.remove('open');
+    inputName.value = ''; inputUrl.value = '';
+    inputName.style.borderColor = '#444'; inputUrl.style.borderColor = '#444';
   }
 
   function saveChannel() {
-    const name = document.getElementById('input-name').value.trim();
-    const rawUrl = document.getElementById('input-url').value.trim();
-    if (!name || !rawUrl) return;
-
+    const name = inputName.value.trim();
+    const raw = inputUrl.value.trim();
+    if (!name) { inputName.style.borderColor = '#ff4444'; return; }
+    if (!raw) { inputUrl.style.borderColor = '#ff4444'; return; }
     const channels = load();
-    channels.push({ name, url: normalizeUrl(rawUrl) });
+    channels.push({ name, url: handleToUrl(raw) });
     save(channels);
     closeModal();
     render();
   }
 
-  // Close modal on overlay click
-  document.getElementById('modal-overlay').addEventListener('click', e => {
-    if (e.target === document.getElementById('modal-overlay')) closeModal();
-  });
-
-  // Enter key to save
+  document.getElementById('add-btn').addEventListener('click', openModal);
+  document.getElementById('cancel-btn').addEventListener('click', closeModal);
+  document.getElementById('save-btn').addEventListener('click', saveChannel);
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
   document.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && document.getElementById('modal-overlay').classList.contains('open')) saveChannel();
+    if (e.key === 'Enter' && overlay.classList.contains('open')) saveChannel();
     if (e.key === 'Escape') closeModal();
   });
+  inputName.addEventListener('input', () => inputName.style.borderColor = '#444');
+  inputUrl.addEventListener('input', () => inputUrl.style.borderColor = '#444');
 
   render();
 </script>
