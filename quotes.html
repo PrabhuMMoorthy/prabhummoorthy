@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quote Maker</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Lato:wght@300;400&family=Merriweather:ital,wght@0,300;1,300&family=Montserrat:wght@300;600&family=Space+Mono&family=Crimson+Pro:ital,wght@0,300;1,300&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0f0f0f;
+    color: #fff;
+    font-family: 'Lato', sans-serif;
+    min-height: 100vh;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    background: #1a1a1a;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid #ff0000;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  header h1 { font-size: 1.2rem; color: #ff0000; letter-spacing: 1px; }
+  .header-back {
+    background: #222;
+    border: 1px solid #444;
+    color: #ccc;
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .header-back:hover { border-color: #ff0000; color: #fff; }
+  #nav-toggle {
+    background: none; border: none; color: #ccc;
+    font-size: 1.3rem; cursor: pointer; padding: 4px 8px;
+    border-radius: 6px;
+  }
+  #nav-toggle:hover { color: #fff; background: #2a2a2a; }
+
+  /* ─── RIGHT SIDE NAV (same as index) ─── */
+  #nav-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:200; }
+  #nav-overlay.open { display:block; }
+  #side-nav {
+    position:fixed; top:0; right:-280px; width:260px; height:100%;
+    background:#141414; border-left:1px solid #2a2a2a; z-index:201;
+    transition:right .28s cubic-bezier(.4,0,.2,1);
+    display:flex; flex-direction:column; padding:0 0 24px;
+  }
+  #side-nav.open { right:0; }
+  .nav-header { display:flex; align-items:center; justify-content:space-between; padding:18px 20px; border-bottom:1px solid #2a2a2a; }
+  .nav-header span { font-size:.8rem; color:#666; text-transform:uppercase; letter-spacing:1.5px; }
+  #nav-close { background:none; border:none; color:#555; font-size:1.1rem; cursor:pointer; padding:4px; }
+  #nav-close:hover { color:#fff; }
+  .nav-section-label { font-size:.68rem; color:#444; text-transform:uppercase; letter-spacing:1.5px; padding:18px 20px 8px; }
+  .nav-link { display:flex; align-items:center; gap:12px; padding:11px 20px; color:#bbb; text-decoration:none; font-size:.92rem; transition:background .15s,color .15s; }
+  .nav-link:hover { background:#1e1e1e; color:#fff; }
+  .nav-link.active { color:#ff0000; background:#1e1e1e; }
+  .nav-icon { font-size:1rem; width:22px; text-align:center; }
+  .nav-badge { margin-left:auto; background:#ff0000; color:#fff; font-size:.6rem; padding:2px 6px; border-radius:8px; font-weight:700; }
+  .nav-divider { border:none; border-top:1px solid #222; margin:8px 0; }
+
+  /* ─── MAIN LAYOUT ─── */
+  .page-wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 24px 16px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  /* ─── FORM PANEL ─── */
+  .panel {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .panel-title {
+    font-size: 0.72rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 14px;
+  }
+
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 0.78rem; color: #777; margin-bottom: 6px; }
+  .field textarea, .field input[type=text] {
+    width: 100%;
+    background: #242424;
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 0.95rem;
+    padding: 10px 14px;
+    outline: none;
+    font-family: inherit;
+    resize: vertical;
+  }
+  .field textarea:focus, .field input[type=text]:focus { border-color: #ff0000; }
+  .field textarea { min-height: 90px; }
+
+  /* ─── THEMES ─── */
+  .themes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+    gap: 10px;
+  }
+  .theme-chip {
+    border-radius: 8px;
+    aspect-ratio: 1;
+    cursor: pointer;
+    border: 2px solid transparent;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.15s, transform 0.1s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    padding-bottom: 6px;
+  }
+  .theme-chip:hover { transform: scale(1.05); }
+  .theme-chip.selected { border-color: #ff0000; }
+  .theme-chip .chip-label {
+    font-size: 0.6rem;
+    color: rgba(255,255,255,0.85);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  /* ─── ASPECT RATIO BUTTONS ─── */
+  .ratio-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .ratio-btn {
+    background: #242424;
+    border: 1px solid #333;
+    color: #aaa;
+    padding: 7px 14px;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .ratio-btn:hover { border-color: #666; color: #fff; }
+  .ratio-btn.selected { border-color: #ff0000; color: #fff; background: #2a1010; }
+
+  /* ─── EXPORT BUTTON ─── */
+  #export-btn {
+    width: 100%;
+    padding: 13px;
+    background: #ff0000;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: background 0.15s;
+  }
+  #export-btn:hover { background: #cc0000; }
+  #export-btn:active { background: #aa0000; }
+
+  /* ─── CANVAS PREVIEW ─── */
+  .preview-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .preview-label {
+    align-self: flex-start;
+    font-size: 0.72rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+  #quote-canvas {
+    max-width: 100%;
+    border-radius: 10px;
+    border: 1px solid #2a2a2a;
+    display: block;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="header-back">← Back</a>
+  <h1>✏️ Quote Maker</h1>
+  <button id="nav-toggle" title="Menu">☰</button>
+</header>
+
+<!-- Right Side Nav -->
+<div id="nav-overlay"></div>
+<nav id="side-nav">
+  <div class="nav-header">
+    <span>Pages</span>
+    <button id="nav-close">✕</button>
+  </div>
+  <div class="nav-section-label">Main</div>
+  <a href="index.html" class="nav-link">
+    <span class="nav-icon">📺</span> My Channels
+  </a>
+  <a href="quotes.html" class="nav-link active">
+    <span class="nav-icon">✏️</span> Quote Maker
+    <span class="nav-badge">NEW</span>
+  </a>
+  <hr class="nav-divider">
+  <div class="nav-section-label">Coming Soon</div>
+  <a href="#" class="nav-link" style="opacity:0.4;pointer-events:none">
+    <span class="nav-icon">📌</span> Bookmarks
+  </a>
+  <a href="#" class="nav-link" style="opacity:0.4;pointer-events:none">
+    <span class="nav-icon">🗒️</span> Notes
+  </a>
+</nav>
+
+<div class="page-wrap">
+
+  <!-- Left: Form -->
+  <div class="panel">
+    <div class="panel-title">Quote Details</div>
+    <div class="field">
+      <label>Quote Text</label>
+      <textarea id="quote-text" placeholder="Enter your quote here…"></textarea>
+    </div>
+    <div class="field">
+      <label>Author / Source</label>
+      <input id="author-text" type="text" placeholder="— Author Name" />
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Theme</div>
+    <div class="themes-grid" id="themes-grid"></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Aspect Ratio</div>
+    <div class="ratio-btns">
+      <button class="ratio-btn selected" data-ratio="1:1">1:1 Square</button>
+      <button class="ratio-btn" data-ratio="4:5">4:5 Portrait</button>
+      <button class="ratio-btn" data-ratio="16:9">16:9 Wide</button>
+      <button class="ratio-btn" data-ratio="9:16">9:16 Story</button>
+    </div>
+  </div>
+
+  <!-- Preview -->
+  <div class="preview-wrap">
+    <div class="preview-label">Preview</div>
+    <canvas id="quote-canvas"></canvas>
+  </div>
+
+  <button id="export-btn">⬇ Download as Image</button>
+
+</div>
+
+<script>
+// ─── THEMES ──────────────────────────────────────────────
+const THEMES = [
+  {
+    id: 'midnight',
+    label: 'Midnight',
+    bg: { type: 'solid', color: '#0d0d0d' },
+    accent: '#ff0000',
+    quoteColor: '#ffffff',
+    authorColor: '#888888',
+    quoteFont: "italic 400 {size}px 'Playfair Display', serif",
+    authorFont: "300 {asize}px 'Lato', sans-serif",
+    border: null,
+    chip: '#0d0d0d',
+  },
+  {
+    id: 'crimson',
+    label: 'Crimson',
+    bg: { type: 'gradient', colors: ['#1a0000', '#3d0000'] },
+    accent: '#ff4444',
+    quoteColor: '#fff5f5',
+    authorColor: '#ff9999',
+    quoteFont: "italic 400 {size}px 'Crimson Pro', serif",
+    authorFont: "300 {asize}px 'Lato', sans-serif",
+    border: { color: 'rgba(255,80,80,0.25)', width: 2 },
+    chip: 'linear-gradient(135deg,#1a0000,#3d0000)',
+  },
+  {
+    id: 'gold',
+    label: 'Gold',
+    bg: { type: 'solid', color: '#0a0800' },
+    accent: '#c9a227',
+    quoteColor: '#f5e9c0',
+    authorColor: '#c9a227',
+    quoteFont: "italic 400 {size}px 'Playfair Display', serif",
+    authorFont: "300 {asize}px 'Lato', sans-serif",
+    border: { color: 'rgba(201,162,39,0.4)', width: 1 },
+    chip: '#0a0800',
+    chipAccent: '#c9a227',
+  },
+  {
+    id: 'ocean',
+    label: 'Ocean',
+    bg: { type: 'gradient', colors: ['#021b2e', '#0a3d5e'] },
+    accent: '#4fc3f7',
+    quoteColor: '#e8f4fd',
+    authorColor: '#7cb9d8',
+    quoteFont: "italic 300 {size}px 'Merriweather', serif",
+    authorFont: "300 {asize}px 'Lato', sans-serif",
+    border: null,
+    chip: 'linear-gradient(135deg,#021b2e,#0a3d5e)',
+  },
+  {
+    id: 'forest',
+    label: 'Forest',
+    bg: { type: 'gradient', colors: ['#0a1a0a', '#0d2b0d'] },
+    accent: '#4caf50',
+    quoteColor: '#e8f5e9',
+    authorColor: '#81c784',
+    quoteFont: "italic 300 {size}px 'Merriweather', serif",
+    authorFont: "300 {asize}px 'Lato', sans-serif",
+    border: { color: 'rgba(76,175,80,0.25)', width: 1 },
+    chip: 'linear-gradient(135deg,#0a1a0a,#0d2b0d)',
+  },
+  {
+    id: 'parchment',
+    label: 'Parchment',
+    bg: { type: 'solid', color: '#f5eed6' },
+    accent: '#8b5e3c',
+    quoteColor: '#2c1810',
+    authorColor: '#8b5e3c',
+    quoteFont: "italic 400 {size}px 'Playfair Display', serif",
+    authorFont: "400 {asize}px 'Lato', sans-serif",
+    border: { color: 'rgba(139,94,60,0.35)', width: 2 },
+    chip: '#f5eed6',
+  },
+  {
+    id: 'mono',
+    label: 'Mono',
+    bg: { type: 'solid', color: '#111111' },
+    accent: '#ffffff',
+    quoteColor: '#eeeeee',
+    authorColor: '#555555',
+    quoteFont: "400 {size}px 'Space Mono', monospace",
+    authorFont: "400 {asize}px 'Space Mono', monospace",
+    border: { color: '#333', width: 1 },
+    chip: '#111',
+  },
+  {
+    id: 'lavender',
+    label: 'Lavender',
+    bg: { type: 'gradient', colors: ['#1a1030', '#2d1f5e'] },
+    accent: '#b39ddb',
+    quoteColor: '#ede7f6',
+    authorColor: '#b39ddb',
+    quoteFont: "italic 400 {size}px 'Crimson Pro', serif",
+    authorFont: "300 {asize}px 'Lato', sans-serif",
+    border: { color: 'rgba(179,157,219,0.3)', width: 1 },
+    chip: 'linear-gradient(135deg,#1a1030,#2d1f5e)',
+  },
+  {
+    id: 'sunrise',
+    label: 'Sunrise',
+    bg: { type: 'gradient', colors: ['#1a0a00', '#3d1c00', '#1a0000'] },
+    accent: '#ff8c42',
+    quoteColor: '#fff3e0',
+    authorColor: '#ffb74d',
+    quoteFont: "italic 400 {size}px 'Playfair Display', serif",
+    authorFont: "300 {asize}px 'Lato', sans-serif",
+    border: null,
+    chip: 'linear-gradient(135deg,#3d1c00,#1a0000)',
+  },
+  {
+    id: 'ice',
+    label: 'Ice',
+    bg: { type: 'solid', color: '#f0f6ff' },
+    accent: '#1565c0',
+    quoteColor: '#0d1b3e',
+    authorColor: '#1565c0',
+    quoteFont: "300 {size}px 'Montserrat', sans-serif",
+    authorFont: "600 {asize}px 'Montserrat', sans-serif",
+    border: { color: 'rgba(21,101,192,0.25)', width: 1 },
+    chip: '#cce0ff',
+  },
+  {
+    id: 'charcoal',
+    label: 'Charcoal',
+    bg: { type: 'solid', color: '#1e1e1e' },
+    accent: '#e0e0e0',
+    quoteColor: '#ffffff',
+    authorColor: '#9e9e9e',
+    quoteFont: "300 {size}px 'Montserrat', sans-serif",
+    authorFont: "300 {asize}px 'Montserrat', sans-serif",
+    border: { color: '#333', width: 1 },
+    chip: '#2a2a2a',
+  },
+  {
+    id: 'sakura',
+    label: 'Sakura',
+    bg: { type: 'gradient', colors: ['#fff0f5', '#ffe4ef'] },
+    accent: '#e91e8c',
+    quoteColor: '#3d001a',
+    authorColor: '#e91e8c',
+    quoteFont: "italic 400 {size}px 'Playfair Display', serif",
+    authorFont: "300 {asize}px 'Lato', sans-serif",
+    border: { color: 'rgba(233,30,140,0.2)', width: 1 },
+    chip: 'linear-gradient(135deg,#ffe4ef,#ffb3d0)',
+  },
+];
+
+// ─── STATE ───────────────────────────────────────────────
+let currentTheme = THEMES[0];
+let currentRatio = '1:1';
+
+const RATIOS = {
+  '1:1':  { w: 1080, h: 1080 },
+  '4:5':  { w: 1080, h: 1350 },
+  '16:9': { w: 1920, h: 1080 },
+  '9:16': { w: 1080, h: 1920 },
+};
+
+// ─── BUILD THEME CHIPS ────────────────────────────────────
+const grid = document.getElementById('themes-grid');
+THEMES.forEach(t => {
+  const chip = document.createElement('div');
+  chip.className = 'theme-chip' + (t.id === currentTheme.id ? ' selected' : '');
+  chip.style.background = t.chip;
+  // small accent line
+  const accent = document.createElement('div');
+  accent.style.cssText = `position:absolute;bottom:0;left:0;right:0;height:3px;background:${t.accent};`;
+  chip.appendChild(accent);
+  const lbl = document.createElement('span');
+  lbl.className = 'chip-label';
+  lbl.textContent = t.label;
+  chip.appendChild(lbl);
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('.theme-chip').forEach(c => c.classList.remove('selected'));
+    chip.classList.add('selected');
+    currentTheme = t;
+    renderCanvas();
+  });
+  grid.appendChild(chip);
+});
+
+// ─── RATIO BUTTONS ────────────────────────────────────────
+document.querySelectorAll('.ratio-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.ratio-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    currentRatio = btn.dataset.ratio;
+    renderCanvas();
+  });
+});
+
+// ─── CANVAS RENDERER ──────────────────────────────────────
+const canvas = document.getElementById('quote-canvas');
+const ctx = canvas.getContext('2d');
+
+function wrapText(ctx, text, x, maxWidth, lineHeight) {
+  const words = text.split(' ');
+  const lines = [];
+  let line = '';
+  for (const word of words) {
+    const test = line ? line + ' ' + word : word;
+    if (ctx.measureText(test).width > maxWidth && line) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = test;
+    }
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
+function renderCanvas() {
+  const quoteText  = document.getElementById('quote-text').value.trim() || 'Your quote goes here…';
+  const authorText = document.getElementById('author-text').value.trim() || '— Author';
+
+  const { w, h } = RATIOS[currentRatio];
+  canvas.width  = w;
+  canvas.height = h;
+
+  const t = currentTheme;
+  const pad = w * 0.1;
+
+  // Background
+  if (t.bg.type === 'solid') {
+    ctx.fillStyle = t.bg.color;
+    ctx.fillRect(0, 0, w, h);
+  } else {
+    const colors = t.bg.colors;
+    const grad = ctx.createLinearGradient(0, 0, w * 0.3, h);
+    colors.forEach((c, i) => grad.addColorStop(i / (colors.length - 1), c));
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+  }
+
+  // Border
+  if (t.border) {
+    ctx.strokeStyle = t.border.color;
+    ctx.lineWidth   = t.border.width * 2;
+    const m = pad * 0.35;
+    ctx.strokeRect(m, m, w - m*2, h - m*2);
+  }
+
+  // Accent line (decorative top bar)
+  ctx.fillStyle = t.accent;
+  ctx.fillRect(pad, pad * 0.8, w * 0.06, 3);
+
+  // Opening quote mark
+  const qMarkSize = w * 0.13;
+  ctx.fillStyle = t.accent + '22';
+  ctx.font = `bold ${qMarkSize}px Georgia, serif`;
+  ctx.textAlign = 'left';
+  ctx.fillText('\u201C', pad - qMarkSize * 0.15, h * 0.28 + qMarkSize * 0.55);
+
+  // Quote text — auto-size font
+  const maxW = w - pad * 2;
+  let fontSize = Math.floor(w * 0.055);
+  ctx.textAlign = 'center';
+
+  let lines;
+  while (fontSize > 18) {
+    ctx.font = t.quoteFont.replace('{size}', fontSize);
+    lines = wrapText(ctx, quoteText, pad, maxW, fontSize * 1.5);
+    const totalH = lines.length * fontSize * 1.55;
+    if (totalH < h * 0.55) break;
+    fontSize -= 2;
+  }
+
+  const lineH = fontSize * 1.58;
+  const totalTextH = lines.length * lineH;
+  let startY = (h - totalTextH) / 2 - fontSize * 0.5;
+
+  ctx.fillStyle = t.quoteColor;
+  ctx.font = t.quoteFont.replace('{size}', fontSize);
+  lines.forEach((line, i) => {
+    ctx.fillText(line, w / 2, startY + i * lineH);
+  });
+
+  // Author
+  const authorSize = Math.floor(fontSize * 0.42);
+  ctx.font = t.authorFont.replace('{asize}', authorSize);
+  ctx.fillStyle = t.authorColor;
+  ctx.textAlign = 'center';
+
+  const authorY = startY + totalTextH + fontSize * 1.2;
+  ctx.fillText('— ' + authorText.replace(/^—\s*/, ''), w / 2, authorY);
+
+  // Scale canvas visually
+  const maxPreviewW = Math.min(window.innerWidth - 32, 560);
+  const scale = maxPreviewW / w;
+  canvas.style.width  = (w * scale) + 'px';
+  canvas.style.height = (h * scale) + 'px';
+}
+
+// ─── LIVE UPDATE ──────────────────────────────────────────
+document.getElementById('quote-text').addEventListener('input',  renderCanvas);
+document.getElementById('author-text').addEventListener('input', renderCanvas);
+
+// ─── EXPORT ───────────────────────────────────────────────
+document.getElementById('export-btn').addEventListener('click', () => {
+  renderCanvas();
+  const link = document.createElement('a');
+  const author = (document.getElementById('author-text').value.trim() || 'quote').replace(/[^a-z0-9]/gi,'_').slice(0,30);
+  link.download = `quote_${author}_${currentTheme.id}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+});
+
+// ─── SIDE NAV ─────────────────────────────────────────────
+const navToggle  = document.getElementById('nav-toggle');
+const navOverlay = document.getElementById('nav-overlay');
+const sideNav    = document.getElementById('side-nav');
+const navClose   = document.getElementById('nav-close');
+function openNav()  { sideNav.classList.add('open'); navOverlay.classList.add('open'); }
+function closeNav() { sideNav.classList.remove('open'); navOverlay.classList.remove('open'); }
+navToggle.addEventListener('click', openNav);
+navClose.addEventListener('click', closeNav);
+navOverlay.addEventListener('click', closeNav);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeNav(); });
+
+// Initial render
+renderCanvas();
+</script>
+</body>
+</html>
