@@ -249,6 +249,92 @@
   }
   #cancel-btn { background: #333; color: #ccc; }
   #save-btn { background: #ff0000; color: #fff; }
+
+  /* ─── RIGHT SIDE NAV ─── */
+  #nav-toggle {
+    background: none;
+    border: none;
+    color: #ccc;
+    font-size: 1.3rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    line-height: 1;
+  }
+  #nav-toggle:hover { color: #fff; background: #2a2a2a; }
+
+  #nav-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 200;
+  }
+  #nav-overlay.open { display: block; }
+
+  #side-nav {
+    position: fixed;
+    top: 0;
+    right: -280px;
+    width: 260px;
+    height: 100%;
+    background: #141414;
+    border-left: 1px solid #2a2a2a;
+    z-index: 201;
+    transition: right 0.28s cubic-bezier(.4,0,.2,1);
+    display: flex;
+    flex-direction: column;
+    padding: 0 0 24px;
+  }
+  #side-nav.open { right: 0; }
+
+  .nav-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px;
+    border-bottom: 1px solid #2a2a2a;
+  }
+  .nav-header span { font-size: 0.8rem; color: #666; text-transform: uppercase; letter-spacing: 1.5px; }
+  #nav-close {
+    background: none; border: none; color: #555;
+    font-size: 1.1rem; cursor: pointer; padding: 4px;
+  }
+  #nav-close:hover { color: #fff; }
+
+  .nav-section-label {
+    font-size: 0.68rem;
+    color: #444;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 18px 20px 8px;
+  }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 20px;
+    color: #bbb;
+    text-decoration: none;
+    font-size: 0.92rem;
+    border-radius: 0;
+    transition: background 0.15s, color 0.15s;
+  }
+  .nav-link:hover { background: #1e1e1e; color: #fff; }
+  .nav-link.active { color: #ff0000; background: #1e1e1e; }
+  .nav-link .nav-icon { font-size: 1rem; width: 22px; text-align: center; }
+  .nav-link .nav-badge {
+    margin-left: auto;
+    background: #ff0000;
+    color: #fff;
+    font-size: 0.6rem;
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-weight: 700;
+  }
+
+  .nav-divider { border: none; border-top: 1px solid #222; margin: 8px 0; }
 </style>
 </head>
 <body>
@@ -257,7 +343,33 @@
   <h1>▶ My Channels</h1>
   <button id="refresh-btn" class="header-btn">⟳ Refresh</button>
   <button id="add-btn" class="header-btn">+ Add</button>
+  <button id="nav-toggle" title="Menu">☰</button>
 </header>
+
+<!-- Right Side Navigation -->
+<div id="nav-overlay"></div>
+<nav id="side-nav">
+  <div class="nav-header">
+    <span>Pages</span>
+    <button id="nav-close">✕</button>
+  </div>
+  <div class="nav-section-label">Main</div>
+  <a href="index.html" class="nav-link active">
+    <span class="nav-icon">📺</span> My Channels
+  </a>
+  <a href="quotes.html" class="nav-link">
+    <span class="nav-icon">✏️</span> Quote Maker
+    <span class="nav-badge">NEW</span>
+  </a>
+  <hr class="nav-divider">
+  <div class="nav-section-label">Coming Soon</div>
+  <a href="#" class="nav-link" style="opacity:0.4;pointer-events:none">
+    <span class="nav-icon">📌</span> Bookmarks
+  </a>
+  <a href="#" class="nav-link" style="opacity:0.4;pointer-events:none">
+    <span class="nav-icon">🗒️</span> Notes
+  </a>
+</nav>
 
 <div id="search-bar">
   <input id="search-input" type="search" placeholder="🔍  Search channels..." />
@@ -605,6 +717,20 @@
   inputUrl.addEventListener('input', () => inputUrl.style.borderColor  = '#444');
 
   render();
+
+  // ─── SIDE NAV ────────────────────────────────────────────
+  const navToggle  = document.getElementById('nav-toggle');
+  const navOverlay = document.getElementById('nav-overlay');
+  const sideNav    = document.getElementById('side-nav');
+  const navClose   = document.getElementById('nav-close');
+
+  function openNav()  { sideNav.classList.add('open'); navOverlay.classList.add('open'); }
+  function closeNav() { sideNav.classList.remove('open'); navOverlay.classList.remove('open'); }
+
+  navToggle.addEventListener('click', openNav);
+  navClose.addEventListener('click', closeNav);
+  navOverlay.addEventListener('click', closeNav);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeNav(); });
 </script>
 </body>
 </html>
