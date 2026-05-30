@@ -91,6 +91,44 @@ header{border-bottom:1px solid var(--header-border);padding:12px 18px;display:fl
 .chapter-item{padding:6px 10px;border-radius:6px;cursor:pointer;margin-bottom:2px;font-size:0.78rem;color:var(--text-dim);transition:all .2s;}
 .chapter-item:hover{background:var(--surface2);color:var(--text);}
 .chapter-item.active{background:var(--surface2);color:var(--gold);}
+
+/* Segmented Character Sort Bar */
+.char-sort-bar {
+  display: flex;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 3px;
+  margin: 6px 4px 12px;
+  gap: 2px;
+}
+.sort-btn {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 0.68rem;
+  font-family: inherit;
+  padding: 6px 2px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.sort-btn:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.03);
+}
+[data-theme="light"] .sort-btn:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+.sort-btn.active {
+  background: var(--surface);
+  color: var(--gold);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  font-weight: bold;
+}
+
 .char-item{padding:7px 10px;border-radius:6px;cursor:pointer;margin-bottom:2px;font-size:0.8rem;color:var(--text-dim);transition:all .2s;display:flex;align-items:center;justify-content:space-between;gap:6px;}
 .char-item:hover{background:var(--surface2);color:var(--text);}
 .char-item.active{background:var(--surface2);color:var(--gold);}
@@ -103,7 +141,7 @@ header{border-bottom:1px solid var(--header-border);padding:12px 18px;display:fl
 .content{flex:1;overflow-y:auto;padding:22px 26px;}
 .content::-webkit-scrollbar{width:5px;}
 .content::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
-.content-header{margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--header-border);display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.content-header{margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--header-border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
 .content-title{font-size:1.15rem;color:var(--gold);}
 .content-meta{font-size:0.75rem;color:var(--text-dim);margin-top:3px;}
 
@@ -121,8 +159,39 @@ header{border-bottom:1px solid var(--header-border);padding:12px 18px;display:fl
 .export-btn{background:var(--btn-bg);border:1px solid var(--btn-border);color:var(--text-dim);border-radius:6px;padding:4px 10px;font-size:0.71rem;cursor:pointer;transition:all .2s;font-family:inherit;}
 .export-btn:hover{border-color:var(--gold-dim);color:var(--gold);}
 
-.random-btn{background:var(--gold);color:var(--bg);border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-size:0.83rem;font-weight:bold;transition:opacity .2s;font-family:inherit;}
-.random-btn:hover{opacity:.85;}
+/* Premium Interactive Random Button */
+.random-btn {
+  background: linear-gradient(135deg, var(--gold), #a28230);
+  color: #0f0e0c !important;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 18px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(200, 168, 75, 0.2);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  font-family: inherit;
+}
+.random-btn:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 6px 16px rgba(200, 168, 75, 0.35);
+}
+.random-btn:active {
+  transform: translateY(1px) scale(0.98);
+}
+.random-btn span {
+  display: inline-block;
+  transition: transform 0.4s ease;
+}
+.random-btn:hover span {
+  transform: rotate(180deg);
+}
+
 .random-card{background:var(--surface2);border:1px solid var(--gold-dim);border-radius:14px;padding:26px 30px;max-width:660px;margin:0 auto;}
 .random-loc-badge{display:inline-block;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:3px 11px;font-size:.7rem;color:var(--text-dim);margin-bottom:10px;}
 
@@ -152,9 +221,25 @@ header{border-bottom:1px solid var(--header-border);padding:12px 18px;display:fl
 .eth-opt.selected{border-color:var(--gold);color:var(--text);}
 .eth-preview{height:44px;border-radius:6px;margin-bottom:7px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;}
 
-/* CANVAS PREVIEW */
-.canvas-preview-wrap{border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--surface2);}
-.canvas-preview-wrap canvas{max-width:100%;height:auto;display:block;}
+/* Dynamic Canvas Scaling Fix */
+.canvas-preview-wrap {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--surface2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-height: 40vh;
+}
+.canvas-preview-wrap canvas {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto !important;
+  height: auto !important;
+  object-fit: contain;
+  display: block;
+}
 
 .modal-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;}
 .btn-cancel{background:none;border:1px solid var(--btn-border);color:var(--text-dim);border-radius:8px;padding:7px 16px;cursor:pointer;font-family:inherit;font-size:.84rem;}
@@ -240,6 +325,7 @@ header{border-bottom:1px solid var(--header-border);padding:12px 18px;display:fl
 <script>
 var data=null, activeBook=null, activeChapter=null, activeChar=null, currentTab='books';
 var exportQuote=null, selectedExportTheme=0, currentQuotes=[], _charList=[];
+var charSort='default'; /* default | az | za | count */
 var LS_KEY='venmurasu_quotes_data', LS_THEME='venmurasu_ui_theme';
 
 var EXPORT_THEMES=[
@@ -345,12 +431,12 @@ function renderBookList(){
 
 /* ---- CHAR LIST ---- */
 function buildCharMap(){
-  var chars={};
+  var chars={}, order=[];
   data.books.forEach(function(b){
     b.chapters&&b.chapters.forEach(function(ch){
       ch.big_quotes&&ch.big_quotes.forEach(function(q){
         if(!q.character_name)return;
-        if(!chars[q.character_name])chars[q.character_name]={count:0,role:''};
+        if(!chars[q.character_name]){chars[q.character_name]={count:0,role:''};order.push(q.character_name);}
         chars[q.character_name].count++;
       });
       ch.characters&&ch.characters.forEach(function(c){
@@ -358,13 +444,31 @@ function buildCharMap(){
       });
     });
   });
-  _charList=Object.keys(chars).sort(function(a,b){return chars[b].count-chars[a].count;});
+  /* dedupe order */
+  var seen={}, dedupe=[];
+  order.forEach(function(n){if(!seen[n]){seen[n]=1;dedupe.push(n);}});
+  /* apply sort */
+  if(charSort==='az') _charList=dedupe.slice().sort(function(a,b){return a.localeCompare(b,'ta');});
+  else if(charSort==='za') _charList=dedupe.slice().sort(function(a,b){return b.localeCompare(a,'ta');});
+  else if(charSort==='count') _charList=dedupe.slice().sort(function(a,b){return chars[b].count-chars[a].count;});
+  else _charList=dedupe; /* default: appearance order */
   return chars;
+}
+
+function setCharSort(s){
+  charSort=s;
+  renderCharList();
 }
 
 function renderCharList(){
   var chars=buildCharMap();
-  var html='<div class="section-label">Characters</div>';
+  var sortBtns='<div class="char-sort-bar">'
+    +'<button class="sort-btn'+(charSort==='default'?' active':'')+'" onclick="setCharSort(\'default\')">Default</button>'
+    +'<button class="sort-btn'+(charSort==='az'?' active':'')+'" onclick="setCharSort(\'az\')">A → Z</button>'
+    +'<button class="sort-btn'+(charSort==='za'?' active':'')+'" onclick="setCharSort(\'za\')">Z → A</button>'
+    +'<button class="sort-btn'+(charSort==='count'?' active':'')+'" onclick="setCharSort(\'count\')"># Quotes</button>'
+    +'</div>';
+  var html=sortBtns+'<div class="section-label">Characters</div>';
   _charList.forEach(function(name,idx){
     var info=chars[name];
     html+='<div class="char-item'+(activeChar===name?' active':'')+'" onclick="selectCharByIndex('+idx+')">'
@@ -456,7 +560,7 @@ function showRandom(){
   currentQuotes=[pick];
   document.getElementById('content').innerHTML=
     '<div class="content-header"><div><div class="content-title">Random Quote</div></div>'
-    +'<button class="random-btn" onclick="showRandom()">🎲 Another</button></div>'
+    +'<button class="random-btn" onclick="showRandom()"><span>🎲</span> Another</button></div>'
     +'<div class="random-card">'
     +'<div class="random-loc-badge">'+esc(pick.book)+' &middot; '+esc(pick.chapter)+'</div>'
     +'<div class="quote-text">'+esc(pick.quote)+'</div>'
