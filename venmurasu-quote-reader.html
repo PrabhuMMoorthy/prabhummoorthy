@@ -208,20 +208,20 @@ header{border-bottom:1px solid var(--header-border);padding:12px 18px;display:fl
 .empty{text-align:center;padding:50px 20px;color:var(--text-dim);}
 .empty .icon{font-size:2rem;margin-bottom:10px;}
 
-/* MODAL OVERLAY — use normal-flow container to avoid fixed */
+/* MODAL OVERLAY */
 .modal-wrap{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:300;align-items:center;justify-content:center;}
 .modal-wrap.show{display:flex;}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;width:min(640px,95vw);max-height:92vh;overflow-y:auto;display:flex;flex-direction:column;gap:16px;}
-.modal h2{color:var(--gold);font-size:1rem;font-family:inherit;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;width:min(520px,95vw);max-height:92vh;overflow-y:auto;display:flex;flex-direction:column;gap:12px;}
+.modal h2{color:var(--gold);font-size:0.95rem;font-family:inherit;text-align:center;}
 
-/* THEME GRID IN MODAL */
-.export-theme-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
-.eth-opt{border:2px solid var(--border);border-radius:10px;padding:10px 8px;cursor:pointer;text-align:center;font-size:.74rem;transition:all .2s;color:var(--text-dim);}
+/* MINIMALISTIC HIGH-DENSITY THEME GRID IN MODAL */
+.export-theme-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;}
+.eth-opt{border:1px solid var(--border);border-radius:8px;padding:6px 4px;cursor:pointer;text-align:center;transition:all .2s;color:var(--text-dim);background:var(--surface2);display:flex;flex-direction:column;align-items:center;gap:4px;width:100%;}
 .eth-opt:hover{border-color:var(--gold-dim);}
-.eth-opt.selected{border-color:var(--gold);color:var(--text);}
-.eth-preview{height:44px;border-radius:6px;margin-bottom:7px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;}
+.eth-opt.selected{border-color:var(--gold);color:var(--text);background:var(--btn-hover);}
+.eth-preview{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.8rem;border:1px solid rgba(255,255,255,0.15);flex-shrink:0;margin:0;}
 
-/* Dynamic Canvas Scaling Fix */
+/* Dynamic Canvas Scaling Fix - Sits proudly at the top */
 .canvas-preview-wrap {
   border: 1px solid var(--border);
   border-radius: 10px;
@@ -230,7 +230,9 @@ header{border-bottom:1px solid var(--header-border);padding:12px 18px;display:fl
   display: flex;
   justify-content: center;
   align-items: center;
-  max-height: 40vh;
+  max-height: 42vh;
+  padding: 6px;
+  box-shadow: inset 0 0 15px rgba(0,0,0,0.4);
 }
 .canvas-preview-wrap canvas {
   max-width: 100%;
@@ -241,9 +243,9 @@ header{border-bottom:1px solid var(--header-border);padding:12px 18px;display:fl
   display: block;
 }
 
-.modal-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;}
-.btn-cancel{background:none;border:1px solid var(--btn-border);color:var(--text-dim);border-radius:8px;padding:7px 16px;cursor:pointer;font-family:inherit;font-size:.84rem;}
-.btn-export{background:var(--gold);border:none;color:var(--bg);border-radius:8px;padding:7px 18px;cursor:pointer;font-weight:bold;font-family:inherit;font-size:.84rem;}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:4px;}
+.btn-cancel{background:none;border:1px solid var(--btn-border);color:var(--text-dim);border-radius:8px;padding:7px 16px;cursor:pointer;font-family:inherit;font-size:.8rem;}
+.btn-export{background:var(--gold);border:none;color:var(--bg);border-radius:8px;padding:7px 18px;cursor:pointer;font-weight:bold;font-family:inherit;font-size:.8rem;}
 #exportCanvas{display:none;}
 
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -252,7 +254,9 @@ header{border-bottom:1px solid var(--header-border);padding:12px 18px;display:fl
   .sidebar{position:fixed;top:0;left:0;height:100%;transform:translateX(-100%);padding-top:57px;}
   .sidebar.open{transform:translateX(0);}
   .content{padding:14px;}
-  .export-theme-grid{grid-template-columns:repeat(2,1fr);}
+}
+@media(max-width:480px){
+  .export-theme-grid{grid-template-columns:repeat(3,1fr);}
 }
 @media(min-width:701px){
   .sidebar{display:flex!important;transform:none!important;position:relative!important;padding-top:0!important;}
@@ -310,10 +314,12 @@ header{border-bottom:1px solid var(--header-border);padding:12px 18px;display:fl
 <div class="modal-wrap" id="exportModal">
   <div class="modal">
     <h2>📸 Export Quote as Image</h2>
-    <div class="export-theme-grid" id="exportThemeGrid"></div>
+    <!-- Quote Image Preview proudly on the Top -->
     <div class="canvas-preview-wrap" id="previewWrap">
       <canvas id="previewCanvas" width="540" height="540"></canvas>
     </div>
+    <!-- Minimalistic Theme Grid underneath -->
+    <div class="export-theme-grid" id="exportThemeGrid"></div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
       <button class="btn-export" onclick="doExport()">⬇ Download PNG</button>
@@ -334,7 +340,12 @@ var EXPORT_THEMES=[
   {name:'Midnight Blue',bg:'#0a0e1a',border:'#3a6faf',text:'#d8e4f4',meta:'#7a9cc8',accent:'#6ab0ff',deco:'\u2731'},
   {name:'Red Fire',     bg:'#1a0a08',border:'#c04030',text:'#f0ddd8',meta:'#a07060',accent:'#e06040',deco:'\u2694'},
   {name:'Pure White',   bg:'#ffffff',border:'#cccccc',text:'#111111',meta:'#666666',accent:'#333333',deco:'\u275E'},
-  {name:'Forest',       bg:'#0c1a0e',border:'#3a7a42',text:'#d4ead6',meta:'#7aaa80',accent:'#5fc068',deco:'\u2740'},
+  {name:'Forest Accent',bg:'#0c1a0e',border:'#3a7a42',text:'#d4ead6',meta:'#7aaa80',accent:'#5fc068',deco:'\u2740'},
+  /* Programmable Scenery Themes */
+  {name:'Clouds Sky',   bg:'#7597d4',border:'#ffffff',text:'#1a2a3a',meta:'#4a5d78',accent:'#1a2a3a',deco:'\u2601', type:'clouds', glass:true, glassBg:'rgba(255, 255, 255, 0.72)', glassBorder:'rgba(255, 255, 255, 0.4)'},
+  {name:'Misty Peaks',  bg:'#2b1a3d',border:'#fec389',text:'#f5f0fa',meta:'#c9646c',accent:'#fec389',deco:'\u25b2', type:'mountains', glass:true, glassBg:'rgba(18, 10, 31, 0.65)', glassBorder:'rgba(254, 195, 137, 0.25)'},
+  {name:'Deep Ocean',   bg:'#040d1a',border:'#5ba3e8',text:'#e5f2ff',meta:'#6888a8',accent:'#5ba3e8',deco:'\u2248', type:'ocean', glass:true, glassBg:'rgba(4, 13, 26, 0.72)', glassBorder:'rgba(91, 163, 232, 0.25)'},
+  {name:'Serene Woods', bg:'#051108',border:'#5ec87a',text:'#e2f5e8',meta:'#7aaa80',accent:'#5ec87a',deco:'\u2741', type:'forest', glass:true, glassBg:'rgba(5, 17, 8, 0.75)', glassBorder:'rgba(94, 200, 122, 0.25)'},
 ];
 
 /* ---- THEME ---- */
@@ -585,8 +596,16 @@ function buildExportThemeGrid(){
   EXPORT_THEMES.forEach(function(t,i){
     var div=document.createElement('div');
     div.className='eth-opt'+(i===selectedExportTheme?' selected':'');
-    div.innerHTML='<div class="eth-preview" style="background:'+t.bg+';border:2px solid '+t.border+';color:'+t.accent+'">'+t.deco+'</div>'
-      +'<div style="font-size:.74rem">'+t.name+'</div>';
+    
+    // Select beautiful gradient or solid color representation for the preview thumbnail
+    var previewStyle = 'background:'+t.bg+';';
+    if(t.type === 'clouds') previewStyle = 'background:linear-gradient(180deg, #7597d4, #f5e2d6);';
+    else if(t.type === 'mountains') previewStyle = 'background:linear-gradient(180deg, #2b1a3d, #c9646c, #fec389);';
+    else if(t.type === 'ocean') previewStyle = 'background:linear-gradient(180deg, #040d1a, #134e6f);';
+    else if(t.type === 'forest') previewStyle = 'background:linear-gradient(180deg, #051108, #1e462b);';
+
+    div.innerHTML='<div class="eth-preview" style="'+previewStyle+'border:1px solid '+t.border+';color:'+t.accent+'">'+t.deco+'</div>'
+      +'<div style="font-size:0.64rem; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;">'+t.name+'</div>';
     div.onclick=(function(idx){return function(){
       selectedExportTheme=idx;
       document.querySelectorAll('.eth-opt').forEach(function(el,j){el.classList.toggle('selected',j===idx);});
@@ -596,6 +615,172 @@ function buildExportThemeGrid(){
   });
 }
 
+/* ---- PROGRAMMATIC ARTWORK DRAWERS FOR CANVAS ---- */
+function drawCloudsBg(ctx, W, H) {
+  var skyGrad = ctx.createLinearGradient(0, 0, 0, H);
+  skyGrad.addColorStop(0, '#7597d4');
+  skyGrad.addColorStop(0.6, '#b1c5e5');
+  skyGrad.addColorStop(1, '#f5e2d6');
+  ctx.fillStyle = skyGrad;
+  ctx.fillRect(0, 0, W, H);
+  
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.28)';
+  function drawCloud(cx, cy, scale) {
+    ctx.beginPath();
+    ctx.arc(cx, cy, 30*scale, 0, Math.PI*2);
+    ctx.arc(cx + 25*scale, cy - 10*scale, 42*scale, 0, Math.PI*2);
+    ctx.arc(cx + 62*scale, cy, 32*scale, 0, Math.PI*2);
+    ctx.arc(cx + 31*scale, cy + 15*scale, 31*scale, 0, Math.PI*2);
+    ctx.closePath();
+    ctx.fill();
+  }
+  drawCloud(W * 0.2, H * 0.25, W/600);
+  drawCloud(W * 0.75, H * 0.16, W/500);
+  drawCloud(W * 0.85, H * 0.76, W/550);
+  drawCloud(W * 0.15, H * 0.82, W/600);
+}
+
+function drawMountainsBg(ctx, W, H) {
+  var twilight = ctx.createLinearGradient(0, 0, 0, H);
+  twilight.addColorStop(0, '#2b1a3d');
+  twilight.addColorStop(0.5, '#5c3a56');
+  twilight.addColorStop(0.8, '#c9646c');
+  twilight.addColorStop(1, '#fec389');
+  ctx.fillStyle = twilight;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.fillStyle = 'rgba(254, 210, 150, 0.55)';
+  ctx.beginPath();
+  ctx.arc(W * 0.5, H * 0.65, W * 0.14, 0, Math.PI*2);
+  ctx.fill();
+
+  drawMountainRidge(ctx, W, H, 0.62, 'rgba(92, 58, 86, 0.5)', 40, 100);
+  drawMountainRidge(ctx, W, H, 0.76, 'rgba(43, 26, 61, 0.75)', 65, 200);
+  drawMountainRidge(ctx, W, H, 0.91, 'rgba(18, 10, 31, 0.96)', 80, 300);
+}
+
+function drawMountainRidge(ctx, W, H, startYPercent, color, roughness, seed) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(0, H);
+  var points = 16;
+  var step = W / (points - 1);
+  function prng(x) {
+    var s = Math.sin(x) * 10000;
+    return s - Math.floor(s);
+  }
+  for (var i = 0; i < points; i++) {
+    var x = i * step;
+    var randomHeight = prng(seed + i) * roughness - (roughness/2);
+    var y = H * startYPercent + randomHeight;
+    if (i === 0) ctx.lineTo(0, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.lineTo(W, H);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawOceanBg(ctx, W, H) {
+  var oceanGrad = ctx.createLinearGradient(0, 0, 0, H);
+  oceanGrad.addColorStop(0, '#040d1a');
+  oceanGrad.addColorStop(0.6, '#082545');
+  oceanGrad.addColorStop(1, '#134e6f');
+  ctx.fillStyle = oceanGrad;
+  ctx.fillRect(0, 0, W, H);
+
+  var glow = ctx.createRadialGradient(W*0.5, H*0.4, 10, W*0.5, H*0.4, W*0.5);
+  glow.addColorStop(0, 'rgba(255, 255, 255, 0.12)');
+  glow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, W, H);
+
+  drawWave(ctx, W, H, 0.74, 'rgba(19, 78, 111, 0.3)', 20, 0.007, 0);
+  drawWave(ctx, W, H, 0.81, 'rgba(12, 55, 84, 0.53)', 24, 0.009, 120);
+  drawWave(ctx, W, H, 0.89, 'rgba(5, 25, 45, 0.88)', 16, 0.013, 240);
+}
+
+function drawWave(ctx, W, H, startYPercent, color, amplitude, frequency, phase) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(0, H);
+  for (var x = 0; x <= W; x += 10) {
+    var y = H * startYPercent + Math.sin(x * frequency + phase) * amplitude;
+    ctx.lineTo(x, y);
+  }
+  ctx.lineTo(W, H);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawForestBg(ctx, W, H) {
+  var forestGrad = ctx.createLinearGradient(0, 0, 0, H);
+  forestGrad.addColorStop(0, '#051108');
+  forestGrad.addColorStop(0.7, '#112a18');
+  forestGrad.addColorStop(1, '#1e462b');
+  ctx.fillStyle = forestGrad;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+  var seeds = [14, 47, 72, 29, 53, 81, 38, 62, 95, 107];
+  seeds.forEach(function(s) {
+    var sx = ((s * 17) % 100) / 100 * W;
+    var sy = ((s * 33) % 100) / 100 * H * 0.48;
+    ctx.beginPath();
+    ctx.arc(sx, sy, 1.4, 0, Math.PI*2);
+    ctx.fill();
+  });
+
+  drawForestRow(ctx, W, H, 0.86, 'rgba(10, 28, 15, 0.65)', W*0.06, W*0.13, 555);
+  drawForestRow(ctx, W, H, 0.91, 'rgba(4, 15, 8, 0.92)', W*0.08, W*0.17, 777);
+}
+
+function drawForestRow(ctx, W, H, startYPercent, color, treeW, treeH, seed) {
+  ctx.fillStyle = color;
+  function prng(x) {
+    var s = Math.sin(x) * 10000;
+    return s - Math.floor(s);
+  }
+  for (var x = -treeW; x < W + treeW; x += treeW * 0.65) {
+    var randScale = 0.72 + prng(seed + x) * 0.58;
+    var h = treeH * randScale;
+    var w = treeW * randScale;
+    var base = H * startYPercent + prng(seed + x + 2) * (H * 0.05);
+    drawPineTree(ctx, x + w/2, base, w, h);
+  }
+}
+
+function drawPineTree(ctx, cx, base, w, h) {
+  ctx.beginPath();
+  ctx.moveTo(cx, base - h);
+  ctx.lineTo(cx - w * 0.25, base - h * 0.7);
+  ctx.lineTo(cx - w * 0.15, base - h * 0.7);
+  ctx.lineTo(cx - w * 0.4, base - h * 0.4);
+  ctx.lineTo(cx - w * 0.25, base - h * 0.4);
+  ctx.lineTo(cx - w * 0.5, base);
+  ctx.lineTo(cx + w * 0.5, base);
+  ctx.lineTo(cx + w * 0.25, base - h * 0.4);
+  ctx.lineTo(cx + w * 0.4, base - h * 0.4);
+  ctx.lineTo(cx + w * 0.15, base - h * 0.7);
+  ctx.lineTo(cx + w * 0.25, base - h * 0.7);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function roundRect(ctx, x, y, width, height, radius) {
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + width - radius, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+  ctx.lineTo(x + width, y + height - radius);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+  ctx.lineTo(x + radius, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+  ctx.closePath();
+}
+
 /* ---- DRAW TO CANVAS ---- */
 function drawToCanvas(canvas, W, H){
   var t=EXPORT_THEMES[selectedExportTheme];
@@ -603,11 +788,33 @@ function drawToCanvas(canvas, W, H){
   var ctx=canvas.getContext('2d');
   canvas.width=W; canvas.height=H;
 
-  /* background */
-  ctx.fillStyle=t.bg;
-  ctx.fillRect(0,0,W,H);
+  /* background (programmatic illustration or solid fallback) */
+  if(t.type === 'clouds') {
+    drawCloudsBg(ctx, W, H);
+  } else if (t.type === 'mountains') {
+    drawMountainsBg(ctx, W, H);
+  } else if (t.type === 'ocean') {
+    drawOceanBg(ctx, W, H);
+  } else if (t.type === 'forest') {
+    drawForestBg(ctx, W, H);
+  } else {
+    ctx.fillStyle=t.bg;
+    ctx.fillRect(0,0,W,H);
+  }
 
-  /* outer border */
+  /* glassmorphism central overlay card (for illustrated themes) */
+  if (t.glass) {
+    ctx.fillStyle = t.glassBg;
+    ctx.strokeStyle = t.glassBorder || t.border;
+    ctx.lineWidth = Math.max(1, Math.round(W * 0.0015));
+    
+    var cx = W * 0.07, cy = H * 0.13, cw = W * 0.86, ch = H * 0.69, cr = W * 0.035;
+    roundRect(ctx, cx, cy, cw, ch, cr);
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  /* outer border (only if not illustrated, or as decorative subtle frame) */
   var pad=Math.round(W*0.04);
   ctx.strokeStyle=t.border; ctx.lineWidth=W*0.002;
   ctx.strokeRect(pad,pad,W-pad*2,H-pad*2);
@@ -628,7 +835,7 @@ function drawToCanvas(canvas, W, H){
   /* ghost open-quote */
   ctx.font=Math.round(W*0.11)+'px serif';
   ctx.fillStyle=t.accent; ctx.globalAlpha=0.1; ctx.textAlign='left';
-  ctx.fillText('\u201C', W*0.07, H*0.35);
+  ctx.fillText('\u201C', W*0.09, H*0.35);
   ctx.globalAlpha=1;
 
   /* --- quote text with auto font sizing --- */
