@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Venmurasu — Quotes</title>
+<link rel="stylesheet" href="vq-style.css">
+</head>
+<body data-theme="dark">
+
+<header>
+  <button class="hamburger" id="hamburger" onclick="toggleSidebar()">
+    <span></span><span></span><span></span>
+  </button>
+  <div>
+    <div class="logo">வெண்முரசு</div>
+    <div class="subtitle">Quote Reader</div>
+  </div>
+  <div class="header-right">
+    <div class="theme-switcher" id="themeSwitcher">
+      <div class="theme-dot active" data-t="dark"    title="Night Gold"  onclick="setTheme('dark')"></div>
+      <div class="theme-dot"        data-t="light"   title="Parchment"   onclick="setTheme('light')"></div>
+      <div class="theme-dot"        data-t="ocean"   title="Ocean"       onclick="setTheme('ocean')"></div>
+      <div class="theme-dot"        data-t="rose"    title="Rose"        onclick="setTheme('rose')"></div>
+      <div class="theme-dot"        data-t="forest"  title="Forest"      onclick="setTheme('forest')"></div>
+      <div class="theme-dot"        data-t="slate"   title="Slate Blue"  onclick="setTheme('slate')"></div>
+    </div>
+  </div>
+</header>
+
+<div class="main-layout">
+  <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+  <div class="sidebar" id="sidebar" style="display:none">
+    <div class="sidebar-tabs">
+      <button class="tab-btn active" onclick="switchTab('books')" id="tab-books">📖 Books</button>
+      <button class="tab-btn"        onclick="switchTab('chars')" id="tab-chars">👤 Characters</button>
+      <button class="tab-btn"        onclick="switchTab('themes')" id="tab-themes">🏷 Themes</button>
+      <button class="tab-btn"        onclick="switchTab('random')" id="tab-random">🎲 Random</button>
+    </div>
+    <div class="sidebar-body" id="sidebar-body"></div>
+  </div>
+  <div class="content" id="content">
+    <div class="upload-wrap">
+      <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+        <div class="upload-icon">📖</div>
+        <div class="upload-title">Load your quotes JSON</div>
+        <div class="upload-sub">Click to select your quotes data file</div>
+        <button class="upload-btn" onclick="event.stopPropagation();document.getElementById('fileInput').click()">Choose File</button>
+        <input type="file" id="fileInput" accept=".json" onchange="loadFile(event)">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Export Modal -->
+<div class="modal-wrap" id="exportModal">
+  <div class="modal">
+    <h2>📸 Export Quote as Image</h2>
+    <div class="canvas-preview-wrap" id="previewWrap">
+      <canvas id="previewCanvas" width="540" height="540"></canvas>
+    </div>
+    <div class="export-theme-grid" id="exportThemeGrid"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-export" onclick="doExport()">⬇ Download Image</button>
+    </div>
+  </div>
+</div>
+
+<canvas id="exportCanvas" style="display:none;"></canvas>
+
+<script src="vq-app.js"></script>
+</body>
+</html>
