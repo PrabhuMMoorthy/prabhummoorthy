@@ -172,6 +172,8 @@ function renderBookList() {
   data.books.forEach(function(b, i) {
     var isChecked = b.isSelected !== false;
     var displayIndex = b.bookOrder || (i + 1);
+    var isExpanded = (activeBook === i);
+    var toggleIcon = isExpanded ? '▲' : '▼';
     
     html += '<div class="book-item' + (activeBook === i ? ' active' : '') + '" '
           + 'style="display:flex;align-items:flex-start;gap:8px;" '
@@ -182,10 +184,10 @@ function renderBookList() {
           + '    <div class="book-num">Book ' + displayIndex + '</div>'
           + '    <div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(b.title) + '</div>'
           + '  </div>'
-          + '  <button onclick="deleteBook(event,' + i + ')" title="Remove" '
+          + '  <button onclick="toggleBookAccordion(event,' + i + ')" title="' + (isExpanded ? 'Collapse Chapters' : 'Expand Chapters') + '" '
           + '    style="flex-shrink:0;background:none;border:none;cursor:pointer;color:var(--text-dim);'
-          + '    font-size:0.8rem;padding:2px 4px;line-height:1;border-radius:4px;margin-top:2px;" '
-          + '    onmouseover="this.style.color=\'#e06060\'" onmouseout="this.style.color=\'var(--text-dim)\'">✕</button>'
+          + '    font-size:0.75rem;padding:2px 6px;line-height:1;border-radius:4px;margin-top:2px;" '
+          + '    onmouseover="this.style.color=\'var(--gold)\'" onmouseout="this.style.color=\'var(--text-dim)\'">' + toggleIcon + '</button>'
           + '</div>';
 
     if (activeBook === i && b.chapters && isChecked) {
@@ -202,21 +204,14 @@ function renderBookList() {
   body.innerHTML = html;
 }
 
-function deleteBook(e, i) {
+function toggleBookAccordion(e, i) {
   e.stopPropagation();
-  var title = data.books[i].title;
-  if (!confirm('Remove "' + title + '" from your library?')) return;
-  dbDeleteBook(title, function() {
-    var wasActive = (activeBook === i);
-    refreshFromDB(function() {
-      if (wasActive) {
-        activeBook = null; activeChapter = null;
-        if (data.books.length) selectBook(0);
-        else showUploadPrompt();
-      }
-      showToast('🗑️ "' + title + '" removed.');
-    });
-  });
+  if (activeBook === i) {
+    activeBook = null;
+  } else {
+    activeBook = i;
+  }
+  renderBookList();
 }
 
 /* ── Character Panel Controllers ────────────────────────────────────── */
@@ -387,18 +382,74 @@ function selectChar(name) {
   closeSidebar();
 }
 
+/* ── General Quote Pagination State ──────────────────────────────────── */
+var currentQuotesPage = 1;
+var currentQuotesTitle = '';
+var currentQuotesMeta = '';
+
+function changeQuotesPage(delta) {
+  var itemsPerPage = typeof ITEMS_PER_PAGE !== 'undefined' ? ITEMS_PER_PAGE : 100;
+  var totalPages = Math.ceil(currentQuotes.length / itemsPerPage);
+  var newPage = currentQuotesPage + delta;
+  if (newPage >= 1 && newPage <= totalPages) {
+    currentQuotesPage = newPage;
+    displayQuotesPage();
+    var contentEl = document.getElementById('content');
+    if (contentEl) contentEl.scrollTop = 0;
+  }
+}
+
+function goToQuotesPage(pageNum) {
+  var itemsPerPage = typeof ITEMS_PER_PAGE !== 'undefined' ? ITEMS_PER_PAGE : 100;
+  var totalPages = Math.ceil(currentQuotes.length / itemsPerPage);
+  if (pageNum >= 1 && pageNum <= totalPages) {
+    currentQuotesPage = pageNum;
+    displayQuotesPage();
+    var contentEl = document.getElementById('content');
+    if (contentEl) contentEl.scrollTop = 0;
+  }
+}
+
 function renderQuotes(quotes, title, meta) {
   currentQuotes = quotes;
+  currentQuotesPage = 1; // Always reset pagination on a fresh view selection
+  currentQuotesTitle = title;
+  currentQuotesMeta = meta;
+  displayQuotesPage();
+}
+
+function displayQuotesPage() {
   var c = document.getElementById('content');
-  if (!quotes.length) {
-    c.innerHTML = '<div class="content-header"><div><div class="content-title">' + title + '</div>'
-      + '<div class="content-meta">' + meta + '</div></div></div>'
+  if (!currentQuotes || !currentQuotes.length) {
+    c.innerHTML = '<div class="content-header"><div><div class="content-title">' + currentQuotesTitle + '</div>'
+      + '<div class="content-meta">' + currentQuotesMeta + '</div></div></div>'
       + '<div class="empty"><div class="icon">🔍</div>No quotes found.</div>';
     return;
   }
-  var html = '<div class="content-header"><div><div class="content-title">' + title + '</div>'
-    + '<div class="content-meta">' + meta + '</div></div></div><div class="quotes-grid">';
-  quotes.forEach(function(q, idx) {
+
+  var itemsPerPage = typeof ITEMS_PER_PAGE !== 'undefined' ? ITEMS_PER_PAGE : 100;
+  var totalPages = Math.ceil(currentQuotes.length / itemsPerPage);
+
+  // Bounds safety checks
+  if (currentQuotesPage > totalPages) currentQuotesPage = totalPages;
+  if (currentQuotesPage < 1) currentQuotesPage = 1;
+
+  var start = (currentQuotesPage - 1) * itemsPerPage;
+  var end = Math.min(start + itemsPerPage, currentQuotes.length);
+  var pageQuotes = currentQuotes.slice(start, end);
+
+  // Enhance metadata dynamically with pagination range info
+  var displayedMeta = currentQuotesMeta;
+  if (totalPages > 1) {
+    displayedMeta += ' &middot; Showing ' + (start + 1) + '-' + end + ' of ' + currentQuotes.length;
+  }
+
+  var html = '<div class="content-header"><div><div class="content-title">' + currentQuotesTitle + '</div>'
+    + '<div class="content-meta">' + displayedMeta + '</div></div></div><div class="quotes-grid">';
+
+  pageQuotes.forEach(function(q, localIdx) {
+    // Preserve absolute indices of the items for high-res export triggers
+    var absoluteIdx = start + localIdx;
     var isPhil = !!q.isPhil;
     html += '<div class="quote-card' + (isPhil ? ' is-phil' : '') + '">';
     html += '<div class="quote-text">' + esc(q.quote) + '</div>'
@@ -413,11 +464,70 @@ function renderQuotes(quotes, title, meta) {
     if (isPhil && q.texture) {
       html += '<span class="texture-label">' + esc(q.texture) + '</span>';
     }
-    html += '<button class="export-btn" onclick="openExport(' + idx + ')">📸 Save as Image</button>'
+    html += '<button class="export-btn" onclick="openExport(' + absoluteIdx + ')">📸 Save as Image</button>'
           + '</div>'
           + '</div>';
   });
   html += '</div>';
+
+  // Render responsive pagination navigation with dynamic page skipping options
+  if (totalPages > 1) {
+    html += '<div class="pagination" style="display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:6px; margin-top:32px; padding:12px;">'
+      + '  <button class="pagination-btn" style="min-width:auto; padding:6px 12px; margin-right:4px;" onclick="changeQuotesPage(-1)" ' + (currentQuotesPage === 1 ? 'disabled' : '') + '>◀ Prev</button>';
+
+    var maxVisible = 7; // Absolute maximum standard numerical page slots before drawing ellipsis partitions
+    if (totalPages <= maxVisible) {
+      for (var p = 1; p <= totalPages; p++) {
+        var isActive = (p === currentQuotesPage);
+        var activeStyle = isActive ? 'background:var(--gold); color:var(--bg); border-color:var(--gold); font-weight:bold;' : '';
+        html += '  <button class="pagination-btn" style="min-width:34px; padding:6px 8px; ' + activeStyle + '" onclick="goToQuotesPage(' + p + ')">' + p + '</button>';
+      }
+    } else {
+      // Elegant sliding numeric navigation window with ellipsis partition
+      var half = 2;
+      var startPage = Math.max(2, currentQuotesPage - half);
+      var endPage = Math.min(totalPages - 1, currentQuotesPage + half);
+
+      // Handle window alignment adjustments at boundaries
+      if (currentQuotesPage <= 3) {
+        endPage = 1 + half * 2;
+      }
+      if (currentQuotesPage >= totalPages - 2) {
+        startPage = totalPages - half * 2;
+      }
+
+      // Render Page 1 Anchor
+      var p1Active = (currentQuotesPage === 1) ? 'background:var(--gold); color:var(--bg); border-color:var(--gold); font-weight:bold;' : '';
+      html += '  <button class="pagination-btn" style="min-width:34px; padding:6px 8px; ' + p1Active + '" onclick="goToQuotesPage(1)">1</button>';
+
+      // Left-side ellipsis
+      if (startPage > 2) {
+        html += '  <span style="color:var(--text-dim); padding:0 4px; font-weight:bold; align-self:center;">...</span>';
+      }
+
+      // Middle sliding sequence
+      for (var p = startPage; p <= endPage; p++) {
+        if (p > 1 && p < totalPages) {
+          var isActive = (p === currentQuotesPage);
+          var activeStyle = isActive ? 'background:var(--gold); color:var(--bg); border-color:var(--gold); font-weight:bold;' : '';
+          html += '  <button class="pagination-btn" style="min-width:34px; padding:6px 8px; ' + activeStyle + '" onclick="goToQuotesPage(' + p + ')">' + p + '</button>';
+        }
+      }
+
+      // Right-side ellipsis
+      if (endPage < totalPages - 1) {
+        html += '  <span style="color:var(--text-dim); padding:0 4px; font-weight:bold; align-self:center;">...</span>';
+      }
+
+      // Render Final Page Anchor
+      var pLastActive = (currentQuotesPage === totalPages) ? 'background:var(--gold); color:var(--bg); border-color:var(--gold); font-weight:bold;' : '';
+      html += '  <button class="pagination-btn" style="min-width:34px; padding:6px 8px; ' + pLastActive + '" onclick="goToQuotesPage(' + totalPages + ')">' + totalPages + '</button>';
+    }
+
+    html += '  <button class="pagination-btn" style="min-width:auto; padding:6px 12px; margin-left:4px;" onclick="changeQuotesPage(1)" ' + (currentQuotesPage === totalPages ? 'disabled' : '') + '>Next ▶</button>'
+      + '</div>';
+  }
+
   c.innerHTML = html;
 }
 
