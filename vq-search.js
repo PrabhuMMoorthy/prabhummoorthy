@@ -72,7 +72,7 @@ function executeSearch() {
   renderSearchResults();
 }
 
-/* Render outputs structured 100 quotes per page */
+/* Render outputs structured 100 quotes per page with sliding numeric pagination */
 function renderSearchResults() {
   var c = document.getElementById('content');
   var total = searchResults.length;
@@ -93,7 +93,7 @@ function renderSearchResults() {
   var endIdx = Math.min(startIdx + ITEMS_PER_PAGE, total);
   var pagedQuotes = searchResults.slice(startIdx, endIdx);
 
-  // Link global scope pointer for exporters
+  // Link global scope pointer for exporters (sliced page view)
   currentQuotes = pagedQuotes;
 
   var metaText = 'Showing ' + (startIdx + 1) + ' - ' + endIdx + ' of ' + total + ' matching quotes';
@@ -122,11 +122,56 @@ function renderSearchResults() {
   });
   html += '</div>';
 
+  // Display fully interactive sliding numeric pagination for search tab
   if (totalPages > 1) {
     html += '<div class="pagination">'
-      + '  <button class="pagination-btn" onclick="changeSearchPage(-1)" ' + (searchPage === 1 ? 'disabled' : '') + '>◀ Previous</button>'
-      + '  <span class="pagination-info">Page <b>' + searchPage + '</b> of ' + totalPages + '</span>'
-      + '  <button class="pagination-btn" onclick="changeSearchPage(1)" ' + (searchPage === totalPages ? 'disabled' : '') + '>Next ▶</button>'
+      + '  <button class="pagination-btn" onclick="changeSearchPage(-1)" ' + (searchPage === 1 ? 'disabled' : '') + '>◀ Prev</button>';
+
+    var maxVisible = 7;
+    if (totalPages <= maxVisible) {
+      for (var p = 1; p <= totalPages; p++) {
+        var isActive = (p === searchPage);
+        var activeClass = isActive ? ' active' : '';
+        html += '  <button class="pagination-btn' + activeClass + '" onclick="goToSearchPage(' + p + ')">' + p + '</button>';
+      }
+    } else {
+      var half = 2;
+      var startPage = Math.max(2, searchPage - half);
+      var endPage = Math.min(totalPages - 1, searchPage + half);
+
+      if (searchPage <= 3) {
+        endPage = 1 + half * 2;
+      }
+      if (searchPage >= totalPages - 2) {
+        startPage = totalPages - half * 2;
+      }
+
+      // Page 1 Anchor
+      var p1Active = (searchPage === 1) ? ' active' : '';
+      html += '  <button class="pagination-btn' + p1Active + '" onclick="goToSearchPage(1)">1</button>';
+
+      if (startPage > 2) {
+        html += '  <span class="pagination-ellipsis">...</span>';
+      }
+
+      for (var p = startPage; p <= endPage; p++) {
+        if (p > 1 && p < totalPages) {
+          var isActive = (p === searchPage);
+          var activeClass = isActive ? ' active' : '';
+          html += '  <button class="pagination-btn' + activeClass + '" onclick="goToSearchPage(' + p + ')">' + p + '</button>';
+        }
+      }
+
+      if (endPage < totalPages - 1) {
+        html += '  <span class="pagination-ellipsis">...</span>';
+      }
+
+      // Final Page Anchor
+      var pLastActive = (searchPage === totalPages) ? ' active' : '';
+      html += '  <button class="pagination-btn' + pLastActive + '" onclick="goToSearchPage(' + totalPages + ')">' + totalPages + '</button>';
+    }
+
+    html += '  <button class="pagination-btn" onclick="changeSearchPage(1)" ' + (searchPage === totalPages ? 'disabled' : '') + '>Next ▶</button>'
       + '</div>';
   }
 
@@ -134,7 +179,25 @@ function renderSearchResults() {
   c.scrollTop = 0; // Scroll back to container top cleanly
 }
 
+function goToSearchPage(pageNum) {
+  var total = searchResults.length;
+  var totalPages = Math.ceil(total / ITEMS_PER_PAGE);
+  if (pageNum >= 1 && pageNum <= totalPages) {
+    searchPage = pageNum;
+    renderSearchResults();
+    var contentEl = document.getElementById('content');
+    if (contentEl) contentEl.scrollTop = 0;
+  }
+}
+
 function changeSearchPage(delta) {
-  searchPage += delta;
-  renderSearchResults();
+  var total = searchResults.length;
+  var totalPages = Math.ceil(total / ITEMS_PER_PAGE);
+  var newPage = searchPage + delta;
+  if (newPage >= 1 && newPage <= totalPages) {
+    searchPage = newPage;
+    renderSearchResults();
+    var contentEl = document.getElementById('content');
+    if (contentEl) contentEl.scrollTop = 0;
+  }
 }
