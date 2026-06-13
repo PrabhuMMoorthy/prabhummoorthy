@@ -8,10 +8,24 @@ function toggleSidebar() {
   var open = sb.classList.toggle('open');
   document.getElementById('hamburger').classList.toggle('open', open);
   document.getElementById('overlay').classList.toggle('show', open);
+  if (open) {
+    document.getElementById('right-sidebar').classList.remove('open');
+  }
+}
+
+function toggleRightSidebar() {
+  var rsb  = document.getElementById('right-sidebar');
+  var open = rsb.classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('show', open);
+  if (open) {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('hamburger').classList.remove('open');
+  }
 }
 
 function closeSidebar() {
   document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('right-sidebar').classList.remove('open');
   document.getElementById('hamburger').classList.remove('open');
   document.getElementById('overlay').classList.remove('show');
 }
@@ -115,7 +129,6 @@ function refreshFromDB(callback) {
     else if (currentTab === 'chars') renderCharList();
     else if (currentTab === 'themes') renderThemeList();
     else if (currentTab === 'search') renderSearchTab();
-    else if (currentTab === 'stats') renderStatsTab();
     if (typeof callback === 'function') callback();
   });
 }
@@ -135,7 +148,7 @@ function refreshFromDB(callback) {
 /* ── Tab Switcher Routing ────────────────────────────────────────────── */
 function switchTab(tab) {
   currentTab = tab;
-  ['books', 'chars', 'themes', 'search', 'random', 'stats'].forEach(function(t) {
+  ['books', 'chars', 'themes', 'search', 'random'].forEach(function(t) {
     var btn = document.getElementById('tab-' + t);
     if (btn) btn.classList.toggle('active', t === tab);
   });
@@ -143,7 +156,6 @@ function switchTab(tab) {
   else if (tab === 'chars')   renderCharList();
   else if (tab === 'themes')  renderThemeList();
   else if (tab === 'search')  renderSearchTab();
-  else if (tab === 'stats')   { document.getElementById('sidebar-body').innerHTML = ''; showStatsPage(); }
   else { document.getElementById('sidebar-body').innerHTML = ''; showRandom(); }
 }
 
@@ -251,7 +263,7 @@ function renderCharList() {
   var html = '<div class="char-sort-bar">'
     + '<button class="sort-btn' + (charSort==='default'?' active':'') + '" onclick="setCharSort(\'default\')">Default</button>'
     + '<button class="sort-btn' + (charSort==='az'?' active':'')      + '" onclick="setCharSort(\'az\')">A → Z</button>'
-    + '<button class="sort-btn' + (charSort==='za'?' active':'')      + '" onclick="setCharSort(\'za\')">Z → A</button>'
+    + '<button class="sort-btn' + (charSort==='za'?' data-t="za" active':'') + '" onclick="setCharSort(\'za\')">Z → A</button>'
     + '<button class="sort-btn' + (charSort==='count'?' active':'')   + '" onclick="setCharSort(\'count\')"># Quotes</button>'
     + '</div><div class="section-label">Characters</div>';
   
@@ -455,7 +467,7 @@ function displayQuotesPage() {
     html += '<div class="quote-text">' + esc(q.quote) + '</div>'
           + '<div class="quote-footer">'
           + '<span class="quote-char">' + esc(q.character_name || 'Unknown') + '</span>'
-          + '<span class="quote-loc">' + (q.book ? esc(q.book) + ' &middot; ' : '') + esc(q.chapter || '') + '</span>'
+          + '<span class="quote-loc">' + (q.book ? esc(q.book) : '') + (q.book && q.chapter ? ' &middot; ' : '') + esc(q.chapter || '') + '</span>'
           + '</div>'
           + '<div class="quote-actions">';
     if (isPhil && q.theme) {
@@ -470,17 +482,17 @@ function displayQuotesPage() {
   });
   html += '</div>';
 
-  // Render responsive pagination navigation with dynamic page skipping options
+  // Render responsive pagination navigation with sliding numeric windows
   if (totalPages > 1) {
-    html += '<div class="pagination" style="display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:6px; margin-top:32px; padding:12px;">'
-      + '  <button class="pagination-btn" style="min-width:auto; padding:6px 12px; margin-right:4px;" onclick="changeQuotesPage(-1)" ' + (currentQuotesPage === 1 ? 'disabled' : '') + '>◀ Prev</button>';
+    html += '<div class="pagination">'
+      + '  <button class="pagination-btn" onclick="changeQuotesPage(-1)" ' + (currentQuotesPage === 1 ? 'disabled' : '') + '>◀ Prev</button>';
 
     var maxVisible = 7; // Absolute maximum standard numerical page slots before drawing ellipsis partitions
     if (totalPages <= maxVisible) {
       for (var p = 1; p <= totalPages; p++) {
         var isActive = (p === currentQuotesPage);
-        var activeStyle = isActive ? 'background:var(--gold); color:var(--bg); border-color:var(--gold); font-weight:bold;' : '';
-        html += '  <button class="pagination-btn" style="min-width:34px; padding:6px 8px; ' + activeStyle + '" onclick="goToQuotesPage(' + p + ')">' + p + '</button>';
+        var activeClass = isActive ? ' active' : '';
+        html += '  <button class="pagination-btn' + activeClass + '" onclick="goToQuotesPage(' + p + ')">' + p + '</button>';
       }
     } else {
       // Elegant sliding numeric navigation window with ellipsis partition
@@ -497,34 +509,34 @@ function displayQuotesPage() {
       }
 
       // Render Page 1 Anchor
-      var p1Active = (currentQuotesPage === 1) ? 'background:var(--gold); color:var(--bg); border-color:var(--gold); font-weight:bold;' : '';
-      html += '  <button class="pagination-btn" style="min-width:34px; padding:6px 8px; ' + p1Active + '" onclick="goToQuotesPage(1)">1</button>';
+      var p1Active = (currentQuotesPage === 1) ? ' active' : '';
+      html += '  <button class="pagination-btn' + p1Active + '" onclick="goToQuotesPage(1)">1</button>';
 
       // Left-side ellipsis
       if (startPage > 2) {
-        html += '  <span style="color:var(--text-dim); padding:0 4px; font-weight:bold; align-self:center;">...</span>';
+        html += '  <span class="pagination-ellipsis">...</span>';
       }
 
       // Middle sliding sequence
       for (var p = startPage; p <= endPage; p++) {
         if (p > 1 && p < totalPages) {
           var isActive = (p === currentQuotesPage);
-          var activeStyle = isActive ? 'background:var(--gold); color:var(--bg); border-color:var(--gold); font-weight:bold;' : '';
-          html += '  <button class="pagination-btn" style="min-width:34px; padding:6px 8px; ' + activeStyle + '" onclick="goToQuotesPage(' + p + ')">' + p + '</button>';
+          var activeClass = isActive ? ' active' : '';
+          html += '  <button class="pagination-btn' + activeClass + '" onclick="goToQuotesPage(' + p + ')">' + p + '</button>';
         }
       }
 
       // Right-side ellipsis
       if (endPage < totalPages - 1) {
-        html += '  <span style="color:var(--text-dim); padding:0 4px; font-weight:bold; align-self:center;">...</span>';
+        html += '  <span class="pagination-ellipsis">...</span>';
       }
 
       // Render Final Page Anchor
-      var pLastActive = (currentQuotesPage === totalPages) ? 'background:var(--gold); color:var(--bg); border-color:var(--gold); font-weight:bold;' : '';
-      html += '  <button class="pagination-btn" style="min-width:34px; padding:6px 8px; ' + pLastActive + '" onclick="goToQuotesPage(' + totalPages + ')">' + totalPages + '</button>';
+      var pLastActive = (currentQuotesPage === totalPages) ? ' active' : '';
+      html += '  <button class="pagination-btn' + pLastActive + '" onclick="goToQuotesPage(' + totalPages + ')">' + totalPages + '</button>';
     }
 
-    html += '  <button class="pagination-btn" style="min-width:auto; padding:6px 12px; margin-left:4px;" onclick="changeQuotesPage(1)" ' + (currentQuotesPage === totalPages ? 'disabled' : '') + '>Next ▶</button>'
+    html += '  <button class="pagination-btn" onclick="changeQuotesPage(1)" ' + (currentQuotesPage === totalPages ? 'disabled' : '') + '>Next ▶</button>'
       + '</div>';
   }
 
@@ -585,12 +597,15 @@ function showRandom() {
 }
 
 /* ── Stats Page Panel Controller ────────────────────────────────────── */
-function renderStatsTab() {
-  document.getElementById('sidebar-body').innerHTML = 
-    '<div class="section-label">Library Insights</div>' +
-    '<div style="padding:10px; color:var(--text-dim); font-size:0.84rem; line-height:1.4;">' +
-    '📊 Displays statistical insights calculated from currently uploaded library databases.' +
-    '</div>';
+function triggerShowStats() {
+  // Clear left sidebar navigation highlights
+  ['books', 'chars', 'themes', 'search', 'random'].forEach(function(t) {
+    var btn = document.getElementById('tab-' + t);
+    if (btn) btn.classList.remove('active');
+  });
+  currentTab = 'stats';
+  showStatsPage();
+  closeSidebar(); // collapse utilities drawer
 }
 
 function showStatsPage() {

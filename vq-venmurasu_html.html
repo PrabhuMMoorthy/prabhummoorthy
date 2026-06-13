@@ -17,19 +17,16 @@
     <div class="subtitle">Quote Reader</div>
   </div>
   <div class="header-right">
-    <div class="theme-switcher" id="themeSwitcher">
-      <div class="theme-dot active" data-t="dark"    title="Night Gold"  onclick="setTheme('dark')"></div>
-      <div class="theme-dot"        data-t="light"   title="Parchment"   onclick="setTheme('light')"></div>
-      <div class="theme-dot"        data-t="ocean"   title="Ocean"       onclick="setTheme('ocean')"></div>
-      <div class="theme-dot"        data-t="rose"    title="Rose"        onclick="setTheme('rose')"></div>
-      <div class="theme-dot"        data-t="forest"  title="Forest"      onclick="setTheme('forest')"></div>
-      <div class="theme-dot"        data-t="slate"   title="Slate Blue"  onclick="setTheme('slate')"></div>
-    </div>
+    <button class="utilities-btn" onclick="toggleRightSidebar()" title="Settings & Insights">
+      ⚙️ Options
+    </button>
   </div>
 </header>
 
 <div class="main-layout">
   <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+  
+  <!-- Left Navigation Sidebar -->
   <div class="sidebar" id="sidebar" style="display:none">
     <div class="sidebar-tabs">
       <button class="tab-btn active" onclick="switchTab('books')" id="tab-books">📖 Books</button>
@@ -37,10 +34,53 @@
       <button class="tab-btn"        onclick="switchTab('themes')" id="tab-themes">🏷 Themes</button>
       <button class="tab-btn"        onclick="switchTab('search')" id="tab-search">🔍 Search</button>
       <button class="tab-btn"        onclick="switchTab('random')" id="tab-random">🎲 Rand</button>
-      <button class="tab-btn"        onclick="switchTab('stats')" id="tab-stats">📊 Stats</button>
     </div>
     <div class="sidebar-body" id="sidebar-body"></div>
   </div>
+
+  <!-- Right Options Sidebar -->
+  <div class="right-sidebar" id="right-sidebar">
+    <div class="right-sidebar-header">
+      <h3>⚙️ Options</h3>
+      <button class="close-right-btn" onclick="toggleRightSidebar()">×</button>
+    </div>
+    <div class="right-sidebar-body">
+      <div class="section-label" style="margin-top:0;">UI Themes</div>
+      <div class="theme-switcher-vertical">
+        <div class="theme-option" onclick="setTheme('dark')">
+          <div class="theme-dot" data-t="dark"></div>
+          <span>Night Gold</span>
+        </div>
+        <div class="theme-option" onclick="setTheme('light')">
+          <div class="theme-dot" data-t="light"></div>
+          <span>Parchment</span>
+        </div>
+        <div class="theme-option" onclick="setTheme('ocean')">
+          <div class="theme-dot" data-t="ocean"></div>
+          <span>Ocean Depth</span>
+        </div>
+        <div class="theme-option" onclick="setTheme('rose')">
+          <div class="theme-dot" data-t="rose"></div>
+          <span>Rose Petal</span>
+        </div>
+        <div class="theme-option" onclick="setTheme('forest')">
+          <div class="theme-dot" data-t="forest"></div>
+          <span>Forest Moss</span>
+        </div>
+        <div class="theme-option" onclick="setTheme('slate')">
+          <div class="theme-dot" data-t="slate"></div>
+          <span>Slate Blue</span>
+        </div>
+      </div>
+      
+      <div class="section-label" style="margin-top:24px;">Library Metrics</div>
+      <button class="sidebar-link-btn" onclick="triggerShowStats()">
+        <span>📊</span> View Insights & Stats
+      </button>
+    </div>
+  </div>
+
+  <!-- Content Workspace Container -->
   <div class="content" id="content">
     <div class="upload-wrap">
       <div class="upload-area" onclick="document.getElementById('fileInput').click()">
