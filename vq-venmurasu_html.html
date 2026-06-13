@@ -33,10 +33,11 @@
   <div class="sidebar" id="sidebar" style="display:none">
     <div class="sidebar-tabs">
       <button class="tab-btn active" onclick="switchTab('books')" id="tab-books">📖 Books</button>
-      <button class="tab-btn"        onclick="switchTab('chars')" id="tab-chars">👤 Characters</button>
-      <button class="tab-btn"        onclick="switchTab('themes')" id="tab-themes">&#128278; Themes</button>
-      <button class="tab-btn"        onclick="switchTab('random')" id="tab-random">🎲 Random</button>
-	  <button class="tab-btn"        onclick="switchTab('search')" id="tab-search">🔍 Search</button>
+      <button class="tab-btn"        onclick="switchTab('chars')" id="tab-chars">👤 Chars</button>
+      <button class="tab-btn"        onclick="switchTab('themes')" id="tab-themes">🏷 Themes</button>
+      <button class="tab-btn"        onclick="switchTab('search')" id="tab-search">🔍 Search</button>
+      <button class="tab-btn"        onclick="switchTab('random')" id="tab-random">🎲 Rand</button>
+      <button class="tab-btn"        onclick="switchTab('stats')" id="tab-stats">📊 Stats</button>
     </div>
     <div class="sidebar-body" id="sidebar-body"></div>
   </div>
@@ -70,6 +71,10 @@
 
 <canvas id="exportCanvas" style="display:none;"></canvas>
 
-<script src="vq-app.js"></script>
+<script src="vq-state.js"></script>
+<script src="vq-db.js"></script>
+<script src="vq-canvas.js"></script>
+<script src="vq-search.js"></script>
+<script src="vq-ui.js"></script>
 </body>
 </html>
