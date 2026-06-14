@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pro Code Editor</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- CodeMirror Stylesheets -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/tomorrow-night-eighties.min.css">
+    
+    <style>
+        /* Force CodeMirror to fill the entire container height */
+        .CodeMirror {
+            height: 100% !important;
+            font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+            font-size: 14px !important;
+            background: #030712 !important; /* Matches Tailwind bg-gray-950 */
+        }
+        
+        .CodeMirror-gutters {
+            background: #090d16 !important;
+            border-right: 1px solid #1f2937 !important;
+        }
+
+        .CodeMirror-linenumber {
+            color: #4b5563 !important; /* Slate color */
+        }
+
+        /* Subtle cursor / caret customization */
+        .CodeMirror-cursor {
+            border-left: 2px solid #34d399 !important; /* Emerald cursor */
+        }
+
+        /* Custom scrollbar design inside CodeMirror wrapper */
+        .CodeMirror-vscrollbar::-webkit-scrollbar,
+        .CodeMirror-hscrollbar::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .CodeMirror-vscrollbar::-webkit-scrollbar-track,
+        .CodeMirror-hscrollbar::-webkit-scrollbar-track {
+            background: #090d16;
+        }
+        .CodeMirror-vscrollbar::-webkit-scrollbar-thumb,
+        .CodeMirror-hscrollbar::-webkit-scrollbar-thumb {
+            background: #1f2937;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 flex flex-col h-screen overflow-hidden select-none">
+
+    <!-- Header Navigation Controls -->
+    <header class="bg-gray-800 border-b border-gray-700 px-4 py-3 flex flex-wrap items-center justify-between gap-3 shrink-0">
+        <div class="flex items-center gap-3">
+            <span class="text-lg font-bold text-emerald-400">⚡ CodeEdit Pro</span>
+            <input type="text" id="fileName" value="index.html" class="bg-gray-700 border border-gray-600 rounded px-3 py-1 text-xs focus:outline-none focus:border-emerald-500 w-40 text-emerald-300 font-mono" placeholder="filename.html">
+        </div>
+        
+        <div class="flex items-center gap-2">
+            <input type="file" id="fileInput" class="hidden">
+            <button onclick="document.getElementById('fileInput').click()" class="bg-gray-700 hover:bg-gray-600 text-white font-medium py-1 px-3 rounded text-xs transition-colors">
+                Open
+            </button>
+            <button onclick="downloadFile()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-1 px-3 rounded text-xs transition-colors">
+                Download
+            </button>
+            <button onclick="clearEditor()" class="bg-red-600/20 hover:bg-red-600/40 text-red-400 font-medium py-1 px-3 rounded text-xs transition-colors border border-red-500/30">
+                Clear
+            </button>
+        </div>
+    </header>
+
+    <!-- Workspace Viewport -->
+    <main class="flex-1 overflow-hidden relative">
+        <textarea id="raw-textarea" class="hidden"></textarea>
+    </main>
+
+    <!-- App Status Footer -->
+    <footer class="bg-gray-800 border-t border-gray-700 px-4 py-1.5 flex justify-between text-xs text-gray-400 shrink-0">
+        <div id="autoSaveStatus">Ready</div>
+        <div id="editorStats">HTML Mode | 1 line</div>
+    </footer>
+
+    <!-- CodeMirror Core JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+    
+    <!-- CodeMirror Language Mode Parsers -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/htmlmixed/htmlmixed.min.js"></script>
+
+    <script>
+        const fileNameInput = document.getElementById('fileName');
+        const fileInput = document.getElementById('fileInput');
+        const autoSaveStatus = document.getElementById('autoSaveStatus');
+        const editorStats = document.getElementById('editorStats');
+
+        // --- Initialize CodeMirror Editor Instance ---
+        const editor = CodeMirror.fromTextArea(document.getElementById('raw-textarea'), {
+            lineNumbers: true,
+            theme: "tomorrow-night-eighties",
+            mode: "htmlmixed",
+            lineWrapping: false, // Forces code layout (horizontal scroll instead of wrap)
+            tabSize: 4,
+            indentUnit: 4,
+            indentWithTabs: true,
+            inputStyle: "contenteditable", // Optimized for mobile keyboards and selection
+            spellcheck: false,
+            autocorrect: false,
+            autocapitalize: "none"
+        });
+
+        // --- Helper: Dynamic Mode Switcher ---
+        function getModeFromFilename(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            switch(ext) {
+                case 'html':
+                case 'htm':
+                    return 'htmlmixed';
+                case 'css':
+                    return 'css';
+                case 'json':
+                    return 'application/json';
+                case 'js':
+                    return 'javascript';
+                default:
+                    return 'text/plain';
+            }
+        }
+
+        // --- Update UI Stats (Line / Character counts) ---
+        function updateStats() {
+            const filename = fileNameInput.value;
+            const mode = getModeFromFilename(filename);
+            const lineCount = editor.lineCount();
+            const charCount = editor.getValue().length;
+            
+            let displayMode = mode.toUpperCase();
+            if (mode === 'htmlmixed') displayMode = 'HTML';
+            if (mode === 'application/json') displayMode = 'JSON';
+
+            editorStats.textContent = `${displayMode} Mode | ${lineCount} line${lineCount !== 1 ? 's' : ''} | ${charCount} chars`;
+        }
+
+        // --- Auto-Save and Local Storage Hooks ---
+        let autoSaveTimeout;
+        function autoSave() {
+            autoSaveStatus.textContent = "Saving...";
+            localStorage.setItem('editor_content', editor.getValue());
+            localStorage.setItem('editor_filename', fileNameInput.value);
+            
+            clearTimeout(autoSaveTimeout);
+            autoSaveTimeout = setTimeout(() => {
+                autoSaveStatus.textContent = "Saved";
+            }, 400);
+
+            updateStats();
+        }
+
+        // Bind editor and filename input change events
+        editor.on('change', autoSave);
+        fileNameInput.addEventListener('input', () => {
+            const mode = getModeFromFilename(fileNameInput.value);
+            editor.setOption("mode", mode);
+            autoSave();
+        });
+
+        // Load content on page initialisation
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedContent = localStorage.getItem('editor_content');
+            const savedName = localStorage.getItem('editor_filename');
+            
+            if (savedContent !== null) {
+                editor.setValue(savedContent);
+            } else {
+                // Default skeleton if fresh
+                editor.setValue('<!DOCTYPE html>\n<html>\n<head>\n\t<title>Demo</title>\n</head>\n<body>\n\t<h1>Hello World</h1>\n</body>\n</html>');
+            }
+            if (savedName !== null) {
+                fileNameInput.value = savedName;
+            }
+            
+            editor.setOption("mode", getModeFromFilename(fileNameInput.value));
+            editor.refresh(); // Forces code alignment layout calculation
+            updateStats();
+        });
+
+        // --- File System Operations ---
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                editor.setValue(event.target.result);
+                fileNameInput.value = file.name;
+                editor.setOption("mode", getModeFromFilename(file.name));
+                autoSave();
+            };
+            reader.readAsText(file);
+        });
+
+        function downloadFile() {
+            const text = editor.getValue();
+            const filename = fileNameInput.value || 'index.html';
+            
+            let mimeType = 'text/plain';
+            if (filename.endsWith('.html') || filename.endsWith('.htm')) mimeType = 'text/html';
+            else if (filename.endsWith('.json')) mimeType = 'application/json';
+            else if (filename.endsWith('.css')) mimeType = 'text/css';
+            else if (filename.endsWith('.js')) mimeType = 'application/javascript';
+
+            const blob = new Blob([text], { type: `${mimeType};charset=utf-8;` });
+            const url = URL.createObjectURL(blob);
+            
+            const element = document.createElement('a');
+            element.setAttribute('href', url);
+            element.setAttribute('download', filename);
+            element.style.display = 'none';
+            
+            document.body.appendChild(element);
+            element.click();
+            
+            document.body.removeChild(element);
+            URL.revokeObjectURL(url);
+        }
+
+        function clearEditor() {
+            if (confirm("Clear code workspace? All local changes will be reset.")) {
+                editor.setValue('');
+                fileNameInput.value = 'index.html';
+                editor.setOption("mode", "htmlmixed");
+                autoSave();
+            }
+        }
+    </script>
+</body>
+</html>
+
