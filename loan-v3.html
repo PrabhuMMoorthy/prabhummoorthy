@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Loan Planner</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:#2e3250;
+  --accent:#6c63ff;--green:#43e97b;--yellow:#f9c74f;--red:#f94144;
+  --orange:#f77f00;--text:#e8eaf6;--muted:#8b90b0;--radius:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;}
+header h1{font-size:1.3rem;font-weight:700;color:var(--accent);}
+header span{font-size:0.75rem;color:var(--muted);}
+.container{max-width:1100px;margin:0 auto;padding:24px 16px;}
+.sec-title{font-size:0.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;}
+
+/* Cards */
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:24px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;}
+.card label{font-size:0.72rem;color:var(--muted);display:block;margin-bottom:5px;}
+.card .val{font-size:1.3rem;font-weight:700;}
+.green{color:var(--green);}.yellow{color:var(--yellow);}.red{color:var(--red);}.accent{color:var(--accent);}.orange{color:var(--orange);}
+
+/* Loan cards */
+.loan-list{display:flex;flex-direction:column;gap:14px;margin-bottom:22px;}
+.loan-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.loan-card-top{padding:16px 18px;}
+.loan-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;}
+.loan-name{font-weight:700;font-size:1rem;}
+.badges{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.badge{font-size:0.68rem;padding:3px 9px;border-radius:20px;font-weight:600;}
+.badge-type{background:var(--surface2);color:var(--accent);border:1px solid var(--border);}
+.badge-risk{background:#2d1010;color:var(--red);border:1px solid #4a1a1a;}
+.badge-ok{background:#0d2d1a;color:var(--green);border:1px solid #1a4a2a;}
+.loan-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;}
+.lm label{font-size:0.7rem;color:var(--muted);display:block;margin-bottom:2px;}
+.lm span{font-size:0.92rem;font-weight:600;}
+
+/* Trap zone card */
+.trap-card{background:#1a0d0d;border:1px solid #4a1a1a;border-radius:10px;padding:13px 16px;margin-top:12px;}
+.trap-card h4{color:var(--red);font-size:0.85rem;margin-bottom:6px;}
+.trap-card p{font-size:0.78rem;color:#c08080;line-height:1.5;}
+.trap-card .trap-nums{display:flex;gap:18px;margin-top:8px;flex-wrap:wrap;}
+.trap-card .tn label{font-size:0.68rem;color:var(--muted);display:block;}
+.trap-card .tn span{font-size:1rem;font-weight:700;color:var(--red);}
+
+/* Payment log */
+.plog-section{background:var(--surface2);border-top:1px solid var(--border);padding:14px 18px;}
+.plog-section summary{font-size:0.8rem;font-weight:600;color:var(--accent);cursor:pointer;margin-bottom:0;}
+.plog-section[open] summary{margin-bottom:12px;}
+.plog-add{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:flex-end;}
+.plog-add input{background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:7px 10px;font-size:0.82rem;outline:none;min-width:120px;}
+.plog-add input:focus{border-color:var(--accent);}
+.plog-table{width:100%;border-collapse:collapse;font-size:0.78rem;}
+.plog-table th{color:var(--muted);font-weight:600;text-align:left;padding:4px 8px;border-bottom:1px solid var(--border);}
+.plog-table td{padding:5px 8px;border-bottom:1px solid var(--border);}
+.plog-table tr:last-child td{border-bottom:none;}
+.split-to-int{color:var(--red);}
+.split-to-pri{color:var(--green);}
+.plog-empty{font-size:0.78rem;color:var(--muted);padding:8px 0;}
+
+/* Buttons */
+.btn-row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
+.btn{border:none;border-radius:8px;padding:7px 14px;font-size:0.78rem;font-weight:600;cursor:pointer;transition:opacity .15s;}
+.btn:hover{opacity:.82;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-edit{background:var(--surface2);color:var(--accent);border:1px solid var(--border);}
+.btn-delete{background:#2d1a1a;color:var(--red);border:1px solid #4a2020;}
+.btn-ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
+.btn-sm{padding:5px 10px;font-size:0.74rem;}
+
+/* Form */
+.form-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin-bottom:24px;}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:14px;}
+.fg{display:flex;flex-direction:column;gap:5px;}
+.fg label{font-size:0.75rem;color:var(--muted);font-weight:500;}
+.fg input,.fg select{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 11px;font-size:0.88rem;outline:none;transition:border .15s;}
+.fg input:focus,.fg select:focus{border-color:var(--accent);}
+.calc-hint{font-size:0.76rem;color:var(--accent);min-height:18px;margin-bottom:10px;}
+.form-actions{display:flex;gap:10px;flex-wrap:wrap;}
+#addFormWrap{display:none;}
+#addFormWrap.open{display:block;}
+
+/* Simulator */
+.simulator{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin-bottom:24px;}
+.sim-controls{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;margin-bottom:18px;}
+.sim-controls .fg{min-width:160px;}
+.toggle-row{display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap;}
+.tbtn{padding:5px 13px;border-radius:20px;font-size:0.75rem;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--muted);transition:all .15s;}
+.tbtn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.tbtn.danger.active{background:var(--red);border-color:var(--red);}
+.chart-wrap{position:relative;height:340px;}
+.divider{border:none;border-top:1px solid var(--border);margin:22px 0;}
+.empty-state{text-align:center;padding:36px 20px;color:var(--muted);font-size:0.88rem;}
+.add-btn-wrap{margin-bottom:22px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>💸 Loan Planner</h1>
+  <span>All data saved locally in your browser</span>
+</header>
+<div class="container">
+
+  <div class="sec-title">Overview</div>
+  <div class="summary-grid">
+    <div class="card"><label>Total Principal</label><div class="val accent" id="sumPrincipal">₹0</div></div>
+    <div class="card"><label>Total Monthly EMI</label><div class="val yellow" id="sumEMI">₹0</div></div>
+    <div class="card"><label>Monthly Interest Burn</label><div class="val orange" id="sumIntBurn">₹0</div></div>
+    <div class="card"><label>Total Interest Payable</label><div class="val red" id="sumInterest">₹0</div></div>
+  </div>
+
+  <div class="sec-title">My Loans</div>
+  <div class="loan-list" id="loanList"></div>
+  <div class="add-btn-wrap">
+    <button class="btn btn-primary" onclick="toggleAddForm()">+ Add Loan</button>
+  </div>
+
+  <div id="addFormWrap">
+    <div class="form-panel">
+      <div class="sec-title" id="formTitle">Add Loan</div>
+      <div class="form-grid">
+        <div class="fg"><label>Loan Name</label><input id="fName" placeholder="e.g. Personal Loan"/></div>
+        <div class="fg"><label>Loan Type</label>
+          <select id="fType" onchange="onTypeChange()">
+            <option value="organised">Organised (Fixed EMI / Tenure)</option>
+            <option value="unorganised">Unorganised (No fixed schedule)</option>
+          </select>
+        </div>
+        <div class="fg"><label>Principal Amount (₹)</label><input id="fPrincipal" type="number" placeholder="500000" oninput="onFormInput()"/></div>
+        <div class="fg"><label>Annual Interest Rate (%)</label><input id="fRate" type="number" placeholder="12" step="0.01" oninput="onFormInput()"/></div>
+        <div class="fg org-only"><label>Input Mode</label>
+          <select id="fMode" onchange="onFormInput()">
+            <option value="tenure">Enter Tenure → Calculate EMI</option>
+            <option value="emi">Enter EMI → Calculate Tenure</option>
+          </select>
+        </div>
+        <div class="fg org-only" id="tenureGroup"><label>Tenure (months)</label><input id="fTenure" type="number" placeholder="60" oninput="onFormInput()"/></div>
+        <div class="fg org-only" id="emiGroup" style="display:none"><label>Monthly EMI (₹)</label><input id="fEMI" type="number" placeholder="10000" oninput="onFormInput()"/></div>
+      </div>
+      <p class="calc-hint" id="calcHint"></p>
+      <div class="form-actions">
+        <button class="btn btn-primary" onclick="saveLoan()">Save Loan</button>
+        <button class="btn btn-ghost" onclick="cancelForm()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <div class="simulator">
+    <div class="sec-title">Repayment Simulator</div>
+    <div class="sim-controls">
+      <div class="fg">
+        <label>Monthly Budget (₹)</label>
+        <input id="simBudget" type="number" placeholder="Auto (min EMI)" oninput="renderChart()"/>
+      </div>
+      <div class="fg">
+        <label>Distribution Strategy</label>
+        <select id="simStrategy" onchange="renderChart()">
+          <option value="avalanche">Avalanche (Highest Interest First)</option>
+          <option value="snowball">Snowball (Smallest Balance First)</option>
+        </select>
+      </div>
+    </div>
+    <div class="toggle-row">
+      <span style="font-size:0.76rem;color:var(--muted)">Chart:</span>
+      <button class="tbtn active" id="btnLine" onclick="setChartType('line')">Per Loan</button>
+      <button class="tbtn" id="btnStack" onclick="setChartType('stack')">Stacked</button>
+      <span style="margin-left:auto;font-size:0.76rem;color:var(--muted)">Show:</span>
+      <button class="tbtn active" id="btnRepay" onclick="toggleScenario('repay')">Repayment</button>
+      <button class="tbtn active" id="btnActual" onclick="toggleScenario('actual')">Actual</button>
+      <button class="tbtn danger" id="btnNoPay" onclick="toggleScenario('nopay')">No Payment</button>
+    </div>
+    <div class="chart-wrap"><canvas id="loanChart"></canvas></div>
+
+    <!-- Strategy Comparison -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:20px" id="stratCompare"></div>
+
+    <!-- Interest Breakdown -->
+    <div style="margin-top:20px" id="interestBreakdown"></div>
+  </div>
+
+</div>
+
+<script>
+let loans = JSON.parse(localStorage.getItem('lp_loans2') || '[]');
+let editId = null;
+let chartType = 'line';
+let showRepay = true, showNoPay = false, showActual = true;
+let chart = null;
+const COLORS = ['#6c63ff','#43e97b','#f9c74f','#4cc9f0','#ff6584','#90e0ef','#f77f00','#a8dadc'];
+const TODAY = new Date();
+
+function save() { localStorage.setItem('lp_loans2', JSON.stringify(loans)); }
+function fmt(n) { return '₹' + Math.round(n).toLocaleString('en-IN'); }
+function fmtDate(d) { return new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}); }
+
+function addMonths(date, n) {
+  const d = new Date(date);
+  d.setMonth(d.getMonth() + n);
+  return d;
+}
+function monthLabel(date) {
+  return new Date(date).toLocaleDateString('en-IN',{month:'short',year:'numeric'});
+}
+
+function calcEMI(p,r,n){
+  if(r===0) return p/n;
+  const mr=r/12/100;
+  return p*mr*Math.pow(1+mr,n)/(Math.pow(1+mr,n)-1);
+}
+function calcTenure(p,r,emi){
+  if(r===0) return Math.ceil(p/emi);
+  const mr=r/12/100;
+  return Math.ceil(-Math.log(1-(p*mr/emi))/Math.log(1+mr));
+}
+function monthlyInterest(principal, rate){ return principal * rate / 12 / 100; }
+
+// ---- Form ----
+function onTypeChange(){
+  const t = document.getElementById('fType').value;
+  document.querySelectorAll('.org-only').forEach(el => el.style.display = t==='organised'?'':'none');
+  document.getElementById('calcHint').textContent='';
+}
+function onFormInput(){
+  const mode=document.getElementById('fMode').value;
+  document.getElementById('tenureGroup').style.display=mode==='tenure'?'':'none';
+  document.getElementById('emiGroup').style.display=mode==='emi'?'':'none';
+  const p=parseFloat(document.getElementById('fPrincipal').value);
+  const r=parseFloat(document.getElementById('fRate').value);
+  const hint=document.getElementById('calcHint');
+  const type=document.getElementById('fType').value;
+  if(type==='unorganised'){
+    if(p&&r){ const mi=monthlyInterest(p,r); hint.textContent=`→ Monthly interest: ${fmt(mi)} | Minimum safe payment: ${fmt(mi+1)}`; }
+    else hint.textContent=''; return;
+  }
+  if(mode==='tenure'){
+    const n=parseFloat(document.getElementById('fTenure').value);
+    if(p&&r&&n){ const emi=calcEMI(p,r,n); hint.textContent=`→ EMI: ${fmt(emi)}  |  Total Interest: ${fmt(emi*n-p)}`; }
+    else hint.textContent='';
+  } else {
+    const emi=parseFloat(document.getElementById('fEMI').value);
+    if(p&&r&&emi){
+      if(emi<=monthlyInterest(p,r)){ hint.textContent='⚠️ EMI too low — debt will keep growing!'; return; }
+      const n=calcTenure(p,r,emi);
+      hint.textContent=`→ Tenure: ${n} months (${(n/12).toFixed(1)} yrs)  |  Total Interest: ${fmt(emi*n-p)}`;
+    } else hint.textContent='';
+  }
+}
+function toggleAddForm(){
+  editId=null;
+  document.getElementById('formTitle').textContent='Add Loan';
+  ['fName','fPrincipal','fRate','fTenure','fEMI'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fType').value='organised';
+  document.getElementById('fMode').value='tenure';
+  document.getElementById('calcHint').textContent='';
+  onTypeChange(); onFormInput();
+  const w=document.getElementById('addFormWrap');
+  w.classList.toggle('open');
+}
+function cancelForm(){ document.getElementById('addFormWrap').classList.remove('open'); editId=null; }
+
+function saveLoan(){
+  const name=document.getElementById('fName').value.trim()||'Loan';
+  const type=document.getElementById('fType').value;
+  const principal=parseFloat(document.getElementById('fPrincipal').value);
+  const rate=parseFloat(document.getElementById('fRate').value);
+  if(!principal||!rate){ alert('Please enter principal and interest rate.'); return; }
+
+  let tenure=null, emi=null;
+  if(type==='organised'){
+    const mode=document.getElementById('fMode').value;
+    if(mode==='tenure'){
+      tenure=parseFloat(document.getElementById('fTenure').value);
+      if(!tenure){ alert('Enter tenure.'); return; }
+      emi=calcEMI(principal,rate,tenure);
+    } else {
+      emi=parseFloat(document.getElementById('fEMI').value);
+      if(!emi){ alert('Enter EMI.'); return; }
+      if(emi<=monthlyInterest(principal,rate)){ alert('EMI too low to cover monthly interest.'); return; }
+      tenure=calcTenure(principal,rate,emi);
+    }
+    emi=Math.round(emi*100)/100;
+    tenure=Math.round(tenure);
+  }
+
+  const loan={ id:editId||Date.now(), name, type, principal, rate, tenure, emi, payments:[] };
+  if(editId){
+    const i=loans.findIndex(l=>l.id===editId);
+    loan.payments=loans[i].payments||[];
+    loans[i]=loan;
+  } else loans.push(loan);
+  save(); editId=null;
+  document.getElementById('addFormWrap').classList.remove('open');
+  render();
+}
+
+function editLoan(id){
+  const l=loans.find(l=>l.id===id);
+  editId=id;
+  document.getElementById('formTitle').textContent='Edit Loan';
+  document.getElementById('fName').value=l.name;
+  document.getElementById('fType').value=l.type||'organised';
+  document.getElementById('fPrincipal').value=l.principal;
+  document.getElementById('fRate').value=l.rate;
+  document.getElementById('fMode').value='tenure';
+  document.getElementById('fTenure').value=l.tenure||'';
+  document.getElementById('fEMI').value='';
+  onTypeChange(); onFormInput();
+  document.getElementById('addFormWrap').classList.add('open');
+  document.getElementById('addFormWrap').scrollIntoView({behavior:'smooth'});
+}
+function deleteLoan(id){
+  if(!confirm('Delete this loan?')) return;
+  loans=loans.filter(l=>l.id!==id); save(); render();
+}
+
+// ---- Payment Log ----
+function addPayment(loanId){
+  const amt=parseFloat(document.getElementById('pamt_'+loanId).value);
+  const dt=document.getElementById('pdate_'+loanId).value;
+  if(!amt||!dt){ alert('Enter amount and date.'); return; }
+  const l=loans.find(l=>l.id===loanId);
+  l.payments=l.payments||[];
+  l.payments.push({date:dt, amount:amt});
+  l.payments.sort((a,b)=>new Date(a.date)-new Date(b.date));
+  save(); render();
+}
+function deletePayment(loanId, idx){
+  const l=loans.find(l=>l.id===loanId);
+  l.payments.splice(idx,1); save(); render();
+}
+
+// Compute running balance from payments (Option B: interest first)
+function computeActualBalances(loan){
+  let bal=loan.principal;
+  const entries=[];
+  const payments=(loan.payments||[]).slice().sort((a,b)=>new Date(a.date)-new Date(b.date));
+  let lastDate=TODAY;
+  for(const p of payments){
+    const pDate=new Date(p.date);
+    // Accrue interest from lastDate to pDate
+    const diffMs=pDate-lastDate;
+    const diffDays=diffMs/(1000*60*60*24);
+    const dailyRate=loan.rate/365/100;
+    bal=bal*(1+dailyRate*diffDays);
+    // Apply payment: interest first
+    const intPortion=Math.min(bal*loan.rate/365/100*diffDays, p.amount); // approx interest accrued since last
+    const intDue=bal-(bal/(1+dailyRate*diffDays)); // actual interest accrued
+    const toInt=Math.min(p.amount, intDue);
+    const toPri=Math.max(0, p.amount-toInt);
+    bal=Math.max(0, bal-p.amount);
+    entries.push({date:p.date, amount:p.amount, toInt:Math.round(toInt), toPri:Math.round(toPri), balance:Math.round(bal)});
+    lastDate=pDate;
+  }
+  return {balance:bal, entries};
+}
+
+// ---- Render ----
+function render(){ renderSummary(); renderLoans(); renderChart(); }
+
+function renderSummary(){
+  const totP=loans.reduce((s,l)=>s+l.principal,0);
+  const totEMI=loans.filter(l=>l.type==='organised').reduce((s,l)=>s+l.emi,0);
+  const totBurn=loans.reduce((s,l)=>s+monthlyInterest(l.principal,l.rate),0);
+  const totInt=loans.filter(l=>l.type==='organised').reduce((s,l)=>s+(l.emi*l.tenure-l.principal),0);
+  document.getElementById('sumPrincipal').textContent=fmt(totP);
+  document.getElementById('sumEMI').textContent=fmt(totEMI);
+  document.getElementById('sumIntBurn').textContent=fmt(totBurn)+'/mo';
+  document.getElementById('sumInterest').textContent=totInt>0?fmt(totInt):'—';
+}
+
+function renderLoans(){
+  const el=document.getElementById('loanList');
+  if(!loans.length){ el.innerHTML='<div class="empty-state">No loans added yet. Click "+ Add Loan" to get started.</div>'; return; }
+  el.innerHTML=loans.map((l,i)=>{
+    const color=COLORS[i%COLORS.length];
+    const mi=monthlyInterest(l.principal,l.rate);
+    const isUnorg=l.type==='unorganised';
+    const {balance:actualBal, entries}=computeActualBalances(l);
+
+    const metaOrg=l.type==='organised'?`
+      <div class="lm"><label>Monthly EMI</label><span class="yellow">${fmt(l.emi)}</span></div>
+      <div class="lm"><label>Tenure</label><span>${l.tenure} mo (${(l.tenure/12).toFixed(1)} yrs)</span></div>
+      <div class="lm"><label>Total Interest</label><span class="red">${fmt(l.emi*l.tenure-l.principal)}</span></div>
+    `:'';
+
+    const trapCard=isUnorg?`
+      <div class="trap-card">
+        <h4>⚠️ Trap Zone Risk</h4>
+        <p>This loan has no fixed schedule. Interest accrues every month regardless of when you pay. If you pay less than the monthly interest, your debt will <strong>grow even while making payments.</strong></p>
+        <div class="trap-nums">
+          <div class="tn"><label>Monthly Interest</label><span>${fmt(mi)}</span></div>
+          <div class="tn"><label>Minimum Safe Payment</label><span>${fmt(mi+1)}</span></div>
+          <div class="tn"><label>Current Balance</label><span>${fmt(actualBal)}</span></div>
+        </div>
+      </div>`:'';
+
+    const todayStr=new Date().toISOString().split('T')[0];
+    const payRows=entries.length?entries.map((e,idx)=>`
+      <tr>
+        <td>${fmtDate(e.date)}</td>
+        <td>${fmt(e.amount)}</td>
+        <td class="split-to-int">${fmt(e.toInt)}</td>
+        <td class="split-to-pri">${fmt(e.toPri)}</td>
+        <td>${fmt(e.balance)}</td>
+        <td><button class="btn btn-delete btn-sm" onclick="deletePayment(${l.id},${idx})">✕</button></td>
+      </tr>`).join(''):'';
+
+    return `<div class="loan-card" style="border-left:3px solid ${color}">
+      <div class="loan-card-top">
+        <div class="loan-card-header">
+          <span class="loan-name">${l.name}</span>
+          <div class="badges">
+            <span class="badge badge-type">${isUnorg?'Unorganised':'Organised'}</span>
+            <span class="badge badge-type">${l.rate}% p.a.</span>
+            ${isUnorg?'<span class="badge badge-risk">⚠️ No Fixed Schedule</span>':'<span class="badge badge-ok">✓ Fixed EMI</span>'}
+          </div>
+        </div>
+        <div class="loan-meta">
+          <div class="lm"><label>Principal</label><span style="color:${color}">${fmt(l.principal)}</span></div>
+          <div class="lm"><label>Monthly Interest</label><span class="orange">${fmt(mi)}</span></div>
+          ${metaOrg}
+          ${entries.length?`<div class="lm"><label>Actual Balance</label><span class="yellow">${fmt(actualBal)}</span></div>`:''}
+        </div>
+        ${trapCard}
+        <div class="btn-row">
+          <button class="btn btn-edit" onclick="editLoan(${l.id})">✏️ Edit</button>
+          <button class="btn btn-delete" onclick="deleteLoan(${l.id})">🗑️ Delete</button>
+        </div>
+      </div>
+      <details class="plog-section">
+        <summary>📋 Payment Log (${entries.length} entries)</summary>
+        <div class="plog-add">
+          <input id="pdate_${l.id}" type="date" value="${todayStr}" max="${todayStr}"/>
+          <input id="pamt_${l.id}" type="number" placeholder="Amount paid (₹)" style="width:180px"/>
+          <button class="btn btn-primary btn-sm" onclick="addPayment(${l.id})">+ Log Payment</button>
+        </div>
+        ${entries.length?`
+        <table class="plog-table">
+          <thead><tr><th>Date</th><th>Paid</th><th>→ Interest</th><th>→ Principal</th><th>Balance After</th><th></th></tr></thead>
+          <tbody>${payRows}</tbody>
+        </table>`:`<div class="plog-empty">No payments logged yet.</div>`}
+      </details>
+    </div>`;
+  }).join('');
+}
+
+// ---- Simulation ----
+function simulateRepayment(loansArr, budget, strategy){
+  let bals=loansArr.map(l=>({id:l.id, bal:l.principal, rate:l.rate, emi:l.emi||0}));
+  const hist=[bals.map(b=>b.bal)];
+  const maxMonths=360;
+  for(let m=0;m<maxMonths;m++){
+    bals.forEach(b=>{ if(b.bal>0) b.bal+=b.bal*b.rate/12/100; });
+    let rem=budget;
+    // Pay minimums
+    bals.forEach(b=>{ if(b.bal>0&&b.emi>0){ const pay=Math.min(b.emi,b.bal,rem); b.bal=Math.max(0,b.bal-pay); rem-=pay; }});
+    // Extra
+    if(rem>0.01){
+      const active=bals.filter(b=>b.bal>0);
+      if(strategy==='avalanche') active.sort((a,b2)=>b2.rate-a.rate);
+      else active.sort((a,b2)=>a.bal-b2.bal);
+      for(const b of active){ if(rem<=0) break; const pay=Math.min(b.bal,rem); b.bal=Math.max(0,b.bal-pay); rem-=pay; }
+    }
+    hist.push(bals.map(b=>Math.max(0,b.bal)));
+    if(bals.every(b=>b.bal<=0.01)) break;
+  }
+  return hist;
+}
+function simulateNoPay(loansArr, months){
+  const hist=[loansArr.map(l=>l.principal)];
+  let bals=loansArr.map(l=>l.principal);
+  for(let m=0;m<months;m++){
+    bals=bals.map((b,i)=>b*(1+loansArr[i].rate/12/100));
+    hist.push([...bals]);
+  }
+  return hist;
+}
+
+// Build actual balance series aligned to months from today
+function buildActualSeries(loan, months){
+  const {entries}=computeActualBalances(loan);
+  const series=new Array(months+1).fill(null);
+  series[0]=loan.principal;
+  for(const e of entries){
+    const d=new Date(e.date);
+    const diff=(d.getFullYear()-TODAY.getFullYear())*12+(d.getMonth()-TODAY.getMonth());
+    if(diff>=0&&diff<=months) series[diff]=e.balance;
+  }
+  // Forward fill
+  let last=loan.principal;
+  for(let i=0;i<=months;i++){ if(series[i]!==null) last=series[i]; else series[i]=null; }
+  return series;
+}
+
+function setChartType(t){ chartType=t; document.getElementById('btnLine').classList.toggle('active',t==='line'); document.getElementById('btnStack').classList.toggle('active',t==='stack'); renderChart(); }
+function toggleScenario(s){
+  if(s==='repay'){ showRepay=!showRepay; document.getElementById('btnRepay').classList.toggle('active',showRepay); }
+  else if(s==='nopay'){ showNoPay=!showNoPay; document.getElementById('btnNoPay').classList.toggle('active',showNoPay); }
+  else { showActual=!showActual; document.getElementById('btnActual').classList.toggle('active',showActual); }
+  renderChart();
+}
+
+function simSummary(loansArr, budget, strategy){
+  let bals=loansArr.map(l=>({id:l.id,name:l.name,bal:l.principal,rate:l.rate,emi:l.emi||0,intPaid:0}));
+  const maxMonths=360;
+  for(let m=0;m<maxMonths;m++){
+    bals.forEach(b=>{ if(b.bal>0){ const i=b.bal*b.rate/12/100; b.intPaid+=i; b.bal+=i; }});
+    let rem=budget;
+    bals.forEach(b=>{ if(b.bal>0&&b.emi>0){ const pay=Math.min(b.emi,b.bal,rem); b.bal=Math.max(0,b.bal-pay); rem-=pay; }});
+    if(rem>0.01){
+      const active=bals.filter(b=>b.bal>0);
+      if(strategy==='avalanche') active.sort((a,b2)=>b2.rate-a.rate);
+      else active.sort((a,b2)=>a.bal-b2.bal);
+      for(const b of active){ if(rem<=0) break; const pay=Math.min(b.bal,rem); b.bal=Math.max(0,b.bal-pay); rem-=pay; }
+    }
+    if(bals.every(b=>b.bal<=0.01)){ 
+      return { months:m+1, totalInt:bals.reduce((s,b)=>s+b.intPaid,0), perLoan:bals.map(b=>({name:b.name,intPaid:b.intPaid})) };
+    }
+  }
+  return { months:maxMonths, totalInt:bals.reduce((s,b)=>s+b.intPaid,0), perLoan:bals.map(b=>({name:b.name,intPaid:b.intPaid})) };
+}
+
+function renderStrategyComparison(budget){
+  const av=simSummary(loans,budget,'avalanche');
+  const sw=simSummary(loans,budget,'snowball');
+  const avDate=monthLabel(addMonths(TODAY,av.months));
+  const swDate=monthLabel(addMonths(TODAY,sw.months));
+  const intSaving=sw.totalInt-av.totalInt;
+  const moSaving=sw.months-av.months;
+
+  document.getElementById('stratCompare').innerHTML=`
+    <div class="card" style="border-top:3px solid var(--accent)">
+      <label>⚡ Avalanche Method</label>
+      <div class="val accent">${fmt(av.totalInt)}</div>
+      <div style="font-size:0.75rem;color:var(--muted);margin-top:6px">Total interest paid</div>
+      <div style="font-size:0.85rem;margin-top:8px">Payoff by <strong>${avDate}</strong> (${av.months} months)</div>
+      ${intSaving>0?`<div style="font-size:0.75rem;color:var(--green);margin-top:6px">Saves ${fmt(intSaving)} & ${moSaving} months vs Snowball</div>`:''}
+    </div>
+    <div class="card" style="border-top:3px solid var(--yellow)">
+      <label>❄️ Snowball Method</label>
+      <div class="val yellow">${fmt(sw.totalInt)}</div>
+      <div style="font-size:0.75rem;color:var(--muted);margin-top:6px">Total interest paid</div>
+      <div style="font-size:0.85rem;margin-top:8px">Payoff by <strong>${swDate}</strong> (${sw.months} months)</div>
+      ${intSaving<0?`<div style="font-size:0.75rem;color:var(--green);margin-top:6px">Saves ${fmt(-intSaving)} & ${-moSaving} months vs Avalanche</div>`:''}
+    </div>`;
+}
+
+function renderInterestBreakdown(budget, strategy){
+  const s=simSummary(loans,budget,strategy);
+  const totalPrincipal=loans.reduce((sum,l)=>sum+l.principal,0);
+  document.getElementById('interestBreakdown').innerHTML=`
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px">
+      <div class="sec-title" style="margin-bottom:14px">Estimated Interest Paid — ${strategy==='avalanche'?'⚡ Avalanche':'❄️ Snowball'} Strategy</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px">
+        <div><div style="font-size:0.72rem;color:var(--muted)">Total Principal</div><div style="font-size:1.1rem;font-weight:700;color:var(--accent)">${fmt(totalPrincipal)}</div></div>
+        <div><div style="font-size:0.72rem;color:var(--muted)">Total Interest</div><div style="font-size:1.1rem;font-weight:700;color:var(--red)">${fmt(s.totalInt)}</div></div>
+        <div><div style="font-size:0.72rem;color:var(--muted)">Total Payable</div><div style="font-size:1.1rem;font-weight:700">${fmt(totalPrincipal+s.totalInt)}</div></div>
+        <div><div style="font-size:0.72rem;color:var(--muted)">Interest % of Principal</div><div style="font-size:1.1rem;font-weight:700;color:var(--orange)">${((s.totalInt/totalPrincipal)*100).toFixed(1)}%</div></div>
+      </div>
+      <table class="plog-table">
+        <thead><tr><th>Loan</th><th>Principal</th><th>Est. Interest Paid</th><th>Total Paid</th><th>Interest %</th></tr></thead>
+        <tbody>${s.perLoan.map((p,i)=>{
+          const prin=loans[i].principal;
+          return `<tr>
+            <td style="color:${COLORS[i%COLORS.length]};font-weight:600">${p.name}</td>
+            <td>${fmt(prin)}</td>
+            <td class="split-to-int">${fmt(p.intPaid)}</td>
+            <td>${fmt(prin+p.intPaid)}</td>
+            <td class="orange">${((p.intPaid/prin)*100).toFixed(1)}%</td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table>
+    </div>`;
+}
+
+function renderChart(){
+  if(!loans.length){ if(chart){chart.destroy();chart=null;} return; }
+  const minEMI=loans.reduce((s,l)=>s+(l.emi||monthlyInterest(l.principal,l.rate)*1.1),0);
+  const budget=parseFloat(document.getElementById('simBudget').value)||minEMI;
+  const strategy=document.getElementById('simStrategy').value;
+
+  const repayHist=simulateRepayment(loans,budget,strategy);
+  const months=Math.min(repayHist.length-1,360);
+  const noPayHist=simulateNoPay(loans,months);
+
+  // Find trap zone months — where total projected balance is RISING
+  const trapMonths=[];
+  for(let m=1;m<repayHist.length;m++){
+    const prev=repayHist[m-1].reduce((s,v)=>s+v,0);
+    const curr=repayHist[m].reduce((s,v)=>s+v,0);
+    if(curr>prev) trapMonths.push(m);
+  }
+
+  const labels=Array.from({length:months+1},(_,i)=>monthLabel(addMonths(TODAY,i)));
+  const datasets=[];
+
+  if(showRepay){
+    if(chartType==='line'){
+      loans.forEach((l,i)=>{
+        datasets.push({label:l.name,data:repayHist.slice(0,months+1).map(r=>Math.round(r[i])),borderColor:COLORS[i%COLORS.length],backgroundColor:'transparent',tension:0.3,pointRadius:0,borderWidth:2});
+      });
+    } else {
+      loans.forEach((l,i)=>{
+        datasets.push({label:l.name,data:repayHist.slice(0,months+1).map(r=>Math.round(r[i])),borderColor:COLORS[i%COLORS.length],backgroundColor:COLORS[i%COLORS.length]+'55',fill:true,tension:0.3,pointRadius:0,borderWidth:2});
+      });
+    }
+  }
+
+  if(showActual){
+    loans.forEach((l,i)=>{
+      const actual=buildActualSeries(l,months);
+      const hasData=actual.some(v=>v!==null);
+      if(hasData){
+        datasets.push({label:`${l.name} (Actual)`,data:actual,borderColor:COLORS[i%COLORS.length],backgroundColor:'transparent',borderDash:[3,3],borderWidth:2,tension:0,pointRadius:3,spanGaps:false});
+      }
+    });
+  }
+
+  if(showNoPay){
+    datasets.push({
+      label:'⚠️ No Payment (Total)',
+      data:noPayHist.slice(0,months+1).map(r=>Math.round(r.reduce((s,v)=>s+v,0))),
+      borderColor:'#f94144',backgroundColor:'#f9414422',borderDash:[6,4],fill:false,tension:0.3,pointRadius:0,borderWidth:2
+    });
+  }
+
+  // Trap zone annotation as a dataset (background fill where balance rising)
+  if(trapMonths.length>0){
+    const trapTotal=repayHist.slice(0,months+1).map(r=>r.reduce((s,v)=>s+v,0));
+    const maxVal=Math.max(...trapTotal);
+    const trapData=trapTotal.map((v,i)=>trapMonths.includes(i)?maxVal:null);
+    datasets.push({
+      label:'🔴 Trap Zone',data:trapData,borderColor:'transparent',backgroundColor:'rgba(249,65,68,0.10)',
+      fill:true,pointRadius:0,borderWidth:0,spanGaps:false,tension:0,order:99
+    });
+  }
+
+  renderStrategyComparison(budget);
+  renderInterestBreakdown(budget, strategy);
+
+  const ctx=document.getElementById('loanChart').getContext('2d');
+  if(chart) chart.destroy();
+  chart=new Chart(ctx,{
+    type:'line',
+    data:{labels,datasets},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      scales:{
+        x:{ticks:{color:'#8b90b0',maxTicksLimit:14,maxRotation:30},grid:{color:'#2e3250'}},
+        y:{
+          stacked:chartType==='stack',
+          ticks:{color:'#8b90b0',callback:v=>'₹'+(v>=100000?(v/100000).toFixed(1)+'L':(v/1000).toFixed(0)+'K')},
+          grid:{color:'#2e3250'}
+        }
+      },
+      plugins:{
+        legend:{labels:{color:'#e8eaf6',boxWidth:14,padding:14,filter:i=>i.text!=='🔴 Trap Zone'}},
+        tooltip:{
+          backgroundColor:'#1a1d27',borderColor:'#2e3250',borderWidth:1,
+          titleColor:'#e8eaf6',bodyColor:'#8b90b0',
+          callbacks:{label:ctx=>` ${ctx.dataset.label}: ₹${(ctx.parsed.y||0).toLocaleString('en-IN')}`}
+        }
+      }
+    }
+  });
+}
+
+render();
+</script>
+</body>
+</html>
