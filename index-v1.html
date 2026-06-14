@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My YouTube Dashboard</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0f0f0f; color: #fff; font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+
+  /* ── HEADER ── */
+  header {
+    background: #1a1a1a;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid #ff0000;
+    position: sticky; top: 0; z-index: 10; gap: 8px;
+  }
+  header h1 { font-size: 1.2rem; color: #ff0000; letter-spacing: 1px; flex: 1; }
+  .header-btn {
+    border: none; padding: 8px 14px; border-radius: 20px;
+    font-size: 0.85rem; cursor: pointer; white-space: nowrap;
+  }
+  #refresh-btn { background: #222; color: #ccc; border: 1px solid #444; }
+  #refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  #add-btn { background: #ff0000; color: #fff; }
+  #nav-toggle { background: none; border: none; color: #ccc; font-size: 1.3rem; cursor: pointer; padding: 4px 8px; border-radius: 6px; }
+  #nav-toggle:hover { color: #fff; background: #2a2a2a; }
+
+  /* ── TABS ── */
+  #tab-bar {
+    background: #1a1a1a;
+    display: flex;
+    border-bottom: 1px solid #2a2a2a;
+    position: sticky; top: 57px; z-index: 9;
+  }
+  .tab-btn {
+    flex: 1; padding: 12px; background: none; border: none;
+    color: #666; font-size: 0.9rem; cursor: pointer;
+    border-bottom: 2px solid transparent; transition: color 0.2s, border-color 0.2s;
+  }
+  .tab-btn.active { color: #ff0000; border-bottom-color: #ff0000; }
+  .tab-btn:hover:not(.active) { color: #ccc; }
+
+  /* ── SEARCH ── */
+  #search-bar {
+    padding: 12px 16px; background: #1a1a1a;
+    position: sticky; top: 104px; z-index: 8;
+    border-bottom: 1px solid #2a2a2a;
+  }
+  #search-input {
+    width: 100%; padding: 9px 14px; background: #2a2a2a;
+    border: 1px solid #333; border-radius: 20px; color: #fff;
+    font-size: 0.9rem; outline: none;
+  }
+  #search-input:focus { border-color: #ff0000; }
+
+  /* ── STATUS ── */
+  #stats { text-align: center; font-size: 0.75rem; color: #555; padding: 10px 0 2px; }
+  #refresh-status { text-align: center; font-size: 0.75rem; padding: 4px 0; min-height: 20px; }
+  #refresh-status.error { color: #ff4444; }
+  #refresh-status.success { color: #27ae60; }
+  #refresh-status.info { color: #888; }
+
+  /* ── TAB PANELS ── */
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── CHANNELS LIST ── */
+  #list {
+    max-width: 600px; margin: 8px auto;
+    padding: 0 16px 24px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .channel-row {
+    display: flex; align-items: center; gap: 12px;
+    background: #1a1a1a; border-radius: 10px; padding: 10px 12px;
+    text-decoration: none; color: #fff; border: 1px solid #2a2a2a;
+    transition: border-color 0.2s; position: relative;
+  }
+  .channel-row:hover { border-color: #ff0000; }
+  .channel-icon { width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; object-fit: cover; background: #2a2a2a; }
+  .channel-icon-fallback {
+    width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; font-weight: bold; color: #fff;
+  }
+  .channel-info { flex: 1; min-width: 0; }
+  .channel-top { display: flex; align-items: center; gap: 8px; }
+  .channel-name { font-size: 0.95rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
+  .new-badge { background: #ff0000; color: #fff; font-size: 0.65rem; font-weight: 700; padding: 2px 6px; border-radius: 10px; white-space: nowrap; flex-shrink: 0; }
+  .channel-meta { font-size: 0.72rem; color: #666; margin-top: 3px; }
+  .channel-handle { color: #555; }
+  .latest-video { display: block; font-size: 0.75rem; color: #888; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-decoration: none; }
+  .latest-video:hover { color: #ff0000; }
+  .latest-video .video-age { color: #555; margin-left: 4px; }
+  .delete-btn { background: none; border: none; color: #444; font-size: 1rem; cursor: pointer; padding: 4px 6px; border-radius: 4px; flex-shrink: 0; align-self: flex-start; }
+  .delete-btn:hover { color: #ff4444; }
+  #empty, .no-results { text-align: center; color: #555; padding: 60px 20px; font-size: 0.95rem; line-height: 2; }
+  #empty span { display: block; font-size: 2rem; margin-bottom: 10px; }
+
+  /* ── VIDEOS GRID ── */
+  #videos-status { text-align: center; font-size: 0.75rem; padding: 4px 0 0; min-height: 20px; color: #888; }
+  #videos-grid {
+    max-width: 700px; margin: 8px auto;
+    padding: 0 12px 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+  }
+  .video-card {
+    background: #1a1a1a; border-radius: 10px; overflow: hidden;
+    border: 1px solid #2a2a2a; text-decoration: none; color: #fff;
+    transition: border-color 0.2s, transform 0.15s;
+    display: flex; flex-direction: column;
+  }
+  .video-card:hover { border-color: #ff0000; transform: translateY(-2px); }
+  .video-thumb-wrap { position: relative; width: 100%; aspect-ratio: 16/9; background: #111; }
+  .video-thumb { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .video-thumb-fallback { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 2rem; background: #222; }
+  .video-body { padding: 8px 10px 10px; flex: 1; display: flex; flex-direction: column; gap: 4px; }
+  .video-title { font-size: 0.8rem; font-weight: 500; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .video-channel { font-size: 0.68rem; color: #888; }
+  .video-age { font-size: 0.68rem; color: #555; margin-top: auto; }
+  .videos-empty { text-align: center; color: #555; padding: 60px 20px; font-size: 0.95rem; line-height: 2; grid-column: 1/-1; }
+  .videos-empty span { display: block; font-size: 2rem; margin-bottom: 10px; }
+
+  /* ── MODAL ── */
+  #modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; align-items: center; justify-content: center; }
+  #modal-overlay.open { display: flex; }
+  #modal { background: #1e1e1e; border-radius: 12px; padding: 24px; width: 90%; max-width: 400px; border: 1px solid #333; }
+  #modal h2 { margin-bottom: 16px; font-size: 1rem; color: #ccc; }
+  #modal input { width: 100%; padding: 10px 14px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff; font-size: 0.95rem; margin-bottom: 10px; outline: none; }
+  #modal input:focus { border-color: #ff0000; }
+  .modal-hint { font-size: 0.75rem; color: #888; margin-bottom: 16px; line-height: 1.5; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+  .modal-actions button { padding: 8px 18px; border-radius: 20px; border: none; cursor: pointer; font-size: 0.9rem; }
+  #cancel-btn { background: #333; color: #ccc; }
+  #save-btn { background: #ff0000; color: #fff; }
+
+  /* ── SIDE NAV ── */
+  #nav-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; }
+  #nav-overlay.open { display: block; }
+  #side-nav { position: fixed; top: 0; right: -280px; width: 260px; height: 100%; background: #141414; border-left: 1px solid #2a2a2a; z-index: 201; transition: right 0.28s cubic-bezier(.4,0,.2,1); display: flex; flex-direction: column; padding: 0 0 24px; }
+  #side-nav.open { right: 0; }
+  .nav-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; border-bottom: 1px solid #2a2a2a; }
+  .nav-header span { font-size: 0.8rem; color: #666; text-transform: uppercase; letter-spacing: 1.5px; }
+  #nav-close { background: none; border: none; color: #555; font-size: 1.1rem; cursor: pointer; padding: 4px; }
+  #nav-close:hover { color: #fff; }
+  .nav-section-label { font-size: 0.68rem; color: #444; text-transform: uppercase; letter-spacing: 1.5px; padding: 18px 20px 8px; }
+  .nav-link { display: flex; align-items: center; gap: 12px; padding: 11px 20px; color: #bbb; text-decoration: none; font-size: 0.92rem; transition: background 0.15s, color 0.15s; }
+  .nav-link:hover { background: #1e1e1e; color: #fff; }
+  .nav-link.active { color: #ff0000; background: #1e1e1e; }
+  .nav-link .nav-icon { font-size: 1rem; width: 22px; text-align: center; }
+  .nav-link .nav-badge { margin-left: auto; background: #ff0000; color: #fff; font-size: 0.6rem; padding: 2px 6px; border-radius: 8px; font-weight: 700; }
+  .nav-divider { border: none; border-top: 1px solid #222; margin: 8px 0; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>▶ My YouTube</h1>
+  <button id="refresh-btn" class="header-btn">⟳ Refresh</button>
+  <button id="add-btn" class="header-btn" style="display:none">+ Add</button>
+  <button id="nav-toggle" title="Menu">☰</button>
+</header>
+
+<!-- Tab Bar -->
+<div id="tab-bar">
+  <button class="tab-btn active" data-tab="channels">📺 Channels</button>
+  <button class="tab-btn" data-tab="videos">🎬 Videos</button>
+</div>
+
+<!-- Search (Channels only) -->
+<div id="search-bar">
+  <input id="search-input" type="search" placeholder="🔍  Search channels..." />
+</div>
+
+<div id="stats"></div>
+<div id="refresh-status"></div>
+
+<!-- Channels Panel -->
+<div id="panel-channels" class="tab-panel active">
+  <div id="list"></div>
+</div>
+
+<!-- Videos Panel -->
+<div id="panel-videos" class="tab-panel">
+  <div id="videos-status"></div>
+  <div id="videos-grid"></div>
+</div>
+
+<!-- Modal -->
+<div id="modal-overlay">
+  <div id="modal">
+    <h2>Add a Channel</h2>
+    <input id="input-name" type="text" placeholder="Channel name (e.g. Veritasium)" />
+    <input id="input-url" type="text" placeholder="Channel URL or @handle" />
+    <p class="modal-hint">Paste the full URL like:<br><code>https://www.youtube.com/@veritasium</code><br>or just the handle: <code>@veritasium</code></p>
+    <div class="modal-actions">
+      <button id="cancel-btn">Cancel</button>
+      <button id="save-btn">Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- Side Nav -->
+<div id="nav-overlay"></div>
+<nav id="side-nav">
+  <div class="nav-header">
+    <span>Pages</span>
+    <button id="nav-close">✕</button>
+  </div>
+  <div class="nav-section-label">Main</div>
+  <a href="index.html" class="nav-link active"><span class="nav-icon">📺</span> My Channels</a>
+  <a href="quotes.html" class="nav-link"><span class="nav-icon">✏️</span> Quote Maker <span class="nav-badge">NEW</span></a>
+  <a href="vq-venmurasu_html.html" class="nav-link"><span class="nav-icon">✍️</span> Venmurasu Quote Reader <span class="nav-badge">NEW</span></a>
+  <a href="venmurasu-quote-reader.html" class="nav-link"><span class="nav-icon">✍️</span> Venmurasu Quote Reader (Legacy)</a>
+  <hr class="nav-divider">
+  <div class="nav-section-label">Coming Soon</div>
+  <a href="#" class="nav-link" style="opacity:0.4;pointer-events:none"><span class="nav-icon">📌</span> Bookmarks</a>
+  <a href="#" class="nav-link" style="opacity:0.4;pointer-events:none"><span class="nav-icon">🗒️</span> Notes</a>
+</nav>
+
+<script>
+// ─── CONFIG ─────────────────────────────────────────────
+const API_KEY      = 'AIzaSyCkzxnGe4KeX34xBTlR4WxlxpJ89ZuDVgQ';
+const VIDEOS_PER_CH = 3;
+const CACHE_TTL_MS  = 60 * 60 * 1000; // 1 hour
+// ────────────────────────────────────────────────────────
+
+const STORAGE_KEY = 'yt_channels';
+const VISITED_KEY = 'yt_visited';
+const CACHE_KEY   = 'yt_video_cache';   // stores channelId, uploadsId, videos[]
+const COLORS = ['#c0392b','#8e44ad','#2980b9','#16a085','#d35400','#27ae60','#2c3e50','#e74c3c'];
+
+const listEl      = document.getElementById('list');
+const statsEl     = document.getElementById('stats');
+const statusEl    = document.getElementById('refresh-status');
+const videosGrid  = document.getElementById('videos-grid');
+const videosStatus= document.getElementById('videos-status');
+const overlay     = document.getElementById('modal-overlay');
+const searchEl    = document.getElementById('search-input');
+const inputName   = document.getElementById('input-name');
+const inputUrl    = document.getElementById('input-url');
+const refreshBtn  = document.getElementById('refresh-btn');
+const addBtn      = document.getElementById('add-btn');
+const searchBar   = document.getElementById('search-bar');
+
+const DEFAULTS = [
+  { name: 'Content Machine',        url: 'https://www.youtube.com/@content_machine' },
+  { name: 'Desanthi Ripathippagam', url: 'https://www.youtube.com/@desanthiripathippagam' },
+  { name: 'Empty Hand Ajith Sri',   url: 'https://www.youtube.com/@emptyhandajithsri' },
+  { name: 'Galatta Plus',           url: 'https://www.youtube.com/@galattaplus' },
+  { name: 'Gameranx',               url: 'https://www.youtube.com/@gameranx' },
+  { name: 'Makkal Pechu',           url: 'https://www.youtube.com/@makkalpechu' },
+  { name: 'Moneypechu',             url: 'https://www.youtube.com/@Moneypechu' },
+  { name: 'Moto Wagon',             url: 'https://www.youtube.com/@motowagon' },
+  { name: 'Mr GK Tamil',            url: 'https://www.youtube.com/@mrgktamil' },
+  { name: 'Muzhumai Arivu',         url: 'https://www.youtube.com/@muzhumaiarivu' },
+  { name: 'Parithabangal',          url: 'https://www.youtube.com/@parithabangal' },
+  { name: 'Patrick Boyle',          url: 'https://www.youtube.com/@pboyle' },
+  { name: 'Plip Plip',              url: 'https://www.youtube.com/@plipplip' },
+  { name: 'Polymatter',             url: 'https://www.youtube.com/@polymatter' },
+  { name: 'Tiruppur Bulls',         url: 'https://www.youtube.com/@tiruppurbulls' },
+  { name: 'Vikatan Web TV',         url: 'https://www.youtube.com/@Vikatanwebtv' },
+];
+
+// ─── STORAGE ────────────────────────────────────────────
+function loadChannels() {
+  try { const s = JSON.parse(localStorage.getItem(STORAGE_KEY)); if (s?.length) return s; } catch {}
+  saveChannels(DEFAULTS); return DEFAULTS;
+}
+function saveChannels(ch) { localStorage.setItem(STORAGE_KEY, JSON.stringify(ch)); }
+function loadVisited()    { try { return JSON.parse(localStorage.getItem(VISITED_KEY)) || {}; } catch { return {}; } }
+function markVisited(url) { const v = loadVisited(); v[url] = Date.now(); localStorage.setItem(VISITED_KEY, JSON.stringify(v)); }
+function loadCache()      { try { return JSON.parse(localStorage.getItem(CACHE_KEY)) || {}; } catch { return {}; } }
+function saveCache(c)     { localStorage.setItem(CACHE_KEY, JSON.stringify(c)); }
+
+// ─── HELPERS ────────────────────────────────────────────
+function sorted(ch)  { return [...ch].sort((a,b) => a.name.localeCompare(b.name)); }
+function handleFromUrl(url) { const m = url.match(/@([\w_]+)/); return m ? '@'+m[1] : ''; }
+function normalizeUrl(raw) {
+  raw = raw.trim();
+  if (raw.startsWith('http')) return raw;
+  if (raw.startsWith('@')) return 'https://www.youtube.com/' + raw;
+  return 'https://www.youtube.com/@' + raw;
+}
+function colorFor(name) { let h=0; for (let c of name) h=(h*31+c.charCodeAt(0))&0xffff; return COLORS[h%COLORS.length]; }
+function initials(name) { return name.trim().split(/\s+/).map(w=>w[0]).join('').toUpperCase().slice(0,2); }
+function avatarUrl(handle) { return `https://unavatar.io/youtube/${handle.replace('@','')}`; }
+function timeAgo(iso) {
+  const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+  if (diff < 60) return 'just now';
+  if (diff < 3600) return Math.floor(diff/60)+'m ago';
+  if (diff < 86400) return Math.floor(diff/3600)+'h ago';
+  if (diff < 604800) return Math.floor(diff/86400)+'d ago';
+  if (diff < 2592000) return Math.floor(diff/604800)+'w ago';
+  return Math.floor(diff/2592000)+'mo ago';
+}
+function thumbUrl(videoId) { return `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`; }
+function isStale(entry) { return !entry?.refreshedAt || (Date.now() - entry.refreshedAt) > CACHE_TTL_MS; }
+
+// ─── YOUTUBE API (quota-efficient) ──────────────────────
+// Step 1: resolve channelId + uploadsPlaylistId via channels API (cost: 1 unit)
+async function resolveChannel(handle) {
+  const h = handle.replace('@','');
+  const res = await fetch(
+    `https://www.googleapis.com/youtube/v3/channels?part=contentDetails&forHandle=${encodeURIComponent(h)}&key=${API_KEY}`
+  );
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  const item = data.items?.[0];
+  if (!item) throw new Error('Channel not found');
+  return {
+    channelId:  item.id,
+    uploadsId:  item.contentDetails.relatedPlaylists.uploads,
+  };
+}
+
+// Step 2: fetch latest N videos from uploads playlist (cost: 1 unit)
+async function fetchPlaylistVideos(uploadsId, maxResults) {
+  const res = await fetch(
+    `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${encodeURIComponent(uploadsId)}&maxResults=${maxResults}&key=${API_KEY}`
+  );
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  return (data.items || []).map(item => ({
+    videoId:     item.snippet.resourceId.videoId,
+    title:       item.snippet.title,
+    publishedAt: item.snippet.publishedAt,
+  }));
+}
+
+// ─── REFRESH ────────────────────────────────────────────
+let activeTab = 'channels';
+
+async function refreshAll() {
+  refreshBtn.disabled = true;
+  const origText = refreshBtn.textContent;
+  refreshBtn.textContent = '⟳';
+
+  const channels = loadChannels();
+  const cache    = loadCache();
+  let updated = 0, skipped = 0, errors = 0;
+
+  setStatus('Refreshing…', 'info');
+
+  for (const ch of channels) {
+    const handle = handleFromUrl(ch.url);
+    if (!handle) { errors++; continue; }
+    if (!cache[ch.url]) cache[ch.url] = {};
+    const entry = cache[ch.url];
+
+    try {
+      // Resolve channel IDs once (cached forever)
+      if (!entry.uploadsId) {
+        const info = await resolveChannel(handle);
+        entry.channelId = info.channelId;
+        entry.uploadsId = info.uploadsId;
+      }
+
+      // Fetch videos only if stale
+      if (isStale(entry)) {
+        const videos = await fetchPlaylistVideos(entry.uploadsId, VIDEOS_PER_CH);
+        entry.videos      = videos;
+        entry.latestVideo = videos[0] || null;
+        entry.refreshedAt = Date.now();
+        updated++;
+      } else {
+        skipped++;
+      }
+    } catch(e) {
+      console.error(`Error fetching ${ch.name}:`, e.message);
+      errors++;
+    }
+  }
+
+  saveCache(cache);
+  renderChannels();
+  if (activeTab === 'videos') renderVideos();
+
+  if (errors === 0)
+    setStatus(`Updated ${updated} channels${skipped ? `, ${skipped} from cache` : ''}`, 'success');
+  else
+    setStatus(`Updated ${updated}, ${skipped} cached, ${errors} failed`, 'error');
+
+  setTimeout(() => setStatus('', ''), 5000);
+  refreshBtn.disabled  = false;
+  refreshBtn.textContent = origText;
+}
+
+function setStatus(msg, type) {
+  statusEl.textContent = msg;
+  statusEl.className   = type || '';
+}
+
+// ─── NEW VIDEO COUNT ─────────────────────────────────────
+function newVideoCount(chUrl, latestVideo) {
+  if (!latestVideo) return 0;
+  const lastVisit = loadVisited()[chUrl];
+  if (!lastVisit) return 1;
+  return new Date(latestVideo.publishedAt).getTime() > lastVisit ? 1 : 0;
+}
+
+// ─── RENDER CHANNELS ────────────────────────────────────
+function renderChannels() {
+  const query    = searchEl.value.trim().toLowerCase();
+  const all      = sorted(loadChannels());
+  const cache    = loadCache();
+  const filtered = query ? all.filter(ch => ch.name.toLowerCase().includes(query)) : all;
+
+  statsEl.textContent = query
+    ? `${filtered.length} of ${all.length} channels`
+    : `${all.length} channel${all.length !== 1 ? 's' : ''}`;
+
+  listEl.innerHTML = '';
+
+  if (filtered.length === 0) {
+    listEl.innerHTML = all.length === 0
+      ? `<div id="empty"><span>📺</span>No channels yet.<br>Tap <strong>+ Add</strong> to get started.</div>`
+      : `<div class="no-results">No channels matching "<strong>${query}</strong>"</div>`;
+    return;
+  }
+
+  filtered.forEach(ch => {
+    const handle   = handleFromUrl(ch.url);
+    const entry    = cache[ch.url] || {};
+    const latest   = entry.latestVideo || null;
+    const newCount = newVideoCount(ch.url, latest);
+
+    const row = document.createElement('a');
+    row.className = 'channel-row';
+    row.href = ch.url;
+    row.rel  = 'noopener';
+    row.addEventListener('click', () => { markVisited(ch.url); renderChannels(); });
+
+    // Avatar
+    const img = document.createElement('img');
+    img.className = 'channel-icon'; img.alt = ch.name;
+    img.src = avatarUrl(handle);
+    img.onerror = function() {
+      const fb = document.createElement('div');
+      fb.className = 'channel-icon-fallback';
+      fb.style.background = colorFor(ch.name);
+      fb.textContent = initials(ch.name);
+      this.replaceWith(fb);
+    };
+
+    // Info
+    const info = document.createElement('div');
+    info.className = 'channel-info';
+
+    const top = document.createElement('div');
+    top.className = 'channel-top';
+    top.innerHTML = `<span class="channel-name">${ch.name}</span>`;
+    if (newCount > 0) {
+      const badge = document.createElement('span');
+      badge.className = 'new-badge';
+      badge.textContent = `${newCount} new`;
+      top.appendChild(badge);
+    }
+
+    const meta = document.createElement('div');
+    meta.className = 'channel-meta';
+    meta.innerHTML = `<span class="channel-handle">${handle}</span>`;
+
+    info.appendChild(top);
+    info.appendChild(meta);
+
+    if (latest) {
+      const vLink = document.createElement('a');
+      vLink.className = 'latest-video';
+      vLink.href = `https://www.youtube.com/watch?v=${latest.videoId}`;
+      vLink.rel  = 'noopener';
+      vLink.addEventListener('click', e => { e.stopPropagation(); markVisited(ch.url); });
+      vLink.innerHTML = `▶ ${latest.title} <span class="video-age">${timeAgo(latest.publishedAt)}</span>`;
+      info.appendChild(vLink);
+    } else {
+      const hint = document.createElement('span');
+      hint.className = 'latest-video'; hint.style.color = '#444';
+      hint.textContent = 'Hit Refresh to load videos';
+      info.appendChild(hint);
+    }
+
+    // Delete
+    const del = document.createElement('button');
+    del.className = 'delete-btn'; del.title = 'Remove'; del.textContent = '✕';
+    del.addEventListener('click', e => {
+      e.preventDefault(); e.stopPropagation();
+      const all = loadChannels();
+      const idx = all.findIndex(c => c.url === ch.url);
+      if (idx > -1) { all.splice(idx,1); saveChannels(all); renderChannels(); }
+    });
+
+    row.appendChild(img);
+    row.appendChild(info);
+    row.appendChild(del);
+    listEl.appendChild(row);
+  });
+}
+
+// ─── RENDER VIDEOS ───────────────────────────────────────
+function renderVideos() {
+  const channels = loadChannels();
+  const cache    = loadCache();
+
+  // Collect all videos from cache
+  const allVideos = [];
+  channels.forEach(ch => {
+    const entry = cache[ch.url] || {};
+    (entry.videos || []).forEach(v => {
+      allVideos.push({ ...v, channelName: ch.name, channelUrl: ch.url });
+    });
+  });
+
+  videosGrid.innerHTML = '';
+
+  if (allVideos.length === 0) {
+    videosGrid.innerHTML = `<div class="videos-empty"><span>🎬</span>No videos loaded yet.<br>Tap <strong>⟳ Refresh</strong> to fetch videos.</div>`;
+    videosStatus.textContent = '';
+    return;
+  }
+
+  // Sort newest first
+  allVideos.sort((a,b) => new Date(b.publishedAt) - new Date(a.publishedAt));
+
+  // Staleness hint
+  const staleCount = channels.filter(ch => isStale(cache[ch.url])).length;
+  videosStatus.textContent = staleCount > 0
+    ? `${staleCount} channel${staleCount>1?'s':''} need a refresh`
+    : `All up to date · ${allVideos.length} videos`;
+
+  allVideos.forEach(v => {
+    const card = document.createElement('a');
+    card.className = 'video-card';
+    card.href = `https://www.youtube.com/watch?v=${v.videoId}`;
+    card.rel  = 'noopener';
+    card.addEventListener('click', () => markVisited(v.channelUrl));
+
+    const thumbWrap = document.createElement('div');
+    thumbWrap.className = 'video-thumb-wrap';
+
+    const thumb = document.createElement('img');
+    thumb.className = 'video-thumb';
+    thumb.alt = v.title;
+    thumb.src = thumbUrl(v.videoId);
+    thumb.loading = 'lazy';
+    thumb.onerror = function() {
+      const fb = document.createElement('div');
+      fb.className = 'video-thumb-fallback';
+      fb.textContent = '▶';
+      this.replaceWith(fb);
+    };
+    thumbWrap.appendChild(thumb);
+
+    const body = document.createElement('div');
+    body.className = 'video-body';
+    body.innerHTML = `
+      <div class="video-title">${v.title}</div>
+      <div class="video-channel">${v.channelName}</div>
+      <div class="video-age">${timeAgo(v.publishedAt)}</div>
+    `;
+
+    card.appendChild(thumbWrap);
+    card.appendChild(body);
+    videosGrid.appendChild(card);
+  });
+}
+
+// ─── TABS ────────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    activeTab = btn.dataset.tab;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(`panel-${activeTab}`).classList.add('active');
+
+    // Show/hide search & add button
+    if (activeTab === 'channels') {
+      searchBar.style.display = '';
+      addBtn.style.display    = '';
+      statsEl.style.display   = '';
+      renderChannels();
+    } else {
+      searchBar.style.display = 'none';
+      addBtn.style.display    = 'none';
+      statsEl.style.display   = 'none';
+      renderVideos();
+    }
+  });
+});
+
+// ─── MODAL ───────────────────────────────────────────────
+function openModal()  { overlay.classList.add('open'); inputName.focus(); }
+function closeModal() {
+  overlay.classList.remove('open');
+  inputName.value = ''; inputUrl.value = '';
+  inputName.style.borderColor = '#444'; inputUrl.style.borderColor = '#444';
+}
+function saveChannel() {
+  const name = inputName.value.trim();
+  const raw  = inputUrl.value.trim();
+  if (!name) { inputName.style.borderColor = '#ff4444'; return; }
+  if (!raw)  { inputUrl.style.borderColor  = '#ff4444'; return; }
+  const channels = loadChannels();
+  channels.push({ name, url: normalizeUrl(raw) });
+  saveChannels(channels);
+  closeModal(); renderChannels();
+}
+
+addBtn.addEventListener('click', openModal);
+document.getElementById('cancel-btn').addEventListener('click', closeModal);
+document.getElementById('save-btn').addEventListener('click', saveChannel);
+refreshBtn.addEventListener('click', refreshAll);
+overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+searchEl.addEventListener('input', renderChannels);
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && overlay.classList.contains('open')) saveChannel();
+  if (e.key === 'Escape') { closeModal(); closeNav(); }
+});
+inputName.addEventListener('input', () => inputName.style.borderColor = '#444');
+inputUrl.addEventListener('input',  () => inputUrl.style.borderColor  = '#444');
+
+// ─── SIDE NAV ────────────────────────────────────────────
+const navToggle  = document.getElementById('nav-toggle');
+const navOverlay = document.getElementById('nav-overlay');
+const sideNav    = document.getElementById('side-nav');
+const navClose   = document.getElementById('nav-close');
+function openNav()  { sideNav.classList.add('open'); navOverlay.classList.add('open'); }
+function closeNav() { sideNav.classList.remove('open'); navOverlay.classList.remove('open'); }
+navToggle.addEventListener('click', openNav);
+navClose.addEventListener('click', closeNav);
+navOverlay.addEventListener('click', closeNav);
+
+// ─── INIT ────────────────────────────────────────────────
+renderChannels();
+// Show add button on channels tab by default
+addBtn.style.display = '';
+</script>
+</body>
+</html>
