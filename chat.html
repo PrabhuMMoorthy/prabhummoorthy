@@ -106,45 +106,71 @@
                 location.reload();
             });
         }
-
-        // --- 5. SENDING CHUNKED DATA ---
+        
+        // --- 5. FIXED SENDING LOGIC (With Native Backpressure Handling) ---
         el('send-file-btn').onclick = async () => {
             const file = el('file-input').files[0];
             if (!file) return alert("Select a file first!");
 
             el('progress-container').style.display = 'block';
             
-            // Notify receiver of incoming file specifications
+            // Notify receiver of incoming file details
             conn.send(JSON.stringify({ name: file.name, size: file.size }));
 
             const reader = file.stream().getReader();
+            const rawChannel = conn.dataChannel; // Access the underlying WebRTC channel
+            
+            // Set the safety threshold to 512KB. 
+            // If the buffer drops below this, the browser will fire the event to send more data.
+            rawChannel.bufferedAmountLowThreshold = 524288; 
+
             let offset = 0;
+            let currentChunkArray = null;
+            let currentChunkOffset = 0;
 
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-
-                let chunkOffset = 0;
-                while (chunkOffset < value.length) {
-                    // Prevent memory-flooding browser outbound buffers
-                    if (conn.dataChannel.bufferedAmount > 16000000) { 
-                        await new Promise(r => setTimeout(r, 50));
-                        continue;
+            // This inner function pulls data from the file stream and pushes it to the peer
+            async function sendNextChunks() {
+                while (true) {
+                    // Safety Brake: If the queue is filling up (> 1MB), STOP and wait.
+                    // The 'bufferedamountlow' listener below will re-trigger this function.
+                    if (rawChannel.bufferedAmount > 1048576) {
+                        return; 
                     }
 
-                    const chunk = value.slice(chunkOffset, chunkOffset + CHUNK_SIZE);
-                    conn.send(chunk);
-                    
-                    chunkOffset += CHUNK_SIZE;
+                    // If we don't have a chunk active, read a new block from the file stream
+                    if (!currentChunkArray || currentChunkOffset >= currentChunkArray.length) {
+                        const { done, value } = await reader.read();
+                        if (done) {
+                            el('progress-text').textContent = "Sent successfully!";
+                            return; // Entire file has successfully streamed
+                        }
+                        currentChunkArray = value;
+                        currentChunkOffset = 0;
+                    }
+
+                    // Slice out a 16KB packet from our active block
+                    const chunk = currentChunkArray.slice(currentChunkOffset, currentChunkOffset + CHUNK_SIZE);
+                    rawChannel.send(chunk);
+
+                    currentChunkOffset += CHUNK_SIZE;
                     offset += chunk.length;
 
+                    // Smooth UI progress calculation
                     const percent = Math.round((offset / file.size) * 100);
                     el('progress-bar').value = percent;
                     el('progress-text').textContent = `Sending: ${percent}%`;
                 }
             }
-            el('progress-text').textContent = "Sent successfully!";
+
+            // Tell the browser: "When the network queue drops down, call sendNextChunks to resume"
+            rawChannel.onbufferedamountlow = () => {
+                sendNextChunks();
+            };
+
+            // Kick off the initial stream blast
+            sendNextChunks();
         };
+
 
         // --- 6. RECEIVING & CONCATENATING DATA ---
         function handleIncomingData(data) {
