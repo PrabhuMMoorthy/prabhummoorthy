@@ -18,12 +18,12 @@
         .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; background: #fee2e2; color: #991b1b; }
         .connected { background: #dcfce7; color: #166534; }
         
-        /* QR Code Container Styling */
+        /* QR Code Layout */
         #qrcode-container { text-align: center; }
         #qrcode { display: flex; justify-content: center; margin: 12px 0; }
-        #reader { width: 100%; max-width: 320px; margin: 0 auto; border: none !important; }
+        #reader { width: 100%; max-width: 320px; margin: 0 auto; border: none !important; position: relative; }
         
-        /* File Progress Styling */
+        /* File Interface */
         progress { width: 100%; height: 16px; margin-top: 10px; border-radius: 8px; }
         #download-link { display: block; text-align: center; margin-top: 12px; background: #22c55e; color: white; padding: 10px; text-decoration: none; border-radius: 6px; font-weight: bold; }
         
@@ -43,15 +43,17 @@
     <div class="box" id="qrcode-container">
         <div>Network: <span id="status" class="status-badge">Initializing...</span></div>
         <div id="qrcode"></div>
-        <small style="color: #64748b;">Scan to link another device to this one at any time</small>
+        <small style="color: #64748b;">Your Permanent QR Code</small>
     </div>
 
     <div class="box" id="connection-setup">
         <h3>Connect to a Peer</h3>
-        <button id="start-scan-btn">📷 Scan Friend's QR Code</button>
+        <button id="start-scan-btn">📷 Open QR Camera Scanner</button>
+        <button id="stop-scan-btn" style="background: #dc2626; display: none;">❌ Close Camera / Reset</button>
         <div id="reader" style="display: none;"></div>
         
-        <input type="text" id="remote-id" placeholder="Or paste Share ID manually...">
+        <p style="margin: 15px 0; color: #777; text-align: center;">— OR MANUALLY TYPE ID —</p>
+        <input type="text" id="remote-id" placeholder="Paste Target Share ID here...">
         <button id="connect-btn" style="background: #475569;">Connect Manually</button>
     </div>
 
@@ -81,7 +83,6 @@
         let conn = null;
         let html5QrcodeScanner = null;
 
-        // File stream states
         let receivedChunks = [];
         let expectedSize = 0;
         let receivedSize = 0;
@@ -90,46 +91,61 @@
 
         const el = id => document.getElementById(id);
 
-        // --- 1. SETUP UNIQUE HOST ID & RENDER GENERATED QR ---
+        // --- 1. SET UP PEER ID & GENERATE QR ---
         peer.on('open', (id) => {
             el('status').textContent = "Awaiting Pairing";
             el('status').className = "status-badge";
             el('status').style.background = "#fef08a";
             el('status').style.color = "#854d0e";
             
-            // Build QR Code inside the dedicated top wrapper block
+            // Build permanent layout block
             new QRCode(el("qrcode"), { text: id, width: 160, height: 160 });
         });
 
-        // --- 2. CAMERA FEED CONTROLS ---
+        // --- 2. ADVANCED CAMERA REGISTRATION SYSTEM ---
         el('start-scan-btn').onclick = () => {
             el('start-scan-btn').style.display = "none";
+            el('stop-scan-btn').style.display = "block";
             el('reader').style.display = "block";
+            
             html5QrcodeScanner = new Html5Qrcode("reader");
             
             const onScanSuccess = (decodedText) => {
                 el('remote-id').value = decodedText;
                 stopScanner();
-                el('connect-btn').click();
+                el('connect-btn').click(); // Fire connection request automatically
             };
 
             html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 220 }, onScanSuccess)
-                .catch(() => { alert("Camera capture blocked. Enter ID manually."); stopScanner(); });
+                .catch(() => { 
+                    alert("Camera blocked. Enter ID manually."); 
+                    stopScanner(); 
+                });
         };
 
+        el('stop-scan-btn').onclick = stopScanner;
+
         function stopScanner() {
-            if (html5QrcodeScanner) {
+            if (html5QrcodeScanner && html5QrcodeScanner.isScanning) {
                 html5QrcodeScanner.stop().then(() => {
-                    el('reader').style.display = "none";
-                    el('start-scan-btn').style.display = "block";
-                }).catch(()=>{});
+                    cleanScannerDOM();
+                }).catch(() => { cleanScannerDOM(); });
+            } else {
+                cleanScannerDOM();
             }
         }
 
-        // --- 3. PEER PIPELINE REGISTRATION ---
+        function cleanScannerDOM() {
+            el('reader').style.display = "none";
+            el('stop-scan-btn').style.display = "none";
+            el('start-scan-btn').style.display = "block";
+            el('reader').innerHTML = ""; // Hard clear container artifacts
+        }
+
+        // --- 3. PERSISTENT COUPLING ROUTINES ---
         el('connect-btn').onclick = () => {
             const remoteId = el('remote-id').value.trim();
-            if (!remoteId) return alert("Please specify an target application ID.");
+            if (!remoteId) return alert("Please specify an application ID.");
             el('status').textContent = "Handshaking...";
             conn = peer.connect(remoteId, { label: 'p2p-pipe', reliable: true });
             setupConnectionHandlers();
@@ -146,26 +162,24 @@
                 el('status').textContent = "Paired Connected";
                 el('status').className = "status-badge connected";
                 
-                // Keep the QR area visible but hide the setup/scanning forms
+                // Keep the QR box intact but move everything smoothly into full interface
                 el('connection-setup').style.display = "none";
                 el('transfer-section').style.display = "block";
                 el('chat-section').style.display = "block";
                 
-                appendSystemMsg("Secure data pipeline opened.");
+                appendSystemMsg("Direct network pipeline opened successfully.");
             });
 
             conn.on('data', handleIncomingPayload);
-            conn.on('close', () => { alert("Peer dropped pipeline."); location.reload(); });
+            conn.on('close', () => { alert("Peer closed connection."); location.reload(); });
         }
 
-        // --- 4. BACKPRESSURE REGULATED FILE Uploader ---
+        // --- 4. BACKPRESSURE STREAM UPLOADER ---
         el('send-file-btn').onclick = async () => {
             const file = el('file-input').files[0];
-            if (!file) return alert("Choose a target transfer payload first.");
+            if (!file) return alert("Choose a payload file first.");
 
             el('progress-container').style.display = 'block';
-            
-            // Format an identifier payload so receiver can flag this transaction as a File
             conn.send(JSON.stringify({ type: 'FILE_META', name: file.name, size: file.size }));
 
             const reader = file.stream().getReader();
@@ -178,7 +192,7 @@
 
             async function sendNextChunks() {
                 while (true) {
-                    if (rawChannel.bufferedAmount > 1048576) return; // Halt reading stream on high backup buffer
+                    if (rawChannel.bufferedAmount > 1048576) return; 
 
                     if (!currentChunkArray || currentChunkOffset >= currentChunkArray.length) {
                         const { done, value } = await reader.read();
@@ -191,7 +205,7 @@
                     }
 
                     const chunk = currentChunkArray.slice(currentChunkOffset, currentChunkOffset + CHUNK_SIZE);
-                    conn.send(chunk);
+                    rawChannel.send(chunk);
 
                     currentChunkOffset += CHUNK_SIZE;
                     offset += chunk.length;
@@ -211,7 +225,6 @@
             const text = el('chat-input').value.trim();
             if (!text || !conn) return;
             
-            // Format payload to explicitly separate normal messages from file handshakes
             conn.send(JSON.stringify({ type: 'CHAT_TEXT', body: text }));
             appendChatMessage('me', text);
             el('chat-input').value = '';
@@ -219,9 +232,8 @@
         el('chat-send-btn').onclick = executeTextSend;
         el('chat-input').onkeydown = (e) => { if (e.key === 'Enter') executeTextSend(); };
 
-        // --- 6. MULTI-FORMAT DISPATCH RECEIVER ---
+        // --- 6. UNPACK HANDLERS ---
         function handleIncomingPayload(data) {
-            // Process Object Config Packets (Strings)
             if (typeof data === 'string') {
                 const packet = JSON.parse(data);
                 
@@ -240,7 +252,6 @@
                 return;
             }
 
-            // Process Raw Binary Buffers (File Bytes)
             receivedChunks.push(data);
             receivedSize += data.byteLength;
 
@@ -254,13 +265,12 @@
                 const downloadUrl = URL.createObjectURL(receivedBlob);
                 
                 el('incoming-file-box').innerHTML = `
-                    <a id=\"download-link\" href=\"${downloadUrl}\" download=\"${incomingFileName}\">💾 Save Received File</a>
+                    <a id="download-link" href="${downloadUrl}" download="${incomingFileName}">💾 Save Received File</a>
                 `;
                 appendSystemMsg(`Received file: ${incomingFileName}`);
             }
         }
 
-        // UI Text Render Engines
         function appendChatMessage(sender, text) {
             const wrap = el('chat-area');
             wrap.innerHTML += `<div class="msg ${sender}">${text}</div>`;
