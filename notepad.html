@@ -4,16 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Pro Code Editor</title>
-    <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- CodeMirror Stylesheets -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/tomorrow-night-eighties.min.css">
     
     <style>
-        /* Force CodeMirror to fill the entire container height */
+        /* Force CodeMirror to fill the exact height of its parent and scroll internally */
         .CodeMirror {
+            position: absolute !important;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             height: 100% !important;
             font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
             font-size: 14px !important;
@@ -53,7 +56,6 @@
 </head>
 <body class="bg-gray-900 text-gray-100 flex flex-col h-screen overflow-hidden select-none">
 
-    <!-- Header Navigation Controls -->
     <header class="bg-gray-800 border-b border-gray-700 px-4 py-3 flex flex-wrap items-center justify-between gap-3 shrink-0">
         <div class="flex items-center gap-3">
             <span class="text-lg font-bold text-emerald-400">⚡ CodeEdit Pro</span>
@@ -74,21 +76,17 @@
         </div>
     </header>
 
-    <!-- Workspace Viewport -->
-    <main class="flex-1 overflow-hidden relative">
+    <main class="flex-1 w-full h-full relative overflow-hidden">
         <textarea id="raw-textarea" class="hidden"></textarea>
     </main>
 
-    <!-- App Status Footer -->
     <footer class="bg-gray-800 border-t border-gray-700 px-4 py-1.5 flex justify-between text-xs text-gray-400 shrink-0">
         <div id="autoSaveStatus">Ready</div>
         <div id="editorStats">HTML Mode | 1 line</div>
     </footer>
 
-    <!-- CodeMirror Core JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
     
-    <!-- CodeMirror Language Mode Parsers -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/xml/xml.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/css/css.min.js"></script>
@@ -241,4 +239,3 @@
     </script>
 </body>
 </html>
-
