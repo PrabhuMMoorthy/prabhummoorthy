@@ -43,7 +43,8 @@
     <div class="box" id="qrcode-container">
         <div>Network: <span id="status" class="status-badge">Initializing...</span></div>
         <div id="qrcode"></div>
-        <small style="color: #64748b;">Your Permanent QR Code</small>
+        <small style="color: #64748b; display: block; margin-bottom: 8px;">Your Current Session QR Code</small>
+        <button id="copy-id-btn" style="background: #e2e8f0; color: #475569; font-size: 12px; padding: 6px; width: auto; margin: 0 auto;">📋 Copy Text ID</button>
     </div>
 
     <div class="box" id="connection-setup">
@@ -82,6 +83,7 @@
         const peer = new Peer();
         let conn = null;
         let html5QrcodeScanner = null;
+        let myCurrentId = "";
 
         let receivedChunks = [];
         let expectedSize = 0;
@@ -93,16 +95,22 @@
 
         // --- 1. SET UP PEER ID & GENERATE QR ---
         peer.on('open', (id) => {
+            myCurrentId = id;
             el('status').textContent = "Awaiting Pairing";
             el('status').className = "status-badge";
             el('status').style.background = "#fef08a";
             el('status').style.color = "#854d0e";
             
-            // Build permanent layout block
             new QRCode(el("qrcode"), { text: id, width: 160, height: 160 });
         });
 
-        // --- 2. ADVANCED CAMERA REGISTRATION SYSTEM ---
+        el('copy-id-btn').onclick = () => {
+            if (!myCurrentId) return;
+            navigator.clipboard.writeText(myCurrentId);
+            alert("ID copied to clipboard!");
+        };
+
+        // --- 2. CAMERA FEED CONTROLS ---
         el('start-scan-btn').onclick = () => {
             el('start-scan-btn').style.display = "none";
             el('stop-scan-btn').style.display = "block";
@@ -113,7 +121,7 @@
             const onScanSuccess = (decodedText) => {
                 el('remote-id').value = decodedText;
                 stopScanner();
-                el('connect-btn').click(); // Fire connection request automatically
+                el('connect-btn').click(); 
             };
 
             html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 220 }, onScanSuccess)
@@ -139,13 +147,13 @@
             el('reader').style.display = "none";
             el('stop-scan-btn').style.display = "none";
             el('start-scan-btn').style.display = "block";
-            el('reader').innerHTML = ""; // Hard clear container artifacts
+            el('reader').innerHTML = ""; 
         }
 
-        // --- 3. PERSISTENT COUPLING ROUTINES ---
+        // --- 3. CONNECTION ROUTINES ---
         el('connect-btn').onclick = () => {
             const remoteId = el('remote-id').value.trim();
-            if (!remoteId) return alert("Please specify an application ID.");
+            if (!remoteId) return alert("Please specify an ID.");
             el('status').textContent = "Handshaking...";
             conn = peer.connect(remoteId, { label: 'p2p-pipe', reliable: true });
             setupConnectionHandlers();
@@ -159,27 +167,29 @@
         function setupConnectionHandlers() {
             conn.on('open', () => {
                 stopScanner();
-                el('status').textContent = "Paired Connected";
+                el('status').textContent = "Connected";
                 el('status').className = "status-badge connected";
                 
-                // Keep the QR box intact but move everything smoothly into full interface
                 el('connection-setup').style.display = "none";
                 el('transfer-section').style.display = "block";
                 el('chat-section').style.display = "block";
                 
-                appendSystemMsg("Direct network pipeline opened successfully.");
+                appendSystemMsg("Direct network pipeline opened.");
             });
 
             conn.on('data', handleIncomingPayload);
             conn.on('close', () => { alert("Peer closed connection."); location.reload(); });
         }
 
-        // --- 4. BACKPRESSURE STREAM UPLOADER ---
+        // --- 4. STREAM UPLOADER (WITH EXPLICIT TERMINATION PACKET) ---
         el('send-file-btn').onclick = async () => {
             const file = el('file-input').files[0];
-            if (!file) return alert("Choose a payload file first.");
+            if (!file) return alert("Choose a file first.");
 
             el('progress-container').style.display = 'block';
+            el('incoming-file-box').innerHTML = ''; // Clear previous links
+            
+            // Send Metadata
             conn.send(JSON.stringify({ type: 'FILE_META', name: file.name, size: file.size }));
 
             const reader = file.stream().getReader();
@@ -197,7 +207,11 @@
                     if (!currentChunkArray || currentChunkOffset >= currentChunkArray.length) {
                         const { done, value } = await reader.read();
                         if (done) {
-                            el('progress-text').textContent = "Upload complete!";
+                            // Small delay ensures final data chunks completely clear the buffer
+                            setTimeout(() => {
+                                conn.send(JSON.stringify({ type: 'FILE_END' }));
+                                el('progress-text').textContent = "Sent successfully!";
+                            }, 300);
                             return;
                         }
                         currentChunkArray = value;
@@ -245,30 +259,31 @@
                     expectedSize = packet.size;
                     receivedSize = 0;
                     receivedChunks = [];
+                    el('incoming-file-box').innerHTML = ''; 
                     
                     el('progress-container').style.display = 'block';
                     el('progress-text').textContent = `Downloading: ${incomingFileName}`;
                 }
+                else if (packet.type === 'FILE_END') {
+                    el('progress-text').textContent = "Download complete!";
+                    const receivedBlob = new Blob(receivedChunks);
+                    const downloadUrl = URL.createObjectURL(receivedBlob);
+                    
+                    el('incoming-file-box').innerHTML = `
+                        <a id="download-link" href="${downloadUrl}" download="${incomingFileName}">💾 Save ${incomingFileName}</a>
+                    `;
+                    appendSystemMsg(`Received file: ${incomingFileName}`);
+                }
                 return;
             }
 
+            // Capture incoming binary array fragments
             receivedChunks.push(data);
             receivedSize += data.byteLength;
 
-            const percent = Math.round((receivedSize / expectedSize) * 100);
+            const percent = Math.min(Math.round((receivedSize / expectedSize) * 100), 99);
             el('progress-bar').value = percent;
             el('progress-text').textContent = `Receiving File: ${percent}%`;
-
-            if (receivedSize >= expectedSize) {
-                el('progress-text').textContent = "Download complete!";
-                const receivedBlob = new Blob(receivedChunks);
-                const downloadUrl = URL.createObjectURL(receivedBlob);
-                
-                el('incoming-file-box').innerHTML = `
-                    <a id="download-link" href="${downloadUrl}" download="${incomingFileName}">💾 Save Received File</a>
-                `;
-                appendSystemMsg(`Received file: ${incomingFileName}`);
-            }
         }
 
         function appendChatMessage(sender, text) {
