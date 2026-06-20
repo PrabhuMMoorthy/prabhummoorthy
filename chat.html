@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -34,11 +34,16 @@
         .msg.peer { background: #e2e8f0; color: #1e293b; align-self: flex-start; }
         .msg.sys { background: transparent; color: #64748b; font-size: 12px; font-style: italic; align-self: center; }
         .chat-input-wrapper { display: flex; gap: 6px; }
-    </style>
+
+        header { display:flex; align-items:center; justify-content:space-between; background:#fff; padding:12px 16px; border-radius:10px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom:16px; }
+        header h2 { margin:0; font-size:1.1rem; color:#1e293b; }
+        header #nav-toggle { color:#1e293b; }
+</style>
+    <script src="navigation.js" defer></script>
 </head>
 <body>
 
-    <h2>⚡ QR P2P Share & Chat</h2>
+    <header><h2>⚡ QR P2P Share & Chat</h2></header>
     
     <div class="box" id="qrcode-container">
         <div>Network: <span id="status" class="status-badge">Initializing...</span></div>
