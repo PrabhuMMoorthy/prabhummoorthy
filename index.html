@@ -774,6 +774,15 @@
       color: '#3b82f6'
     },
     {
+      id: 'expense',
+      name: 'Expense Tracker',
+      icon: '💸',
+      url: 'expense.html',
+      badge: null,
+      docked: false,
+      color: '#ff6b6b'
+    },
+    {
       id: 'quotes',
       name: 'Quote Maker',
       icon: '✏️',
@@ -999,99 +1008,98 @@
     const searchField = document.getElementById('search-field');
     searchField.value = '';
     searchField.focus();
-    filterAppsSearch();
+    populateAllAppsInSearchGrid();
   }
 
   function closeSearchDrawer() {
-    document.getElementById('search-drawer').classList.remove('open');
+    const drawer = document.getElementById('search-drawer');
+    drawer.classList.remove('open');
   }
 
-  function filterAppsSearch() {
-    const query = document.getElementById('search-field').value.toLowerCase().trim();
+  function populateAllAppsInSearchGrid() {
     const resultsGrid = document.getElementById('search-results-grid');
     resultsGrid.innerHTML = '';
 
     applications.forEach(app => {
-      if (!query || app.name.toLowerCase().includes(query)) {
-        const item = createAppItem(app);
-        resultsGrid.appendChild(item);
-      }
+      resultsGrid.appendChild(createAppItem(app));
     });
   }
 
-  // ── INTERACTIVE PHONE HARDWARE SIMULATION ──
-  function togglePower() {
-    const overlay = document.getElementById('screen-off');
-    isPhoneOn = !isPhoneOn;
-    
-    if (!isPhoneOn) {
-      overlay.classList.add('active');
-    } else {
-      overlay.classList.add('active');
-      // Simulated wake effect
-      setTimeout(() => {
-        overlay.classList.remove('active');
-      }, 150);
-    }
+  function filterAppsSearch() {
+    const searchField = document.getElementById('search-field');
+    const query = searchField.value.toLowerCase().trim();
+    const resultsGrid = document.getElementById('search-results-grid');
+    resultsGrid.innerHTML = '';
+
+    const filtered = applications.filter(app => 
+      app.name.toLowerCase().includes(query) || app.id.toLowerCase().includes(query)
+    );
+
+    filtered.forEach(app => {
+      resultsGrid.appendChild(createAppItem(app));
+    });
   }
 
-  // Volume simulation
-  function changeVolume(amount) {
-    if (!isPhoneOn) return;
-
-    currentVolume = Math.max(0, Math.min(100, currentVolume + amount));
-    localStorage.setItem('android-launcher-vol', currentVolume);
-
-    // Show HUD
-    const hud = document.getElementById('vol-hud-display');
-    const fill = document.getElementById('vol-hud-fill');
-    const icon = document.getElementById('vol-icon-type');
-
-    fill.style.height = `${currentVolume}%`;
-    icon.textContent = currentVolume === 0 ? '🔇' : currentVolume < 40 ? '🔉' : '🔊';
-
-    hud.classList.add('show');
-
-    // Reset HUD timer
-    if (volHudTimeout) clearTimeout(volHudTimeout);
-    volHudTimeout = setTimeout(() => {
-      hud.classList.remove('show');
-    }, 2000);
-  }
-
-  // ── SPLASH TRANSITION SCREEN & NAVIGATION ──
+  // ── APP LAUNCHER ──
   function launchApp(app) {
     if (!isPhoneOn) return;
 
-    const splash = document.getElementById('app-splash');
+    // Show splash
+    const splashScreen = document.getElementById('app-splash');
     const splashIcon = document.getElementById('splash-app-icon');
     const splashTitle = document.getElementById('splash-app-title');
-
-    // Populate splash loading values
+    
     splashIcon.textContent = app.icon;
-    splashIcon.style.background = `linear-gradient(135deg, ${app.color} 0%, rgba(0,0,0,0.5) 100%)`;
     splashTitle.textContent = app.name;
+    splashScreen.classList.add('active');
 
-    // Show Splash
-    splash.classList.add('active');
+    // Close search drawer if open
+    closeSearchDrawer();
 
-    // Dynamic Island camera punch hole zoom alert animation
-    const notch = document.getElementById('system-notch');
-    notch.style.width = '240px';
-    notch.style.height = '34px';
-
-    // Route direction delay
+    // Simulate load time then navigate
     setTimeout(() => {
       window.location.href = app.url;
-    }, 1000);
+    }, 1500);
   }
 
+  // ── HOME INDICATOR ──
   function goHome() {
-    // Closes overlays and brings user to base screen
     closeSearchDrawer();
-    const notch = document.getElementById('system-notch');
-    notch.style.width = '110px';
-    notch.style.height = '28px';
+    const splashScreen = document.getElementById('app-splash');
+    splashScreen.classList.remove('active');
+  }
+
+  // ── POWER BUTTON TOGGLE ──
+  function togglePower() {
+    isPhoneOn = !isPhoneOn;
+    const screenOffOverlay = document.getElementById('screen-off');
+    if (isPhoneOn) {
+      screenOffOverlay.classList.remove('active');
+    } else {
+      screenOffOverlay.classList.add('active');
+    }
+  }
+
+  // ── VOLUME CONTROLS ──
+  function changeVolume(delta) {
+    if (!isPhoneOn) return;
+
+    currentVolume = Math.max(0, Math.min(100, currentVolume + delta));
+    localStorage.setItem('android-launcher-vol', currentVolume);
+
+    // Show HUD
+    const volHud = document.getElementById('vol-hud-display');
+    const volFill = document.getElementById('vol-hud-fill');
+    const volIcon = document.getElementById('vol-icon-type');
+
+    volFill.style.height = currentVolume + '%';
+    volIcon.textContent = currentVolume > 0 ? '🔊' : '🔇';
+    
+    volHud.classList.add('show');
+    clearTimeout(volHudTimeout);
+    volHudTimeout = setTimeout(() => {
+      volHud.classList.remove('show');
+    }, 1500);
   }
 </script>
 
