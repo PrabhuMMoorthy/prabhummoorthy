@@ -10,6 +10,7 @@ const links = [
   { href: 'notepad.html', icon: '🗒️', text: 'Notepad++' },
   { href: 'comparator.html', icon: '🗒️', text: 'Text Comparator' },
   { href: 'loan.html', icon: '💰️', text: 'Loan Simulator' },
+  { href: 'expense.html', icon: '💸', text: 'Expense Tracker' },
   { href: 'chat.html', icon: '⚡', text: 'P2P Share & Chat' },
   { href: 'venmurasu-quote-reader.html', icon: '✍️', text: 'Venmurasu Quote Reader (Legacy)' }
 ];
