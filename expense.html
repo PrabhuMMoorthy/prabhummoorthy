@@ -34,9 +34,14 @@ select,input,textarea{outline:none;}
       </div>
       <h1 class="text-xl font-bold" id="hdr-title">Dashboard</h1>
     </div>
-    <div id="hdr-amount" class="text-right">
-      <p class="text-indigo-200 text-xs">Total Spent</p>
-      <p class="text-2xl font-bold" id="hdr-total">₹0</p>
+    <div class="flex items-center gap-3">
+      <div id="hdr-amount" class="text-right">
+        <p class="text-indigo-200 text-xs">Total Spent</p>
+        <p class="text-2xl font-bold" id="hdr-total">₹0</p>
+      </div>
+      <button onclick="showPage('settings')" id="hdr-settings-btn" class="w-9 h-9 flex items-center justify-center rounded-full bg-indigo-700 hover:bg-indigo-800 transition-colors flex-shrink-0" title="Settings">
+        <svg class="w-5 h-5 text-indigo-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
     </div>
   </div>
 </header>
@@ -291,10 +296,6 @@ select,input,textarea{outline:none;}
     <svg class="w-5 h-5 stroke-current" fill="none" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
     <span class="text-xs mt-1">Budget</span>
   </button>
-  <button onclick="showPage('settings')" class="nav-btn flex-1 flex flex-col items-center py-3 text-gray-400" data-page="settings">
-    <svg class="w-5 h-5 stroke-current" fill="none" stroke-width="2" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
-    <span class="text-xs mt-1">Settings</span>
-  </button>
 </nav>
 
 <div id="import-modal" class="fixed inset-0 modal-bg z-50 hidden" style="display:none">
@@ -444,7 +445,11 @@ async function showPage(name) {
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.page===name));
   const titles={dashboard:'Dashboard',add:'Add Expense',reports:'Reports',budget:'Budget',settings:'Settings'};
   document.getElementById('hdr-title').textContent=titles[name];
-  document.getElementById('hdr-amount').classList.toggle('hidden',name!=='dashboard');
+  const isSettings=name==='settings';
+  document.getElementById('hdr-amount').classList.toggle('hidden', isSettings || name!=='dashboard');
+  document.getElementById('hdr-month').parentElement.classList.toggle('hidden', isSettings);
+  document.getElementById('hdr-settings-btn').classList.toggle('bg-indigo-500', isSettings);
+  document.getElementById('hdr-settings-btn').classList.toggle('bg-indigo-700', !isSettings);
   if(name==='dashboard') await loadDashboard();
   if(name==='add') await loadCategoryDropdowns();
   if(name==='reports') await loadReports();
@@ -916,9 +921,43 @@ function toggleTransfer(i,checked) {
 function skipAllTransfers(){ importTransfers.forEach(r=>r._include=false); renderTransferReview(); }
 
 // ── Step 2 ────────────────────────────────────────────────────
-function goToPreview() {
+async function goToPreview() {
   previewFilter='';
-  previewRows=[...importAuto.map(r=>({...r})),...importTransfers.filter(r=>r._include).map(r=>({...r}))];
+  const candidates=[...importAuto.map(r=>({...r})),...importTransfers.filter(r=>r._include).map(r=>({...r}))];
+
+  // Build a frequency map of (date|amount|notes) counts already in DB
+  const allTxns = await db.transactions.toArray();
+  const dbCounts = {};
+  for(const t of allTxns){
+    const key=`${t.date}|${t.amount}|${(t.notes||'').trim()}`;
+    dbCounts[key]=(dbCounts[key]||0)+1;
+  }
+
+  // Compare file counts vs DB counts for each unique key
+  const fileCounts = {};
+  for(const r of candidates){
+    const key=`${r.date}|${r.amount}|${(r.notes||'').trim()}`;
+    fileCounts[key]=(fileCounts[key]||0)+1;
+  }
+
+  // Track how many of each key we've already "consumed" while iterating
+  const consumed = {};
+  for(const r of candidates){
+    const key=`${r.date}|${r.amount}|${(r.notes||'').trim()}`;
+    consumed[key]=(consumed[key]||0);
+    const alreadyInDB = dbCounts[key]||0;
+    const allowedNew = Math.max((fileCounts[key]||0) - alreadyInDB, 0);
+    if(consumed[key] < allowedNew){
+      r._duplicate=false;
+      r._include=true;
+    } else {
+      r._duplicate=true;
+      r._include=false;
+    }
+    consumed[key]++;
+  }
+
+  previewRows=candidates;
   showImportStep(2);
   renderPills();
   renderPreviewList();
@@ -942,21 +981,24 @@ function renderPreviewList() {
   const catOpts=importCats.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
   const visible=previewFilter ? previewRows.filter(r=>r.category===previewFilter) : previewRows;
   const selectedTotal=previewRows.filter(r=>r._include).length;
+  const dupTotal=previewRows.filter(r=>r._duplicate).length;
 
   document.getElementById('preview-count-label').textContent=
     previewFilter
-      ? `Showing ${visible.length} of ${previewRows.length} · ${selectedTotal} to import`
-      : `${previewRows.length} rows · ${selectedTotal} to import`;
+      ? `Showing ${visible.length} of ${previewRows.length} · ${selectedTotal} to import${dupTotal?` · ${dupTotal} duplicate(s) skipped`:''}`
+      : `${previewRows.length} rows · ${selectedTotal} to import${dupTotal?` · ${dupTotal} duplicate(s) skipped`:''}`;
 
   document.getElementById('preview-list').innerHTML = visible.length
     ? visible.map(r=>{
         const i=previewRows.indexOf(r);
-        return `<div class="flex items-center gap-2 px-3 py-2.5 ${r._include?'bg-white':'bg-gray-50 opacity-50'}">
+        const dupChip=r._duplicate?`<span class="chip" style="background:#fee2e2;color:#b91c1c;font-size:10px;">Duplicate</span>`:'';
+        return `<div class="flex items-center gap-2 px-3 py-2.5 ${r._include?'bg-white':'bg-gray-50 opacity-60'}">
           <input type="checkbox" ${r._include?'checked':''} onchange="togglePreview(${i},this.checked)"
             class="w-4 h-4 accent-indigo-600 flex-shrink-0"/>
-          <div class="flex-1 min-w-0">
+          <div class="flex-1 min-w-0 space-y-0.5">
             <p class="text-xs font-medium text-gray-800 break-words">${r.notes}</p>
             <p class="text-xs text-gray-400">${r.date} · ${fmt(r.amount)}</p>
+            ${dupChip}
           </div>
           <select onchange="previewRows[${i}].category=this.value;renderPills();"
             class="text-xs border border-gray-200 rounded-lg px-1.5 py-1 bg-white flex-shrink-0">
