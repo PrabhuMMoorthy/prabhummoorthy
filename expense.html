@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Expense Manager</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dexie/3.2.4/dexie.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+body{font-family:'Segoe UI',sans-serif;background:#f1f5f9;}
+.nav-btn.active{color:#6366f1;}
+.nav-btn.active svg{stroke:#6366f1;}
+.slide-up{animation:slideUp 0.2s ease;}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px;}
+.modal-bg{background:rgba(0,0,0,0.5);}
+.chip{display:inline-flex;align-items:center;gap:4px;background:#e0e7ff;color:#4338ca;border-radius:999px;padding:2px 10px;font-size:12px;}
+.pills-scroll::-webkit-scrollbar{display:none;}
+.pills-scroll{-ms-overflow-style:none;scrollbar-width:none;}
+select,input,textarea{outline:none;}
+</style>
+</head>
+<body class="max-w-lg mx-auto min-h-screen flex flex-col">
+
+<header class="bg-indigo-600 text-white px-4 pt-10 pb-4 sticky top-0 z-20">
+  <div class="flex justify-between items-center">
+    <div>
+      <div class="flex items-center gap-2 text-indigo-200 text-xs mb-0.5">
+        <button onclick="changeDashboardMonth(-1)" class="bg-indigo-700 hover:bg-indigo-800 px-1.5 py-0.5 rounded text-[10px] font-bold">◀</button>
+        <span id="hdr-month" class="font-medium text-white"></span>
+        <button onclick="changeDashboardMonth(1)" class="bg-indigo-700 hover:bg-indigo-800 px-1.5 py-0.5 rounded text-[10px] font-bold">▶</button>
+      </div>
+      <h1 class="text-xl font-bold" id="hdr-title">Dashboard</h1>
+    </div>
+    <div id="hdr-amount" class="text-right">
+      <p class="text-indigo-200 text-xs">Total Spent</p>
+      <p class="text-2xl font-bold" id="hdr-total">₹0</p>
+    </div>
+  </div>
+</header>
+
+<main class="flex-1 overflow-y-auto pb-20">
+
+  <div id="page-dashboard" class="page p-4 space-y-4 slide-up">
+    <div id="budget-bar-card" class="bg-white rounded-2xl p-4 shadow-sm hidden">
+      <div class="flex justify-between text-sm mb-1">
+        <span class="text-gray-500">Monthly Budget</span>
+        <span id="budget-bar-label" class="font-semibold text-indigo-600"></span>
+      </div>
+      <div class="w-full bg-gray-100 rounded-full h-3">
+        <div id="budget-bar-fill" class="h-3 rounded-full transition-all" style="width:0%"></div>
+      </div>
+      <p id="budget-bar-sub" class="text-xs text-gray-400 mt-1"></p>
+    </div>
+    <div class="bg-white rounded-2xl p-4 shadow-sm">
+      <h2 class="font-semibold text-gray-700 mb-3">This Month by Category</h2>
+      <div class="relative h-48"><canvas id="pie-chart"></canvas></div>
+      <div id="pie-legend" class="mt-3 grid grid-cols-2 gap-1 text-xs"></div>
+    </div>
+    <div class="bg-white rounded-2xl p-4 shadow-sm">
+      <div class="flex justify-between items-center mb-3">
+        <h2 class="font-semibold text-gray-700">Recent Transactions</h2>
+        <button onclick="showPage('reports')" class="text-xs text-indigo-500">See all</button>
+      </div>
+      <div id="recent-list" class="space-y-1"></div>
+    </div>
+  </div>
+
+  <div id="page-add" class="page p-4 hidden">
+    <div class="bg-white rounded-2xl p-4 shadow-sm space-y-4">
+      <h2 class="font-semibold text-gray-700 text-lg" id="form-title">Add Expense</h2>
+      <input type="hidden" id="edit-id"/>
+      <div>
+        <label class="text-xs text-gray-500 mb-1 block">Amount *</label>
+        <input id="f-amount" type="number" min="0" step="0.01" placeholder="0.00"
+          class="w-full border border-gray-200 rounded-xl px-4 py-3 text-xl font-bold text-indigo-600 bg-gray-50"/>
+      </div>
+      <div>
+        <label class="text-xs text-gray-500 mb-1 block">Date *</label>
+        <input id="f-date" type="date" class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50"/>
+      </div>
+      <div>
+        <label class="text-xs text-gray-500 mb-1 block">Category *</label>
+        <select id="f-category" onchange="loadSubcats()"
+          class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50">
+          <option value="">Select category</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-xs text-gray-500 mb-1 block">Subcategory</label>
+        <select id="f-subcat" class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50">
+          <option value="">None</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-xs text-gray-500 mb-1 block">Notes</label>
+        <textarea id="f-notes" rows="2" placeholder="Optional note..."
+          class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 resize-none"></textarea>
+      </div>
+      <button onclick="saveExpense()" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold text-base">Save Expense</button>
+      <button onclick="cancelEdit()" id="cancel-btn" class="w-full text-gray-400 py-2 text-sm hidden">Cancel</button>
+    </div>
+  </div>
+
+  <div id="page-reports" class="page p-4 space-y-4 hidden">
+    <div class="bg-white rounded-2xl p-4 shadow-sm space-y-3">
+      <div class="flex gap-1.5 overflow-x-auto pills-scroll py-0.5" id="r-preset-pills">
+        <button onclick="applyPillPreset('current-month')" id="btn-current-month" class="flex-shrink-0 text-xs px-3 py-1.5 rounded-full font-medium border border-indigo-600 bg-indigo-600 text-white transition-all">Current Month</button>
+        <button onclick="applyPillPreset('prev-month')" id="btn-prev-month" class="flex-shrink-0 text-xs px-3 py-1.5 rounded-full font-medium border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-all">◀ Prev Month</button>
+        <button onclick="applyPillPreset('last-3-months')" id="btn-last-3-months" class="flex-shrink-0 text-xs px-3 py-1.5 rounded-full font-medium border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-all">Last 3 M</button>
+        <button onclick="applyPillPreset('custom')" id="btn-custom" class="flex-shrink-0 text-xs px-3 py-1.5 rounded-full font-medium border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-all">Custom</button>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2" id="r-date-inputs">
+        <div><label class="text-xs text-gray-400 mb-0.5 block">From</label>
+          <input id="r-from" type="date" onchange="onManualDateChange()" class="w-full border border-gray-100 rounded-lg px-2.5 py-1.5 text-xs bg-gray-50"/></div>
+        <div><label class="text-xs text-gray-400 mb-0.5 block">To</label>
+          <input id="r-to" type="date" onchange="onManualDateChange()" class="w-full border border-gray-100 rounded-lg px-2.5 py-1.5 text-xs bg-gray-50"/></div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <select id="r-cat" onchange="loadReports()" class="w-full border border-gray-100 rounded-lg px-2.5 py-1.5 text-xs bg-gray-50">
+            <option value="">All Categories</option>
+          </select>
+        </div>
+        <div>
+          <select id="r-sort" onchange="loadReports()" class="w-full border border-gray-100 rounded-lg px-2.5 py-1.5 text-xs bg-gray-50">
+            <option value="date-desc">Newest First</option>
+            <option value="date-asc">Oldest First</option>
+            <option value="amt-desc">Amount: High to Low</option>
+            <option value="amt-asc">Amount: Low to High</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="relative flex items-center">
+        <input id="r-search" type="text" oninput="loadReports()" placeholder="Search transactions..." class="w-full border border-gray-100 rounded-lg pl-8 pr-3 py-1.5 text-xs bg-gray-50"/>
+        <span class="absolute left-2.5 text-gray-400 text-xs">🔍</span>
+      </div>
+    </div>
+    
+    <div class="bg-white rounded-2xl p-4 shadow-sm">
+      <h2 class="font-semibold text-gray-700 mb-3">6-Month Trend</h2>
+      <div class="relative h-44"><canvas id="bar-chart"></canvas></div>
+    </div>
+    <div class="bg-white rounded-2xl p-4 shadow-sm">
+      <div class="flex justify-between items-center mb-3">
+        <h2 class="font-semibold text-gray-700">Transactions</h2>
+        <span id="r-total" class="text-sm font-bold text-indigo-600"></span>
+      </div>
+      <div id="report-list" class="space-y-1"></div>
+    </div>
+    <div class="bg-white rounded-2xl p-4 shadow-sm space-y-2">
+      <h2 class="font-semibold text-gray-700 mb-1">Data</h2>
+      <button onclick="exportCSV()" class="w-full border border-indigo-300 text-indigo-600 py-2 rounded-xl text-sm font-medium">⬇ Export CSV</button>
+      <label class="w-full border border-gray-300 text-gray-600 py-2 rounded-xl text-sm font-medium flex items-center justify-center cursor-pointer">
+        ⬆ Import CSV<input type="file" accept=".csv" onchange="importCSV(event)" class="hidden"/>
+      </label>
+      <label class="w-full border border-green-400 text-green-700 py-2 rounded-xl text-sm font-medium flex items-center justify-center cursor-pointer">
+        📊 Import Paytm XLSX<input type="file" accept=".xlsx,.xls" onchange="startPaytmImport(event)" class="hidden"/>
+      </label>
+    </div>
+  </div>
+
+  <div id="page-budget" class="page p-4 space-y-4 hidden">
+    <div class="bg-white rounded-2xl p-4 shadow-sm space-y-3">
+      <h2 class="font-semibold text-gray-700">Monthly Overall Budget</h2>
+      <div class="flex gap-2">
+        <input id="b-overall" type="number" placeholder="Overall limit"
+          class="flex-1 border border-gray-200 rounded-xl px-4 py-3 bg-gray-50"/>
+        <button onclick="saveOverallBudget()" class="bg-indigo-600 text-white px-4 rounded-xl font-medium">Save</button>
+      </div>
+    </div>
+    <div class="bg-white rounded-2xl p-4 shadow-sm space-y-3">
+      <h2 class="font-semibold text-gray-700">Per Category Budget</h2>
+      <div id="cat-budget-list" class="space-y-3"></div>
+    </div>
+    <div class="bg-white rounded-2xl p-4 shadow-sm space-y-3">
+      <h2 class="font-semibold text-gray-700">Manage Categories & Subcategories</h2>
+      <div class="flex gap-2">
+        <input id="new-cat" type="text" placeholder="New category name"
+          class="flex-1 border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 text-sm"/>
+        <button onclick="addCategory()" class="bg-indigo-600 text-white px-4 rounded-xl font-medium text-sm">Add</button>
+      </div>
+      <div id="cat-manage-list" class="space-y-3"></div>
+    </div>
+  </div>
+
+  <div id="page-settings" class="page p-4 space-y-4 hidden text-sm">
+    <div class="bg-white rounded-2xl p-4 shadow-sm space-y-3">
+      <h2 class="font-semibold text-gray-700">Preferences</h2>
+      <div>
+        <label class="text-xs text-gray-500 mb-1 block">Global Currency Symbol</label>
+        <select id="s-currency" onchange="updateCurrencySymbol()" class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 text-sm">
+          <option value="₹">₹ (INR)</option>
+          <option value="$">$ (USD)</option>
+          <option value="€">€ (EUR)</option>
+          <option value="£">£ (GBP)</option>
+          <option value="¥">¥ (JPY)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-2xl p-4 shadow-sm space-y-4">
+      <div class="flex items-center justify-between border-b border-gray-50 pb-2">
+        <div>
+          <h2 class="font-semibold text-gray-700">Intelligent Import Rules</h2>
+          <p class="text-[11px] text-gray-400 mt-0.5">Automate Paytm row parsing based on historical categorizations.</p>
+        </div>
+        <button onclick="trainImportRules()" class="px-3 py-1.5 bg-indigo-600 text-white text-xs font-semibold rounded-xl hover:bg-indigo-700 transition flex items-center gap-1 shadow-sm">
+          🔄 Train Engine
+        </button>
+      </div>
+
+      <div class="bg-gray-50 rounded-xl p-3 space-y-2 border border-gray-100">
+        <p class="text-xs font-semibold text-gray-600">Create Custom Manual Rule</p>
+        <div class="space-y-2">
+          <input id="rule-keyword" type="text" placeholder="Keyword or description (e.g. Zomato, Apollo)" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs bg-white"/>
+          <div class="grid grid-cols-2 gap-2">
+            <select id="rule-category" onchange="loadSettingsRuleSubcats()" class="border border-gray-200 rounded-lg px-2 py-2 text-xs bg-white">
+              <option value="">Select Category</option>
+            </select>
+            <select id="rule-subcategory" class="border border-gray-200 rounded-lg px-2 py-2 text-xs bg-white">
+              <option value="">Select Subcategory</option>
+            </select>
+          </div>
+          <button onclick="addManualRule()" class="w-full bg-indigo-50 text-indigo-600 border border-indigo-200 text-xs font-semibold py-1.5 rounded-lg hover:bg-indigo-100 transition">
+            ➕ Add Rule Pattern
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <p class="text-xs font-semibold text-gray-600 mb-2">Active Rules Matrix</p>
+        <div class="overflow-hidden border border-gray-100 rounded-xl max-h-60 overflow-y-auto">
+          <table class="min-w-full divide-y divide-gray-100 text-xs text-left">
+            <thead class="bg-gray-50 text-gray-400 text-[10px] uppercase font-bold sticky top-0 z-10">
+              <tr>
+                <th class="px-3 py-2">Pattern Keyword</th>
+                <th class="px-3 py-2">Auto Destination</th>
+                <th class="px-3 py-2 text-center">Type</th>
+                <th class="px-3 py-2 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="rules-table-body" class="divide-y divide-gray-50 bg-white text-gray-700">
+              </tbody>
+          </table>
+          <div id="rules-empty-state" class="text-center p-4 text-xs text-gray-400 hidden">
+            No categorization rules saved yet. Tap "Train Engine" to run automatic background detection.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-2xl p-4 shadow-sm space-y-2">
+      <h2 class="font-semibold text-gray-700 mb-1">Full Database Backup</h2>
+      <p class="text-xs text-gray-400 mb-2">Export or restore all custom categories, transactions, and budgets in a single JSON backup file.</p>
+      <button onclick="exportJSONBackup()" class="w-full border border-indigo-300 text-indigo-600 py-2 rounded-xl text-sm font-medium">⬇ Export JSON Backup</button>
+      <label class="w-full border border-gray-300 text-gray-600 py-2 rounded-xl text-sm font-medium flex items-center justify-center cursor-pointer">
+        ⬆ Restore JSON Backup<input type="file" accept=".json" onchange="importJSONBackup(event)" class="hidden"/>
+      </label>
+    </div>
+    <div class="bg-white rounded-2xl p-4 shadow-sm space-y-2 border border-red-100">
+      <h2 class="font-semibold text-red-600 mb-1">Danger Zone</h2>
+      <p class="text-xs text-gray-400 mb-2">Permanently erase database tables and reset configuration back to defaults.</p>
+      <button onclick="factoryResetApp()" class="w-full bg-red-500 text-white py-2 rounded-xl text-sm font-medium hover:bg-red-600 transition-colors">⚠️ Reset All Data</button>
+    </div>
+  </div>
+
+</main>
+
+<nav class="fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-white border-t border-gray-100 flex z-20 shadow-lg">
+  <button onclick="showPage('dashboard')" class="nav-btn active flex-1 flex flex-col items-center py-3 text-gray-400" data-page="dashboard">
+    <svg class="w-5 h-5 stroke-current" fill="none" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    <span class="text-xs mt-1">Dashboard</span>
+  </button>
+  <button onclick="showPage('add')" class="nav-btn flex-1 flex flex-col items-center py-3 text-gray-400" data-page="add">
+    <div class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center -mt-5 shadow-lg">
+      <svg class="w-6 h-6" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+    </div>
+    <span class="text-xs mt-1 text-gray-400">Add</span>
+  </button>
+  <button onclick="showPage('reports')" class="nav-btn flex-1 flex flex-col items-center py-3 text-gray-400" data-page="reports">
+    <svg class="w-5 h-5 stroke-current" fill="none" stroke-width="2" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 4-6"/></svg>
+    <span class="text-xs mt-1">Reports</span>
+  </button>
+  <button onclick="showPage('budget')" class="nav-btn flex-1 flex flex-col items-center py-3 text-gray-400" data-page="budget">
+    <svg class="w-5 h-5 stroke-current" fill="none" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+    <span class="text-xs mt-1">Budget</span>
+  </button>
+  <button onclick="showPage('settings')" class="nav-btn flex-1 flex flex-col items-center py-3 text-gray-400" data-page="settings">
+    <svg class="w-5 h-5 stroke-current" fill="none" stroke-width="2" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+    <span class="text-xs mt-1">Settings</span>
+  </button>
+</nav>
+
+<div id="import-modal" class="fixed inset-0 modal-bg z-50 hidden" style="display:none">
+  <div class="absolute inset-0" onclick="closeImportModal()"></div>
+  <div class="absolute bottom-0 left-0 right-0 max-w-lg mx-auto bg-white rounded-t-3xl flex flex-col" style="height:88vh">
+
+    <div class="px-4 pt-4 pb-2 border-b border-gray-100 flex-shrink-0">
+      <div class="flex justify-between items-center mb-2">
+        <h2 class="font-bold text-gray-800 text-base" id="import-modal-title">Import Paytm Statement</h2>
+        <button onclick="closeImportModal()" class="text-gray-400 text-xl w-8 h-8 flex items-center justify-center">✕</button>
+      </div>
+      <div class="flex gap-1">
+        <div class="h-1 flex-1 rounded-full" id="step-bar-1" style="background:#6366f1"></div>
+        <div class="h-1 flex-1 rounded-full bg-gray-200" id="step-bar-2"></div>
+        <div class="h-1 flex-1 rounded-full bg-gray-200" id="step-bar-3"></div>
+      </div>
+    </div>
+
+    <div id="import-step-1" class="flex-col flex-1 overflow-hidden" style="display:none">
+      <div class="px-4 py-2 bg-yellow-50 border-b border-yellow-100 flex-shrink-0 flex items-center justify-between">
+        <p class="text-xs text-yellow-800"><strong id="tr-count">0</strong> money transfers — decide each</p>
+        <button onclick="skipAllTransfers()" class="text-xs text-red-500 font-medium border border-red-200 px-2 py-1 rounded-lg">Skip All</button>
+      </div>
+      <div id="transfer-review-list" class="overflow-y-auto flex-1 divide-y divide-gray-100"></div>
+      <div class="p-3 border-t border-gray-100 flex-shrink-0">
+        <button onclick="goToPreview()" class="w-full bg-indigo-600 text-white py-3 rounded-xl text-sm font-semibold">Next: Full Preview →</button>
+      </div>
+    </div>
+
+    <div id="import-step-2" class="flex-col flex-1 overflow-hidden" style="display:none">
+      <div class="px-3 pt-2 pb-1 border-b border-gray-100 flex-shrink-0">
+        <div id="preview-filter-pills" class="flex gap-1.5 overflow-x-auto pills-scroll pb-1"></div>
+        <p id="preview-count-label" class="text-xs text-gray-400 mt-1"></p>
+      </div>
+      <div id="preview-list" class="overflow-y-auto flex-1 divide-y divide-gray-100"></div>
+      <div class="p-3 border-t border-gray-100 flex-shrink-0 flex gap-2">
+        <button onclick="backToTransfers()" class="border border-gray-300 text-gray-600 py-3 px-4 rounded-xl text-sm">← Back</button>
+        <button onclick="confirmImport()" id="confirm-import-btn" class="flex-1 bg-green-600 text-white py-3 rounded-xl text-sm font-semibold">Import</button>
+      </div>
+    </div>
+
+    <div id="import-step-3" class="flex-col flex-1 items-center justify-center p-8" style="display:none">
+      <div class="text-center">
+        <div class="text-6xl mb-4">✅</div>
+        <h3 class="text-xl font-bold text-gray-800 mb-2" id="import-done-msg"></h3>
+        <p class="text-gray-500 text-sm mb-6">Review and adjust them in Reports.</p>
+        <button onclick="closeImportModal()" class="bg-indigo-600 text-white px-8 py-3 rounded-xl font-semibold">Done</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="del-modal" class="fixed inset-0 modal-bg z-50 items-center justify-center hidden">
+  <div class="bg-white rounded-2xl p-6 mx-6 shadow-xl">
+    <h3 class="font-bold text-lg mb-2">Delete Expense?</h3>
+    <p class="text-gray-500 text-sm mb-5">This action cannot be undone.</p>
+    <div class="flex gap-3">
+      <button onclick="closeDelModal()" class="flex-1 border border-gray-200 py-2 rounded-xl text-gray-600">Cancel</button>
+      <button onclick="confirmDelete()" class="flex-1 bg-red-500 text-white py-2 rounded-xl font-semibold">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="fixed bottom-24 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-sm px-5 py-2 rounded-full shadow-lg opacity-0 transition-opacity z-50 pointer-events-none whitespace-nowrap"></div>
+
+<script>
+// ─── DB (BUMPED VERSION TO SUPPORT INTELLIGENT RULE STORAGE MAPPING) ───
+const db = new Dexie('ExpenseDB');
+db.version(1).stores({
+  transactions: '++id,date,category',
+  categories: '++id,name',
+  budgets: '++id,month'
+});
+db.version(2).stores({
+  transactions: '++id,date,category',
+  categories: '++id,name',
+  budgets: '++id,month',
+  importRules: '++id,&keyword,category,subcategory,type'
+});
+
+const DEFAULT_CATS = [
+  {name:'Food',subcategories:['Groceries','Restaurant','Snacks']},
+  {name:'Transport',subcategories:['Fuel','Auto/Cab','Bus/Train','Metro']},
+  {name:'Bills',subcategories:['Electricity','Water','Internet','Phone']},
+  {name:'Shopping',subcategories:['Clothing','Electronics','Home']},
+  {name:'Health',subcategories:['Medicine','Doctor','Gym']},
+  {name:'Education',subcategories:['School','Books','Coaching','Fees']},
+  {name:'Entertainment',subcategories:['Movies','Games','Subscriptions']},
+  {name:'Others',subcategories:['Miscellaneous','Financial Services']},
+];
+
+const TAG_MAP = {
+  '#🥘 Food':          {category:'Food',       subcategory:'Restaurant'},
+  '#🛒 Groceries':     {category:'Food',       subcategory:'Groceries'},
+  '#✈️ Travel':        {category:'Transport',  subcategory:'Metro'},
+  '#🛍 Shopping':      {category:'Shopping',   subcategory:''},
+  '#🧾 Bill Payments': {category:'Bills',      subcategory:'Electricity'},
+  '#📚 Education':     {category:'Education',  subcategory:'Fees'},
+  '#🎈 Entertainment': {category:'Entertainment',subcategory:'Movies'},
+  '#🔄 Miscellaneous': {category:'Others',     subcategory:'Miscellaneous'},
+  '#🏦 Financial Services':{category:'Others', subcategory:'Financial Services'},
+  '#💵 Money Transfer':{category:'Others',     subcategory:''},
+};
+const SKIP_TAGS = ['Self-Transfer','Money Received'];
+
+let pieChart=null, barChart=null, pendingDeleteId=null, currentPage='dashboard';
+let importAuto=[], importTransfers=[], importCats=[], previewRows=[], previewFilter='';
+
+// Global tracker variables for views
+let dashboardDate = new Date();
+let reportsReferenceDate = new Date(); 
+let selectedPreset = 'current-month';
+
+const SYSTEM_COLORS = ['#6366f1','#f59e0b','#10b981','#f43f5e','#3b82f6','#8b5cf6','#ec4899','#14b8a6','#f97316','#06b6d4','#84cc16','#a855f7','#64748b','#b45309','#047857','#1d4ed8','#be123c'];
+
+function getCategoryColor(categoryName) {
+  const cc={Food:'#f59e0b',Transport:'#3b82f6',Bills:'#ef4444',Shopping:'#ec4899',Health:'#10b981',Education:'#8b5cf6',Entertainment:'#f97316',Others:'#6b7280'};
+  if (cc[categoryName]) return cc[categoryName];
+  let hash = 0;
+  for (let i = 0; i < categoryName.length; i++) {
+    hash = categoryName.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const idx = Math.abs(hash) % SYSTEM_COLORS.length;
+  return SYSTEM_COLORS[idx];
+}
+
+// ─── Init ─────────────────────────────────────────────────────
+async function init() {
+  const count = await db.categories.count();
+  if(!count) await db.categories.bulkAdd(DEFAULT_CATS);
+  setDefaultDates();
+  applyPillPreset('current-month'); 
+  await showPage('dashboard');
+}
+
+function setDefaultDates() {
+  const now=new Date(),y=now.getFullYear(),m=String(now.getMonth()+1).padStart(2,'0'),d=String(now.getDate()).padStart(2,'0');
+  document.getElementById('f-date').value=`${y}-${m}-${d}`;
+}
+
+// ─── Navigation ───────────────────────────────────────────────
+async function showPage(name) {
+  currentPage=name;
+  document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
+  document.getElementById('page-'+name).classList.remove('hidden');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.page===name));
+  const titles={dashboard:'Dashboard',add:'Add Expense',reports:'Reports',budget:'Budget',settings:'Settings'};
+  document.getElementById('hdr-title').textContent=titles[name];
+  document.getElementById('hdr-amount').classList.toggle('hidden',name!=='dashboard');
+  if(name==='dashboard') await loadDashboard();
+  if(name==='add') await loadCategoryDropdowns();
+  if(name==='reports') await loadReports();
+  if(name==='budget') await loadBudget();
+  if(name==='settings') await loadSettings();
+}
+
+// ─── Dashboard Month Change ──────────────────────────────────
+async function changeDashboardMonth(direction) {
+  dashboardDate.setMonth(dashboardDate.getMonth() + direction);
+  await loadDashboard();
+}
+
+// ─── Dashboard ────────────────────────────────────────────────
+async function loadDashboard() {
+  const y=dashboardDate.getFullYear(),m=String(dashboardDate.getMonth()+1).padStart(2,'0');
+  const from=`${y}-${m}-01`,to=`${y}-${m}-31`;
+  document.getElementById('hdr-month').textContent=dashboardDate.toLocaleString('default',{month:'long',year:'numeric'});
+  const txns=await db.transactions.where('date').between(from,to,true,true).toArray();
+  const total=txns.reduce((s,t)=>s+t.amount,0);
+  document.getElementById('hdr-total').textContent=fmt(total);
+
+  const targetBudgetMonth = `${y}-${m}`;
+  const budget = await db.budgets.where('month').equals(targetBudgetMonth).first();
+
+  const bbCard=document.getElementById('budget-bar-card');
+  if(budget?.overall){
+    bbCard.classList.remove('hidden');
+    const pct=Math.min((total/budget.overall)*100,100);
+    const fill=document.getElementById('budget-bar-fill');
+    fill.style.width=pct+'%';
+    fill.className='h-3 rounded-full transition-all '+(pct>90?'bg-red-500':pct>70?'bg-yellow-400':'bg-indigo-500');
+    document.getElementById('budget-bar-label').textContent=`${fmt(total)} / ${fmt(budget.overall)}`;
+    document.getElementById('budget-bar-sub').textContent=`${fmt(budget.overall-total)} remaining`;
+  } else bbCard.classList.add('hidden');
+
+  const catMap={};
+  txns.forEach(t=>catMap[t.category]=(catMap[t.category]||0)+t.amount);
+  const cats=Object.keys(catMap),vals=cats.map(c=>catMap[c]);
+  
+  const dynamicColors = cats.map(c => getCategoryColor(c));
+
+  if(pieChart) pieChart.destroy();
+  if(cats.length){
+    pieChart=new Chart(document.getElementById('pie-chart'),{
+      type:'doughnut',
+      data:{labels:cats,datasets:[{data:vals,backgroundColor:dynamicColors,borderWidth:0}]},
+      options:{plugins:{legend:{display:false}},cutout:'65%',responsive:true,maintainAspectRatio:false}
+    });
+    document.getElementById('pie-legend').innerHTML=cats.map((c,i)=>`
+      <div class="flex items-center gap-1">
+        <span class="w-2.5 h-2.5 rounded-full" style="background:${dynamicColors[i]}"></span>
+        <span class="text-gray-600 truncate">${c}</span>
+        <span class="ml-auto font-medium">${fmt(vals[i])}</span>
+      </div>`).join('');
+  } else {
+    document.getElementById('pie-legend').innerHTML='<p class="text-gray-400 text-xs text-center col-span-2 py-4">No allocations recorded</p>';
+  }
+
+  const recent=[...txns].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8);
+  document.getElementById('recent-list').innerHTML=recent.length
+    ? recent.map(t=>txnRow(t)).join('')
+    : '<p class="text-gray-400 text-sm text-center py-4">No expenses this month</p>';
+}
+
+// ─── Add / Edit ───────────────────────────────────────────────
+async function loadCategoryDropdowns() {
+  const cats=await db.categories.toArray();
+  const sel=document.getElementById('f-category'),cur=sel.value;
+  sel.innerHTML='<option value="">Select category</option>'+cats.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
+  if(cur) sel.value=cur;
+  await loadSubcats();
+}
+
+async function loadSubcats() {
+  const catName=document.getElementById('f-category').value;
+  const cats=await db.categories.toArray();
+  const cat=cats.find(c=>c.name===catName);
+  const sel=document.getElementById('f-subcat');
+  sel.innerHTML='<option value="">None</option>';
+  if(cat?.subcategories?.length) sel.innerHTML+=cat.subcategories.map(s=>`<option value="${s}">${s}</option>`).join('');
+}
+
+async function saveExpense() {
+  const amount=parseFloat(document.getElementById('f-amount').value);
+  const date=document.getElementById('f-date').value;
+  const category=document.getElementById('f-category').value;
+  if(!amount||amount<=0) return showToast('Enter a valid amount');
+  if(!date) return showToast('Select a date');
+  if(!category) return showToast('Select a category');
+  const rec={amount,date,category,subcategory:document.getElementById('f-subcat').value,notes:document.getElementById('f-notes').value.trim()};
+  const editId=document.getElementById('edit-id').value;
+  if(editId){await db.transactions.update(parseInt(editId),rec);showToast('Updated!');}
+  else{await db.transactions.add(rec);showToast('Saved!');}
+  resetForm(); await showPage('dashboard');
+}
+
+function resetForm() {
+  ['f-amount','f-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-category').value='';
+  document.getElementById('f-subcat').innerHTML='<option value="">None</option>';
+  document.getElementById('edit-id').value='';
+  document.getElementById('form-title').textContent='Add Expense';
+  document.getElementById('cancel-btn').classList.add('hidden');
+  const now=new Date(),y=now.getFullYear(),m=String(now.getMonth()+1).padStart(2,'0'),d=String(now.getDate()).padStart(2,'0');
+  document.getElementById('f-date').value=`${y}-${m}-${d}`;
+}
+
+async function editExpense(id) {
+  const t=await db.transactions.get(id); if(!t) return;
+  await showPage('add'); await loadCategoryDropdowns();
+  document.getElementById('edit-id').value=id;
+  document.getElementById('f-amount').value=t.amount;
+  document.getElementById('f-date').value=t.date;
+  document.getElementById('f-category').value=t.category;
+  await loadSubcats();
+  document.getElementById('f-subcat').value=t.subcategory||'';
+  document.getElementById('f-notes').value=t.notes||'';
+  document.getElementById('form-title').textContent='Edit Expense';
+  document.getElementById('cancel-btn').classList.remove('hidden');
+}
+
+function cancelEdit(){resetForm();showPage('dashboard');}
+
+// ─── Delete ───────────────────────────────────────────────────
+function deleteExpense(id){pendingDeleteId=id;document.getElementById('del-modal').classList.remove('hidden');document.getElementById('del-modal').style.display='flex';}
+function closeDelModal(){pendingDeleteId=null;document.getElementById('del-modal').classList.add('hidden');document.getElementById('del-modal').style.display='';}
+async function confirmDelete() {
+  if(!pendingDeleteId) return;
+  await db.transactions.delete(pendingDeleteId);
+  closeDelModal(); showToast('Deleted');
+  if(currentPage==='dashboard') await loadDashboard(); else await loadReports();
+}
+
+// ─── Pill Presets Navigation Engine ──────────────────────────
+function applyPillPreset(preset) {
+  selectedPreset = preset;
+  
+  const pills = ['current-month', 'prev-month', 'last-3-months', 'custom'];
+  pills.forEach(p => {
+    const el = document.getElementById('btn-' + p);
+    if(p === preset) {
+      el.className = "flex-shrink-0 text-xs px-3 py-1.5 rounded-full font-medium border border-indigo-600 bg-indigo-600 text-white transition-all";
+    } else {
+      el.className = "flex-shrink-0 text-xs px-3 py-1.5 rounded-full font-medium border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-all";
+    }
+  });
+
+  const format = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+  if (preset === 'current-month') {
+    reportsReferenceDate = new Date(); 
+    const fromDate = new Date(reportsReferenceDate.getFullYear(), reportsReferenceDate.getMonth(), 1);
+    const toDate = new Date(reportsReferenceDate.getFullYear(), reportsReferenceDate.getMonth() + 1, 0);
+    document.getElementById('r-from').value = format(fromDate);
+    document.getElementById('r-to').value = format(toDate);
+    document.getElementById('btn-prev-month').textContent = "◀ Prev Month";
+  } 
+  else if (preset === 'prev-month') {
+    reportsReferenceDate.setMonth(reportsReferenceDate.getMonth() - 1);
+    const fromDate = new Date(reportsReferenceDate.getFullYear(), reportsReferenceDate.getMonth(), 1);
+    const toDate = new Date(reportsReferenceDate.getFullYear(), reportsReferenceDate.getMonth() + 1, 0);
+    document.getElementById('r-from').value = format(fromDate);
+    document.getElementById('r-to').value = format(toDate);
+    
+    const labelMonth = reportsReferenceDate.toLocaleString('default', { month: 'short' });
+    document.getElementById('btn-prev-month').textContent = `◀ Skip (${labelMonth})`;
+  } 
+  else if (preset === 'last-3-months') {
+    reportsReferenceDate = new Date();
+    const fromDate = new Date(reportsReferenceDate.getFullYear(), reportsReferenceDate.getMonth() - 2, 1);
+    const toDate = new Date(reportsReferenceDate.getFullYear(), reportsReferenceDate.getMonth() + 1, 0);
+    document.getElementById('r-from').value = format(fromDate);
+    document.getElementById('r-to').value = format(toDate);
+    document.getElementById('btn-prev-month').textContent = "◀ Prev Month";
+  }
+
+  loadReports();
+}
+
+function onManualDateChange() {
+  selectedPreset = 'custom';
+  const pills = ['current-month', 'prev-month', 'last-3-months', 'custom'];
+  pills.forEach(p => {
+    document.getElementById('btn-' + p).className = (p === 'custom') 
+      ? "flex-shrink-0 text-xs px-3 py-1.5 rounded-full font-medium border border-indigo-600 bg-indigo-600 text-white transition-all"
+      : "flex-shrink-0 text-xs px-3 py-1.5 rounded-full font-medium border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-all";
+  });
+  document.getElementById('btn-prev-month').textContent = "◀ Prev Month";
+  loadReports();
+}
+
+// ─── Reports ──────────────────────────────────────────────────
+async function loadReports() {
+  const cats=await db.categories.toArray();
+  const rcat=document.getElementById('r-cat'),prev=rcat.value;
+  rcat.innerHTML='<option value="">All Categories</option>'+cats.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
+  rcat.value=prev;
+  
+  const from=document.getElementById('r-from').value,to=document.getElementById('r-to').value;
+  const catFilter=document.getElementById('r-cat').value;
+  const sortType=document.getElementById('r-sort').value;
+  const searchQuery=document.getElementById('r-search').value.toLowerCase().trim();
+  
+  if(!from||!to) return;
+  let txns=await db.transactions.where('date').between(from,to,true,true).toArray();
+  
+  if(catFilter) txns=txns.filter(t=>t.category===catFilter);
+  
+  if(searchQuery) {
+    txns=txns.filter(t => 
+      (t.notes || '').toLowerCase().includes(searchQuery) ||
+      (t.category || '').toLowerCase().includes(searchQuery) ||
+      (t.subcategory || '').toLowerCase().includes(searchQuery)
+    );
+  }
+  
+  if(sortType === 'date-desc') {
+    txns.sort((a,b)=>b.date.localeCompare(a.date));
+  } else if(sortType === 'date-asc') {
+    txns.sort((a,b)=>a.date.localeCompare(b.date));
+  } else if(sortType === 'amt-desc') {
+    txns.sort((a,b)=>b.amount - a.amount);
+  } else if(sortType === 'amt-asc') {
+    txns.sort((a,b)=>a.amount - b.amount);
+  }
+  
+  document.getElementById('r-total').textContent=fmt(txns.reduce((s,t)=>s+t.amount,0));
+  document.getElementById('report-list').innerHTML=txns.length
+    ? txns.map(t=>txnRow(t)).join('')
+    : '<p class="text-gray-400 text-sm text-center py-4">No transactions matched filters</p>';
+
+  const months=[],totals=[];
+  const now=new Date();
+  for(let i=5;i>=0;i--){
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    const y=d.getFullYear(),mo=String(d.getMonth()+1).padStart(2,'0');
+    const mt=await db.transactions.where('date').between(`${y}-${mo}-01`,`${y}-${mo}-31`,true,true).toArray();
+    months.push(d.toLocaleString('default',{month:'short'}));
+    totals.push(mt.reduce((s,t)=>s+t.amount,0));
+  }
+  if(barChart) barChart.destroy();
+  barChart=new Chart(document.getElementById('bar-chart'),{
+    type:'bar',
+    data:{labels:months,datasets:[{data:totals,backgroundColor:'#6366f1',borderRadius:6,borderSkipped:false}]},
+    options:{plugins:{legend:{display:false}},scales:{y:{grid:{color:'#f1f5f9'},ticks:{callback:v=>getCurrencySymbol()+v}},x:{grid:{display:false}}},responsive:true,maintainAspectRatio:false}
+  });
+}
+
+// ─── Budget ───────────────────────────────────────────────────
+async function getMonthBudget() {
+  const now=new Date(),month=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  return await db.budgets.where('month').equals(month).first();
+}
+
+async function saveOverallBudget() {
+  const val=parseFloat(document.getElementById('b-overall').value);
+  if(!val||val<=0) return showToast('Enter valid budget');
+  const now=new Date(),month=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const ex=await db.budgets.where('month').equals(month).first();
+  if(ex) await db.budgets.update(ex.id,{overall:val});
+  else await db.budgets.add({month,overall:val,perCategory:{}});
+  showToast('Budget saved!'); await loadBudget();
+}
+
+async function saveCatBudget(catName) {
+  const val=parseFloat(document.getElementById('cb-'+catName).value);
+  const now=new Date(),month=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const ex=await db.budgets.where('month').equals(month).first();
+  const pC=ex?.perCategory||{};
+  if(val>0) pC[catName]=val; else delete pC[catName];
+  if(ex) await db.budgets.update(ex.id,{perCategory:pC});
+  else await db.budgets.add({month,overall:0,perCategory:pC});
+  showToast('Saved!'); await loadBudget();
+}
+
+async function loadBudget() {
+  const budget=await getMonthBudget();
+  document.getElementById('b-overall').value=budget?.overall||'';
+  const now=new Date(),y=now.getFullYear(),m=String(now.getMonth()+1).padStart(2,'0');
+  const txns=await db.transactions.where('date').between(`${y}-${m}-01`,`${y}-${m}-31`,true,true).toArray();
+  const catSpend={};
+  txns.forEach(t=>catSpend[t.category]=(catSpend[t.category]||0)+t.amount);
+  const cats=await db.categories.toArray();
+
+  document.getElementById('cat-budget-list').innerHTML=cats.map(c=>{
+    const spent=catSpend[c.name]||0,limit=(budget?.perCategory||{})[c.name]||0;
+    const pct=limit?Math.min((spent/limit)*100,100):0;
+    const bc=pct>90?'bg-red-500':pct>70?'bg-yellow-400':'bg-indigo-500';
+    return `<div>
+      <div class="flex justify-between text-sm mb-1">
+        <span class="font-medium text-gray-700">${c.name}</span>
+        <span class="text-gray-400 text-xs">${fmt(spent)}${limit?` / ${fmt(limit)}`:''}</span>
+      </div>
+      <div class="flex gap-2 items-center">
+        <div class="flex-1 bg-gray-100 rounded-full h-2">
+          <div class="${bc} h-2 rounded-full" style="width:${pct}%"></div>
+        </div>
+        <input id="cb-${c.name}" type="number" placeholder="Limit" value="${limit||''}"
+          class="w-24 border border-gray-200 rounded-lg px-2 py-1 text-xs bg-gray-50"/>
+        <button onclick="saveCatBudget('${c.name}')" class="text-xs bg-indigo-100 text-indigo-600 px-2 py-1 rounded-lg">Set</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('cat-manage-list').innerHTML=cats.map(c=>{
+    const isDef=DEFAULT_CATS.find(d=>d.name===c.name);
+    return `<div class="border border-gray-100 rounded-xl p-3 space-y-2">
+      <div class="flex justify-between items-center">
+        <span class="font-medium text-gray-700 text-sm">${c.name}</span>
+        ${!isDef?`<button onclick="deleteCategory(${c.id})" class="text-xs text-red-400 border border-red-200 px-2 py-0.5 rounded-lg">Delete</button>`:'<span class="text-xs text-gray-300">Default</span>'}
+      </div>
+      <div class="flex flex-wrap gap-1">
+        ${(c.subcategories||[]).map(s=>`<span class="chip">${s}
+          <button onclick="deleteSubcat(${c.id},'${s}')" class="text-indigo-400 font-bold">✕</button>
+        </span>`).join('')}
+      </div>
+      <div class="flex gap-2">
+        <input id="newsub-${c.id}" type="text" placeholder="Add subcategory..."
+          class="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-xs bg-gray-50"/>
+        <button onclick="addSubcat(${c.id})" class="bg-indigo-100 text-indigo-600 px-3 py-1.5 rounded-lg text-xs font-medium">Add</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function addCategory() {
+  const name=document.getElementById('new-cat').value.trim();
+  if(!name) return showToast('Enter category name');
+  const ex=await db.categories.where('name').equalsIgnoreCase(name).first();
+  if(ex) return showToast('Already exists!');
+  await db.categories.add({name,subcategories:[]});
+  document.getElementById('new-cat').value='';
+  showToast('Category added!'); await loadBudget();
+}
+
+async function deleteCategory(id){ await db.categories.delete(id); showToast('Deleted'); await loadBudget(); }
+
+async function addSubcat(catId) {
+  const inp=document.getElementById('newsub-'+catId);
+  const name=inp.value.trim(); if(!name) return;
+  const cat=await db.categories.get(catId); if(!cat) return;
+  const subs=cat.subcategories||[];
+  if(subs.includes(name)) return showToast('Already exists!');
+  subs.push(name);
+  await db.categories.update(catId,{subcategories:subs});
+  inp.value=''; showToast('Subcategory added!'); await loadBudget();
+}
+
+async function deleteSubcat(catId,subName) {
+  const cat=await db.categories.get(catId); if(!cat) return;
+  await db.categories.update(catId,{subcategories:(cat.subcategories||[]).filter(s=>s!==subName)});
+  showToast('Removed'); await loadBudget();
+}
+
+// ─── PAYTM IMPORT WITH INTELLIGENT RULE INTERCEPTION ───
+async function startPaytmImport(e) {
+  const file=e.target.files[0]; if(!file) return;
+  e.target.value='';
+  try {
+    const buf=await file.arrayBuffer();
+    const wb=XLSX.read(buf,{type:'array'});
+    const sheetName=wb.SheetNames.find(n=>n.toLowerCase().includes('passbook'))||wb.SheetNames[1]||wb.SheetNames[0];
+    const ws=wb.Sheets[sheetName];
+    const rows=XLSX.utils.sheet_to_json(ws,{defval:''});
+    importAuto=[]; importTransfers=[];
+    importCats=await db.categories.toArray();
+
+    // Pre-cache categorization rules mapping array locally for microsecond lookups
+    const userImportRules = await db.importRules.toArray();
+
+    for(const row of rows){
+      const dateRaw=String(row['Date']||'').trim();
+      const amtRaw=String(row['Amount']||'').replace(/,/g,'');
+      const desc=String(row['Transaction Details']||'').trim();
+      const tag=String(row['Tags']||'').trim();
+      const amt=parseFloat(amtRaw);
+      if(isNaN(amt)||amt>=0) continue;
+      const amount=Math.abs(amt);
+      const parts=dateRaw.split('/');
+      if(parts.length!==3) continue;
+      const date=`${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+      if(SKIP_TAGS.some(s=>tag.includes(s))) continue;
+
+      let category = 'Others';
+      let subcategory = '';
+      let matched = false;
+
+      // Pipeline Hook Step: Check if transaction text fulfills any saved custom query string rule
+      const normalizedNotes = desc.toLowerCase();
+      for(const rule of userImportRules) {
+        if(normalizedNotes.includes(rule.keyword.toLowerCase())) {
+          category = rule.category;
+          subcategory = rule.subcategory || '';
+          matched = true;
+          break; // Exit early on highest priority matching pattern
+        }
+      }
+
+      // Dynamic Fallback Step: Use default hardcoded configurations if no user rule hit
+      if(!matched) {
+        const mapped=TAG_MAP[tag]||{category:'Others',subcategory:''};
+        category = mapped.category;
+        subcategory = mapped.subcategory;
+      }
+
+      const rec={date,amount,notes:desc,category,subcategory,_include:true};
+      if(tag.includes('Money Transfer')) importTransfers.push(rec);
+      else importAuto.push(rec);
+    }
+    openImportModal();
+  } catch(err) {
+    showToast('Error reading file'); console.error(err);
+  }
+}
+
+function openImportModal() {
+  const modal=document.getElementById('import-modal');
+  modal.style.display='flex';
+  modal.style.flexDirection='column';
+  modal.style.justifyContent='flex-end';
+  if(importTransfers.length){ renderTransferReview(); showImportStep(1); }
+  else goToPreview();
+}
+
+function closeImportModal() {
+  document.getElementById('import-modal').style.display='none';
+  importAuto=[]; importTransfers=[]; previewRows=[]; previewFilter='';
+  showPage('reports');
+}
+
+function showImportStep(n) {
+  [1,2,3].forEach(i=>{
+    const el=document.getElementById('import-step-'+i);
+    el.style.display= i===n ? 'flex' : 'none';
+    el.style.flexDirection= i===n ? 'column' : '';
+    document.getElementById('step-bar-'+i).style.background= i<=n ? '#6366f1' : '#e5e7eb';
+  });
+  const titles={1:'Review Transfers',2:'Preview All Rows',3:'Import Complete'};
+  document.getElementById('import-modal-title').textContent=titles[n];
+}
+
+// ── Step 1 ────────────────────────────────────────────────────
+function renderTransferReview() {
+  document.getElementById('tr-count').textContent=importTransfers.length;
+  const catOpts=importCats.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
+  document.getElementById('transfer-review-list').innerHTML = importTransfers.length
+    ? importTransfers.map((r,i)=>`
+      <div class="flex items-center gap-2 px-3 py-2.5 ${r._include?'bg-white':'bg-gray-50'}">
+        <input type="checkbox" data-ti="${i}" ${r._include?'checked':''} onchange="toggleTransfer(${i},this.checked)"
+          class="w-4 h-4 accent-indigo-600 flex-shrink-0"/>
+        <div class="flex-1 min-w-0">
+          <p class="text-xs font-medium text-gray-800 break-words">${r.notes}</p>
+          <p class="text-xs text-gray-400">${r.date} · ${fmt(r.amount)}</p>
+        </div>
+        <select onchange="importTransfers[${i}].category=this.value"
+          class="text-xs border border-gray-200 rounded-lg px-1.5 py-1 bg-white flex-shrink-0 ${r._include?'':'opacity-30 pointer-events-none'}">
+          ${catOpts.replace(`value="${r.category}"`,`value="${r.category}" selected`)}
+        </select>
+      </div>`).join('')
+    : '<p class="text-gray-400 text-center py-8 text-sm">No money transfers found</p>';
+}
+
+function toggleTransfer(i,checked) {
+  importTransfers[i]._include=checked;
+  renderTransferReview();
+}
+
+function skipAllTransfers(){ importTransfers.forEach(r=>r._include=false); renderTransferReview(); }
+
+// ── Step 2 ────────────────────────────────────────────────────
+function goToPreview() {
+  previewFilter='';
+  previewRows=[...importAuto.map(r=>({...r})),...importTransfers.filter(r=>r._include).map(r=>({...r}))];
+  showImportStep(2);
+  renderPills();
+  renderPreviewList();
+}
+
+function renderPills() {
+  const uniqueCats=['All',...new Set(previewRows.map(r=>r.category))];
+  document.getElementById('preview-filter-pills').innerHTML=uniqueCats.map(c=>`
+    <button onclick="setPreviewFilter('${c}')"
+      class="flex-shrink-0 text-xs px-3 py-1 rounded-full font-medium border transition-all
+      ${(c==='All'&&!previewFilter)||(c===previewFilter)
+        ?'bg-indigo-600 text-white border-indigo-600'
+        :'bg-white text-gray-600 border-gray-200'}">
+      ${c}
+    </button>`).join('');
+}
+
+function setPreviewFilter(c){ previewFilter=c==='All'?'':c; renderPills(); renderPreviewList(); }
+
+function renderPreviewList() {
+  const catOpts=importCats.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
+  const visible=previewFilter ? previewRows.filter(r=>r.category===previewFilter) : previewRows;
+  const selectedTotal=previewRows.filter(r=>r._include).length;
+
+  document.getElementById('preview-count-label').textContent=
+    previewFilter
+      ? `Showing ${visible.length} of ${previewRows.length} · ${selectedTotal} to import`
+      : `${previewRows.length} rows · ${selectedTotal} to import`;
+
+  document.getElementById('preview-list').innerHTML = visible.length
+    ? visible.map(r=>{
+        const i=previewRows.indexOf(r);
+        return `<div class="flex items-center gap-2 px-3 py-2.5 ${r._include?'bg-white':'bg-gray-50 opacity-50'}">
+          <input type="checkbox" ${r._include?'checked':''} onchange="togglePreview(${i},this.checked)"
+            class="w-4 h-4 accent-indigo-600 flex-shrink-0"/>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-medium text-gray-800 break-words">${r.notes}</p>
+            <p class="text-xs text-gray-400">${r.date} · ${fmt(r.amount)}</p>
+          </div>
+          <select onchange="previewRows[${i}].category=this.value;renderPills();"
+            class="text-xs border border-gray-200 rounded-lg px-1.5 py-1 bg-white flex-shrink-0">
+            ${catOpts.replace(`value="${r.category}"`,`value="${r.category}" selected`)}
+          </select>
+        </div>`;
+      }).join('')
+    : '<p class="text-gray-400 text-center py-8 text-sm">No rows in this category</p>';
+
+  document.getElementById('confirm-import-btn').textContent=`Import ${selectedTotal} rows`;
+}
+
+function togglePreview(i,checked) {
+  previewRows[i]._include=checked;
+  renderPreviewList();
+}
+
+function backToTransfers() {
+  if(importTransfers.length){ renderTransferReview(); showImportStep(1); }
+}
+
+async function confirmImport() {
+  const toSave=previewRows.filter(r=>r._include);
+  if(!toSave.length) return showToast('Nothing selected to import');
+  for(const r of toSave){
+    await db.transactions.add({date:r.date,amount:r.amount,category:r.category,subcategory:r.subcategory||'',notes:r.notes||''});
+  }
+  document.getElementById('import-done-msg').textContent=`${toSave.length} transactions imported!`;
+  showImportStep(3);
+}
+
+// ─── CSV ──────────────────────────────────────────────────────
+async function exportCSV() {
+  const txns=await db.transactions.toArray();
+  if(!txns.length) return showToast('No data to export');
+  const header='Date,Amount,Category,Subcategory,Notes';
+  const rows=txns.map(t=>[t.date,t.amount,t.category,t.subcategory||'',`"${(t.notes||'').replace(/"/g,'""')}"`].join(','));
+  const blob=new Blob([header+'\n'+rows.join('\n')],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='expenses.csv';a.click();
+  showToast('Exported!');
+}
+
+async function importCSV(e) {
+  const file=e.target.files[0]; if(!file) return;
+  const text=await file.text();
+  const lines=text.trim().split('\n').slice(1);
+  let count=0;
+  for(const line of lines){
+    const [date,amount,category,subcategory,...np]=line.split(',');
+    const notes=np.join(',').replace(/^"|"$/g,'').replace(/""/g,'"');
+    if(date&&amount&&category){await db.transactions.add({date:date.trim(),amount:parseFloat(amount),category:category.trim(),subcategory:subcategory?.trim()||'',notes:notes?.trim()||''});count++;}
+  }
+  showToast(`Imported ${count} transactions`); e.target.value=''; await loadDashboard();
+}
+
+// ─── PREFERENCES AND BACKUPS SETTINGS ─────────────────────────────
+function getCurrencySymbol() {
+  return localStorage.getItem('expense_currency_symbol') || '₹';
+}
+
+async function loadSettings() {
+  document.getElementById('s-currency').value = getCurrencySymbol();
+  await loadSettingsRuleDropdowns();
+  await renderRulesMatrix();
+}
+
+async function updateCurrencySymbol() {
+  const sym = document.getElementById('s-currency').value;
+  localStorage.setItem('expense_currency_symbol', sym);
+  showToast('Currency preference updated!');
+}
+
+async function exportJSONBackup() {
+  const txns = await db.transactions.toArray();
+  const cats = await db.categories.toArray();
+  const budgets = await db.budgets.toArray();
+  const rules = await db.importRules.toArray();
+  const backupData = { transactions: txns, categories: cats, budgets: budgets, importRules: rules };
+  
+  const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `expense_manager_backup_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  showToast('Backup JSON exported!');
+}
+
+async function importJSONBackup(e) {
+  const file = e.target.files[0]; if(!file) return;
+  try {
+    const text = await file.text();
+    const parsed = JSON.parse(text);
+    if (!parsed.transactions || !parsed.categories || !parsed.budgets) {
+      return showToast('Invalid backup file blueprint schema');
+    }
+    if (confirm('Are you sure? This action overrides and overwrites all existing app history metadata.')) {
+      await db.transactions.clear();
+      await db.categories.clear();
+      await db.budgets.clear();
+      await db.importRules.clear();
+      
+      await db.transactions.bulkAdd(parsed.transactions);
+      await db.categories.bulkAdd(parsed.categories);
+      await db.budgets.bulkAdd(parsed.budgets);
+      if(parsed.importRules) await db.importRules.bulkAdd(parsed.importRules);
+      
+      showToast('Database restore complete!');
+      e.target.value = '';
+      await showPage('dashboard');
+    }
+  } catch(err) {
+    showToast('Error reading backup document format');
+    console.error(err);
+  }
+}
+
+async function factoryResetApp() {
+  if (confirm('CRITICAL ACTION: This structural reset clears all entries, customized settings tables, tracking targets, and returns parameters to default initialization rules. Continue?')) {
+    await db.transactions.clear();
+    await db.categories.clear();
+    await db.budgets.clear();
+    await db.importRules.clear();
+    await db.categories.bulkAdd(DEFAULT_CATS);
+    localStorage.removeItem('expense_currency_symbol');
+    showToast('Application cleared to defaults!');
+    await showPage('dashboard');
+  }
+}
+
+// ─── NEW FEATURES: INTELLIGENT RULE CONFIGURATOR FUNCTIONS ───
+async function loadSettingsRuleDropdowns() {
+  const cats = await db.categories.toArray();
+  const sel = document.getElementById('rule-category');
+  sel.innerHTML = '<option value="">Select Category</option>' + cats.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+  document.getElementById('rule-subcategory').innerHTML = '<option value="">Select Subcategory</option>';
+}
+
+async function loadSettingsRuleSubcats() {
+  const catName = document.getElementById('rule-category').value;
+  const cats = await db.categories.toArray();
+  const cat = cats.find(c => c.name === catName);
+  const sel = document.getElementById('rule-subcategory');
+  sel.innerHTML = '<option value="">Select Subcategory</option>';
+  if(cat?.subcategories?.length) {
+    sel.innerHTML += cat.subcategories.map(s => `<option value="${s}">${s}</option>`).join('');
+  }
+}
+
+function cleanMerchantText(note) {
+  if (!note) return '';
+  return note.replace(/Paid to\s+/gi, '')
+             .replace(/Money sent to\s+/gi, '')
+             .replace(/UPI description:\s+/gi, '')
+             .replace(/Paytm Bus:\s+/gi, '')
+             .replace(/\d+/g, '') // Strip transaction tracking IDs & phone digits
+             .replace(/\b(Private|Limited|Ltd|Pvt|Corp|Inc|Bank|Upi|District|Movie)\b.*/gi, '') // Truncate corporate suffixes
+             .replace(/[^a-zA-Z\s]/g, '') // Clear punctuation
+             .trim();
+}
+
+async function trainImportRules() {
+  const txns = await db.transactions.toArray();
+  if(!txns.length) return showToast('No existing transaction history found to train on.');
+  
+  const frequencyMap = {};
+
+  // Build a frequency profile of mapped phrases based on cleaned merchant names
+  txns.forEach(t => {
+    const rawNote = t.notes || '';
+    if(!rawNote) return;
+    const cleanToken = cleanMerchantText(rawNote).toLowerCase();
+    if(cleanToken.length < 3) return; // Prevent training short strings like "To", "A"
+
+    if(!frequencyMap[cleanToken]) {
+      frequencyMap[cleanToken] = {};
+    }
+    const key = `${t.category}::${t.subcategory||''}`;
+    frequencyMap[cleanToken][key] = (frequencyMap[cleanToken][key] || 0) + 1;
+  });
+
+  let autoRulesAdded = 0;
+
+  // Select dominant category pairs that meet threshold parameters
+  for (const token in frequencyMap) {
+    const mappingPairs = frequencyMap[token];
+    let topKey = null;
+    let maxCount = 0;
+    let totalTokenCount = 0;
+
+    for (const key in mappingPairs) {
+      totalTokenCount += mappingPairs[key];
+      if(mappingPairs[key] > maxCount) {
+        maxCount = mappingPairs[key];
+        topKey = key;
+      }
+    }
+
+    // Baseline constraints: Match requires confidence levels above 75% accuracy rate
+    if(topKey && (maxCount / totalTokenCount) >= 0.75) {
+      const [category, subcategory] = topKey.split('::');
+      
+      // Upsert into Dexie table, preserving manual user exceptions
+      const existingRule = await db.importRules.where('keyword').equalsIgnoreCase(token).first();
+      if(!existingRule || existingRule.type === 'auto') {
+        await db.importRules.put({
+          id: existingRule?.id,
+          keyword: token,
+          category,
+          subcategory,
+          type: 'auto'
+        });
+        autoRulesAdded++;
+      }
+    }
+  }
+
+  showToast(`Engine training complete! Generated ${autoRulesAdded} new rules.`);
+  await renderRulesMatrix();
+}
+
+async function addManualRule() {
+  const keyword = document.getElementById('rule-keyword').value.trim();
+  const category = document.getElementById('rule-category').value;
+  const subcategory = document.getElementById('rule-subcategory').value;
+
+  if(!keyword) return showToast('Please enter a target keyword');
+  if(!category) return showToast('Please select a target category mapping');
+
+  try {
+    const existingRule = await db.importRules.where('keyword').equalsIgnoreCase(keyword).first();
+    await db.importRules.put({
+      id: existingRule?.id,
+      keyword: keyword.toLowerCase(),
+      category,
+      subcategory: subcategory || '',
+      type: 'manual'
+    });
+    
+    // Clear inputs
+    document.getElementById('rule-keyword').value = '';
+    document.getElementById('rule-category').value = '';
+    document.getElementById('rule-subcategory').innerHTML = '<option value="">Select Subcategory</option>';
+    
+    showToast('Manual rule saved!');
+    await renderRulesMatrix();
+  } catch(e) {
+    showToast('Rule with this keyword already exists.');
+  }
+}
+
+async function deleteRule(id) {
+  await db.importRules.delete(id);
+  showToast('Rule deleted.');
+  await renderRulesMatrix();
+}
+
+async function renderRulesMatrix() {
+  const rules = await db.importRules.toArray();
+  const tbody = document.getElementById('rules-table-body');
+  const emptyState = document.getElementById('rules-empty-state');
+
+  if(!rules.length) {
+    tbody.innerHTML = '';
+    emptyState.classList.remove('hidden');
+    return;
+  }
+  emptyState.classList.add('hidden');
+
+  tbody.innerHTML = rules.map(r => {
+    const badgeStyle = r.type === 'manual' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700';
+    return `
+      <tr class="hover:bg-gray-50 transition-colors">
+        <td class="px-3 py-2.5 font-medium text-gray-900 truncate max-w-[120px]" title="${r.keyword}">${r.keyword}</td>
+        <td class="px-3 py-2.5 text-gray-500">
+          <span class="inline-flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full" style="background:${getCategoryColor(r.category)}"></span>
+            ${r.category}${r.subcategory ? ` · ${r.subcategory}` : ''}
+          </span>
+        </td>
+        <td class="px-3 py-2.5 text-center">
+          <span class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${badgeStyle}">${r.type}</span>
+        </td>
+        <td class="px-3 py-2.5 text-right">
+          <button onclick="deleteRule(${r.id})" class="text-red-400 hover:text-red-600 font-semibold px-1">✕</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// ─── Helpers ──────────────────────────────────────────────────
+function fmt(n){ return getCurrencySymbol()+Number(n).toLocaleString('en-IN',{minimumFractionDigits:0,maximumFractionDigits:0}); }
+
+function txnRow(t) {
+  const col = getCategoryColor(t.category);
+  const d=new Date(t.date+'T00:00:00');
+  const ds=d.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+  return `<div class="flex items-start gap-3 py-3 border-b border-gray-50 last:border-0">
+    <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-0.5" style="background:${col}">${t.category ? t.category[0] : '?'}</div>
+    <div class="flex-1 min-w-0 space-y-0.5">
+      <p class="font-medium text-gray-800 text-sm">${t.category}${t.subcategory?' · '+t.subcategory:''}</p>
+      <p class="text-xs text-gray-500 break-words leading-relaxed">${t.notes ? t.notes : '<span class="text-gray-300 italic">No notes description</span>'}</p>
+      <p class="text-[10px] text-gray-400 font-medium">${ds}</p>
+    </div>
+    <div class="flex flex-col items-end gap-2 flex-shrink-0 ml-2">
+      <span class="font-bold text-gray-800 text-sm whitespace-nowrap">${fmt(t.amount)}</span>
+      <div class="flex items-center gap-1.5 opacity-80">
+        <button onclick="editExpense(${t.id})" class="p-1 hover:bg-gray-100 rounded text-xs">✏️</button>
+        <button onclick="deleteExpense(${t.id})" class="p-1 hover:bg-gray-100 rounded text-xs">🗑️</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function showToast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.style.opacity='1';
+  setTimeout(()=>t.style.opacity='0',2500);
+}
+
+init();
+</script>
+</body>
+</html>
