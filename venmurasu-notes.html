@@ -1,0 +1,2009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Book Notes & Literary Analyzer</title>
+<style>
+  /* ── CSS VARIABLES & DESIGN SYSTEM ───────────────────────────────────────── */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f5f0e8; 
+    --card: #fffdf7; 
+    --accent: #7c5c3a; 
+    --accent-light: #c9a97a;
+    --text: #2c1f0e; 
+    --muted: #7a6a55; 
+    --quote-bg: #f0e9d8; 
+    --moral-bg: #e8f0e0;
+    --tag-bg: #e8ddd0; 
+    --drawer-bg: #2c1f0e; 
+    --drawer-text: #f5f0e8;
+    --foreshadow-bg: #f0ece0; 
+    --symbol-bg: #eee8d8; 
+    --device-bg: #f5f0e8;
+    --emotion-bg: #f0ede4; 
+    --relation-bg: #ede8dc; 
+    --location-bg: #eaf0e4;
+    --keyword-bg: #e4ddd2; 
+    --section-border: rgba(124,92,58,0.13);
+    --input-bg: #fffdf7;
+    --input-border: #c9a97a;
+  }
+  body { 
+    font-family: Georgia, serif; 
+    background: var(--bg); 
+    color: var(--text); 
+    min-height: 100vh; 
+    overflow-x: hidden; 
+    transition: background 0.3s, color 0.3s; 
+  }
+  body.night {
+    --bg: #0e0b07; 
+    --card: #141008; 
+    --accent: #a07848; 
+    --accent-light: #c9a97a;
+    --text: #e8ddd0; 
+    --muted: #9a8a75; 
+    --quote-bg: #100d07; 
+    --moral-bg: #080f04;
+    --tag-bg: #1a1510; 
+    --drawer-bg: #080604; 
+    --drawer-text: #e8ddd0;
+    --foreshadow-bg: #120e08; 
+    --symbol-bg: #110e08; 
+    --device-bg: #0f0c07;
+    --emotion-bg: #120f09; 
+    --relation-bg: #110e08; 
+    --location-bg: #0b0f07;
+    --keyword-bg: #1a1510; 
+    --section-border: rgba(201,169,122,0.12);
+    --input-bg: #1a1510;
+    --input-border: #7c5c3a;
+  }
+
+  /* ── NIGHT MODE OVERRIDES ───────────────────────────────────────────────── */
+  body.night .char-popup { background: #0d0d0d; border-color: rgba(124,92,58,0.3); }
+  body.night .nav-btn:disabled:hover { background: var(--card); color: var(--accent); }
+  body.night .float-nav { background: #c9a97a; color: #000; opacity: 0.5; }
+  body.night .float-nav:hover { opacity: 1; }
+  body.night .moral-text { color: #7aaa6a; }
+
+  /* ── HEADER ─────────────────────────────────────────────────────────────── */
+  header { 
+    position: sticky; 
+    top: 0; 
+    z-index: 100; 
+    background: var(--accent); 
+    color: #fff; 
+    display: flex; 
+    align-items: center; 
+    gap: 8px; 
+    padding: 12px 16px; 
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2); 
+  }
+  header h1 { 
+    font-size: 1.05rem; 
+    font-weight: normal; 
+    letter-spacing: 0.03em; 
+    flex: 1; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+  }
+  #menuBtn { 
+    background: none; 
+    border: none; 
+    cursor: pointer; 
+    color: #fff; 
+    padding: 6px; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 5px; 
+    align-items: center; 
+    justify-content: center; 
+    flex-shrink: 0; 
+  }
+  #menuBtn span { display: block; width: 22px; height: 2px; background: #fff; border-radius: 2px; }
+  
+  .header-icon-btn { 
+    background: none; 
+    border: none; 
+    cursor: pointer; 
+    color: #fff; 
+    padding: 5px 8px; 
+    font-size: 0.74rem; 
+    font-family: sans-serif; 
+    letter-spacing: 0.05em; 
+    text-transform: uppercase; 
+    opacity: 0.85; 
+    border: 1px solid rgba(255,255,255,0.3); 
+    border-radius: 6px; 
+    transition: all 0.2s; 
+    flex-shrink: 0; 
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .header-icon-btn:hover { opacity: 1; background: rgba(255,255,255,0.15); }
+  .header-icon-btn.active-view { background: rgba(255,255,255,0.2); opacity: 1; }
+
+  #overlay { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.5); }
+  #overlay.open { display: block; }
+
+  /* ── LEFT DRAWER ────────────────────────────────────────────────────────── */
+  #drawer { 
+    position: fixed; 
+    top: 0; 
+    left: -300px; 
+    bottom: 0; 
+    width: 290px; 
+    z-index: 300; 
+    background: var(--drawer-bg); 
+    color: var(--drawer-text); 
+    transition: left 0.3s ease; 
+    display: flex; 
+    flex-direction: column; 
+    overflow: hidden; 
+  }
+  #drawer.open { left: 0; }
+  #drawerHeader { padding: 16px 16px 12px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+  #drawerHeaderTop { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  #drawerHeaderLabel { font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent-light); }
+  
+  #themeToggle { 
+    display: flex; 
+    align-items: center; 
+    gap: 7px; 
+    cursor: pointer; 
+    background: rgba(255,255,255,0.07); 
+    border: 1px solid rgba(255,255,255,0.12); 
+    border-radius: 20px; 
+    padding: 5px 10px; 
+    transition: background 0.2s; 
+  }
+  #themeToggle:hover { background: rgba(255,255,255,0.14); }
+  #themeIcon { font-size: 0.95rem; line-height: 1; }
+  #themeLabel { font-size: 0.72rem; color: rgba(245,240,232,0.7); font-family: sans-serif; letter-spacing: 0.05em; }
+  
+  #chapterList { flex: 1; overflow-y: auto; padding: 8px 0; }
+  #chapterList::-webkit-scrollbar { width: 4px; }
+  #chapterList::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
+
+  .book-group-header { 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    padding: 10px 16px 8px; 
+    cursor: pointer; 
+    border-left: 3px solid transparent; 
+    transition: all 0.2s; 
+    user-select: none; 
+  }
+  .book-group-header:hover { background: rgba(255,255,255,0.05); }
+  .book-group-header.has-active { border-left-color: var(--accent-light); }
+  .book-group-title { font-size: 0.8rem; font-family: sans-serif; font-weight: 600; color: rgba(245,240,232,0.9); letter-spacing: 0.05em; }
+  .book-group-chevron { font-size: 0.7rem; color: rgba(245,240,232,0.4); transition: transform 0.2s; }
+  .book-group.collapsed .book-group-chevron { transform: rotate(-90deg); }
+  .book-group.collapsed .book-chapters { display: none; }
+  .book-chapters { padding-bottom: 4px; }
+
+  /* Reverted to clean, link-only style for sidebar chapters */
+  .ch-item { 
+    padding: 9px 20px 9px 28px; 
+    cursor: pointer; 
+    font-size: 0.88rem; 
+    color: rgba(245,240,232,0.65); 
+    border-left: 3px solid transparent; 
+    transition: all 0.2s; 
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ch-item:hover { background: rgba(255,255,255,0.07); color: #fff; }
+  .ch-item.active { border-left-color: var(--accent-light); color: #fff; background: rgba(255,255,255,0.1); }
+
+  /* ── RIGHT DRAWER ───────────────────────────────────────────────────────── */
+  #rightDrawer { 
+    position: fixed; 
+    top: 0; 
+    right: -300px; 
+    bottom: 0; 
+    width: 290px; 
+    z-index: 300; 
+    background: var(--drawer-bg); 
+    color: var(--drawer-text); 
+    transition: right 0.3s ease; 
+    display: flex; 
+    flex-direction: column; 
+    overflow: hidden; 
+  }
+  #rightDrawer.open { right: 0; }
+  #rightDrawerHeader { padding: 14px 14px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+  
+  .rd-tabs { display: flex; gap: 0; margin-top: 10px; }
+  .rd-tab { 
+    flex: 1; 
+    background: none; 
+    border: none; 
+    border-bottom: 2px solid transparent; 
+    padding: 8px 2px; 
+    font-size: 0.65rem; 
+    font-family: sans-serif; 
+    color: rgba(245,240,232,0.5); 
+    cursor: pointer; 
+    letter-spacing: 0.05em; 
+    text-transform: uppercase; 
+    transition: all 0.2s; 
+  }
+  .rd-tab:hover { color: rgba(245,240,232,0.8); }
+  .rd-tab.active { border-bottom-color: var(--accent-light); color: var(--accent-light); }
+  
+  .rd-panel { display: none; flex: 1; overflow-y: auto; flex-direction: column; }
+  .rd-panel.active { display: flex; }
+  .rd-panel::-webkit-scrollbar { width: 4px; }
+  .rd-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
+  
+  .sort-controls { display: flex; gap: 4px; padding: 10px 14px 0; flex-wrap: wrap; }
+  .sort-btn { 
+    flex: 1; 
+    min-width: 48px; 
+    background: rgba(255,255,255,0.07); 
+    border: 1px solid rgba(255,255,255,0.12); 
+    border-radius: 6px; 
+    padding: 4px 2px; 
+    font-size: 0.62rem; 
+    font-family: sans-serif; 
+    color: rgba(245,240,232,0.6); 
+    cursor: pointer; 
+    transition: all 0.2s; 
+    text-align: center;
+    white-space: nowrap; 
+  }
+  .sort-btn:hover { background: rgba(255,255,255,0.14); color: #fff; }
+  .sort-btn.active { background: var(--accent-light); border-color: var(--accent-light); color: #000; font-weight: 600; }
+  
+  #charList, #locList, #bookFiltersList { padding: 8px 0; }
+
+  /* Character & Location index lists */
+  .char-index-item { padding: 12px 20px; cursor: pointer; font-size: 0.92rem; color: rgba(245,240,232,0.75); border-right: 3px solid transparent; transition: all 0.2s; display: flex; flex-direction: column; gap: 2px; }
+  .char-index-item:hover { background: rgba(255,255,255,0.07); color: #fff; }
+  .char-index-item .ci-name { font-size: 0.92rem; }
+  .char-index-item .ci-role { font-size: 0.7rem; color: rgba(245,240,232,0.4); font-style: italic; margin-bottom: 4px; }
+  .char-index-item .ci-stats { display: flex; gap: 10px; align-items: center; margin-top: 2px; }
+  .char-index-item .stat-badge { display: inline-flex; align-items: center; gap: 3px; font-size: 0.68rem; font-family: sans-serif; color: rgba(245,240,232,0.5); }
+  .char-index-item .stat-badge svg { width: 11px; height: 11px; fill: rgba(245,240,232,0.4); }
+  .char-index-item:hover .stat-badge { color: rgba(245,240,232,0.85); }
+  .char-index-item:hover .stat-badge svg { fill: rgba(245,240,232,0.75); }
+
+  .loc-index-item { padding: 12px 20px; cursor: pointer; font-size: 0.88rem; color: rgba(245,240,232,0.75); border-right: 3px solid transparent; transition: all 0.2s; display: flex; flex-direction: column; gap: 3px; }
+  .loc-index-item:hover { background: rgba(255,255,255,0.07); color: #fff; }
+  .loc-index-item .li-name { font-size: 0.9rem; }
+  .loc-index-item .li-desc { font-size: 0.7rem; color: rgba(245,240,232,0.4); font-style: italic; line-height: 1.5; }
+  .loc-index-item .li-chapter { font-size: 0.66rem; font-family: sans-serif; text-transform: uppercase; letter-spacing: 0.06em; color: rgba(201,169,122,0.6); margin-top: 2px; }
+
+  /* ── BOOK FILTER TAB DESIGN ──────────────────────────────────────────────── */
+  .book-filter-control-panel { padding: 10px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; gap: 8px; }
+  .filter-action-btn { flex: 1; padding: 6px; font-size: 0.68rem; font-family: sans-serif; text-transform: uppercase; letter-spacing: 0.05em; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: rgba(245,240,232,0.7); cursor: pointer; border-radius: 4px; transition: all 0.2s; }
+  .filter-action-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+  
+  .filter-book-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; cursor: pointer; transition: background 0.2s; border-bottom: 1px solid rgba(255,255,255,0.03); }
+  .filter-book-item:hover { background: rgba(255,255,255,0.05); }
+  .filter-book-info { display: flex; flex-direction: column; gap: 2px; flex: 1; margin-right: 8px; }
+  .filter-book-title { font-size: 0.88rem; color: rgba(245,240,232,0.9); }
+  .filter-book-meta { font-size: 0.7rem; color: rgba(245,240,232,0.4); font-family: sans-serif; }
+  
+  /* Custom modern toggle checkbox style */
+  .switch { position: relative; display: inline-block; width: 40px; height: 20px; flex-shrink: 0; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider { position: absolute; cursor: pointer; inset: 0; background-color: rgba(255,255,255,0.15); transition: .3s; border-radius: 20px; }
+  .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: #fff; transition: .3s; border-radius: 50%; }
+  input:checked + .slider { background-color: var(--accent-light); }
+  input:checked + .slider:before { transform: translateX(20px); }
+
+  /* Empty/Unloaded warning view */
+  .db-empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 60px 20px; background: var(--card); border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-top: 20px; border: 1px dashed var(--accent-light); }
+  .db-empty-state svg { width: 64px; height: 64px; fill: var(--accent-light); margin-bottom: 16px; }
+  .db-empty-state h3 { font-size: 1.15rem; font-weight: normal; margin-bottom: 8px; color: var(--text); }
+  .db-empty-state p { font-size: 0.88rem; color: var(--muted); line-height: 1.6; margin-bottom: 20px; max-width: 320px; }
+  .db-empty-state .import-action-btn { background: var(--accent); color: #fff; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-family: sans-serif; font-size: 0.85rem; font-weight: 500; transition: background 0.2s; }
+  .db-empty-state .import-action-btn:hover { background: var(--accent-light); color: var(--drawer-bg); }
+
+  /* ── MAIN CONTENT AREA ──────────────────────────────────────────────────── */
+  main { padding: 20px 16px 80px; max-width: 600px; margin: 0 auto; }
+
+  .chapter-card { background: var(--card); border-radius: 14px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  .card-header { background: var(--accent); padding: 16px 18px; color: #fff; }
+  .card-header .ch-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; opacity: 0.75; margin-bottom: 4px; }
+  .card-header h2 { font-size: 1.25rem; font-weight: normal; line-height: 1.3; }
+  .mood-badge-row { margin-top: 6px; }
+  .mood-badge { font-size: 0.65rem; font-family: sans-serif; background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3); border-radius: 20px; padding: 2px 8px; display: inline-block; line-height: 1.4; }
+  .card-body { padding: 18px; display: flex; flex-direction: column; gap: 0; }
+
+  .sections-toggle-bar { display: flex; align-items: center; justify-content: flex-end; padding: 10px 18px 6px; border-bottom: 1px solid var(--section-border); gap: 8px; }
+  .sections-toggle-btn { background: none; border: 1px solid rgba(124,92,58,0.25); border-radius: 6px; padding: 4px 10px; font-size: 0.68rem; font-family: sans-serif; color: var(--muted); cursor: pointer; letter-spacing: 0.05em; transition: all 0.2s; }
+  .sections-toggle-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .section-block { padding: 18px 0; border-bottom: 1px solid var(--section-border); }
+  .section-block:last-child { border-bottom: none; }
+  .section-block.hidden-section { display: none; }
+  .section-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent); margin-bottom: 10px; font-family: sans-serif; font-weight: 600; display: flex; align-items: center; justify-content: space-between; cursor: default; }
+  .section-collapse-btn { background: none; border: none; cursor: pointer; font-size: 0.75rem; color: var(--muted); padding: 0 2px; transition: transform 0.2s; line-height: 1; }
+  .section-block.collapsed .section-body { display: none; }
+  .section-block.collapsed .section-collapse-btn { transform: rotate(-90deg); }
+  .summary-text { font-size: 0.97rem; line-height: 1.7; color: var(--text); }
+
+  .events-list { display: flex; flex-direction: column; gap: 0; }
+  .event-item { display: flex; gap: 12px; align-items: flex-start; padding: 8px 0; }
+  .event-num { font-size: 0.72rem; font-family: sans-serif; font-weight: 700; color: var(--accent-light); min-width: 20px; padding-top: 3px; }
+  .event-text { font-size: 0.9rem; line-height: 1.6; color: var(--text); border-left: 2px solid var(--section-border); padding-left: 12px; flex: 1; }
+
+  .char-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .char-tag { background: var(--tag-bg); color: var(--accent); padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; cursor: pointer; font-family: sans-serif; border: 1px solid rgba(124,92,58,0.2); transition: background 0.2s; user-select: none; }
+  .char-tag:hover, .char-tag.active { background: var(--accent); color: #fff; }
+  .char-popup { display: none; background: var(--card); border: 1px solid rgba(124,92,58,0.2); border-radius: 10px; padding: 14px; margin-top: 10px; font-size: 0.88rem; line-height: 1.6; box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .char-popup.show { display: block; }
+  .char-popup strong { color: var(--accent); display: block; margin-bottom: 3px; font-family: sans-serif; }
+  .char-popup .role { color: var(--muted); font-style: italic; margin-bottom: 6px; font-size: 0.82rem; }
+  .char-popup .cp-emotion-label { font-size: 0.65rem; font-family: sans-serif; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); margin-top: 8px; margin-bottom: 3px; }
+  .char-popup .cp-emotion { font-size: 0.83rem; color: var(--muted); font-style: italic; }
+
+  .quotes-block { display: flex; flex-direction: column; gap: 10px; }
+  .quote-item { background: var(--quote-bg); border-left: 3px solid var(--accent-light); border-radius: 0 8px 8px 0; padding: 12px 14px 12px 32px; font-size: 0.93rem; line-height: 1.65; color: var(--text); position: relative; }
+  .quote-item::before { content: '\201C'; font-size: 2rem; color: var(--accent-light); position: absolute; top: 2px; left: 10px; line-height: 1; font-family: Georgia, serif; }
+  .quote-text { font-style: italic; display: block; margin-bottom: 4px; }
+  .quote-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 6px; }
+  .quote-author { font-family: sans-serif; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 600; }
+  .quote-share-btn { background: none; border: 1px solid rgba(124,92,58,0.25); border-radius: 6px; padding: 3px 9px; font-size: 0.68rem; font-family: sans-serif; color: var(--muted); cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all 0.18s; letter-spacing: 0.04em; }
+  .quote-share-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .quote-share-btn svg { width: 12px; height: 12px; fill: currentColor; }
+
+  .moral-block { background: var(--moral-bg); border-radius: 10px; padding: 14px 16px; display: flex; gap: 10px; align-items: flex-start; }
+  .moral-text { font-size: 0.9rem; line-height: 1.65; color: #3a5a2a; font-style: italic; }
+
+  .emotions-grid { display: flex; flex-direction: column; gap: 8px; }
+  .emotion-row { background: var(--emotion-bg); border-radius: 8px; padding: 10px 14px; display: flex; flex-direction: column; gap: 3px; border-left: 3px solid var(--accent-light); }
+  .emotion-name { font-size: 0.82rem; font-family: sans-serif; font-weight: 600; color: var(--accent); }
+  .emotion-text { font-size: 0.88rem; line-height: 1.55; color: var(--text); font-style: italic; }
+
+  .relations-list { display: flex; flex-direction: column; gap: 8px; }
+  .relation-item { background: var(--relation-bg); border-radius: 8px; padding: 10px 14px; display: flex; align-items: flex-start; gap: 10px; }
+  .relation-chars { font-size: 0.88rem; font-family: sans-serif; color: var(--accent); flex: 1; }
+  .relation-sep { font-size: 0.78rem; color: var(--accent-light); margin: 0 4px; }
+  .relation-type { font-size: 0.78rem; color: var(--muted); font-style: italic; margin-top: 3px; }
+
+  .foreshadow-list { display: flex; flex-direction: column; gap: 8px; }
+  .foreshadow-item { background: var(--foreshadow-bg); border-radius: 8px; padding: 10px 14px; font-size: 0.88rem; line-height: 1.6; color: var(--text); border-left: 3px solid #b8916a; }
+
+  .symbols-grid { display: flex; flex-direction: column; gap: 8px; }
+  .symbol-item { background: var(--symbol-bg); border-radius: 8px; padding: 10px 14px; display: flex; flex-direction: column; gap: 3px; }
+  .symbol-name { font-size: 0.82rem; font-family: sans-serif; font-weight: 700; color: var(--accent); letter-spacing: 0.02em; }
+  .symbol-meaning { font-size: 0.87rem; line-height: 1.55; color: var(--text); }
+
+  .devices-list { display: flex; flex-direction: column; gap: 8px; }
+  .device-item { background: var(--device-bg); border: 1px solid var(--section-border); padding: 10px 14px; display: flex; flex-direction: column; gap: 4px; }
+  .device-name { font-size: 0.78rem; font-family: sans-serif; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.06em; }
+  .device-example { font-size: 0.87rem; line-height: 1.55; color: var(--muted); font-style: italic; }
+
+  .keywords-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .keyword-chip { background: var(--keyword-bg); color: var(--muted); padding: 4px 10px; border-radius: 20px; font-size: 0.78rem; font-family: sans-serif; border: 1px solid var(--section-border); letter-spacing: 0.02em; }
+
+  .locations-list { display: flex; flex-direction: column; gap: 8px; }
+  .location-item { background: var(--location-bg); border-radius: 8px; padding: 10px 14px; display: flex; flex-direction: column; gap: 3px; border-left: 3px solid #7aaa6a; }
+  .location-name { font-size: 0.85rem; font-family: sans-serif; font-weight: 700; color: var(--accent); }
+  .location-desc { font-size: 0.87rem; line-height: 1.55; color: var(--text); }
+
+  #sectionsPanel { display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 500; background: var(--card); border-top: 1px solid var(--section-border); padding: 16px 20px 24px; box-shadow: 0 -4px 20px rgba(0,0,0,0.15); max-width: 600px; margin: 0 auto; }
+  #sectionsPanel.open { display: block; }
+  .sp-title { font-size: 0.72rem; font-family: sans-serif; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
+  .sp-close { background: none; border: none; cursor: pointer; font-size: 1.1rem; color: var(--muted); }
+  .sp-toggles { display: flex; flex-wrap: wrap; gap: 8px; }
+  .sp-toggle { background: var(--tag-bg); border: 1px solid rgba(124,92,58,0.2); border-radius: 20px; padding: 6px 12px; font-size: 0.8rem; font-family: sans-serif; color: var(--accent); cursor: pointer; transition: all 0.2s; }
+  .sp-toggle.hidden { background: transparent; color: var(--muted); border-color: var(--section-border); text-decoration: line-through; opacity: 0.6; }
+  #spOverlay { display: none; position: fixed; inset: 0; z-index: 490; }
+  #spOverlay.open { display: block; }
+
+  /* ── NAVIGATION BUTTONS ─────────────────────────────────────────────────── */
+  .nav-buttons { display: flex; justify-content: space-between; align-items: center; margin-top: 22px; gap: 12px; }
+  .nav-btn { flex: 1; background: var(--card); border: 1px solid rgba(124,92,58,0.25); border-radius: 10px; padding: 12px; cursor: pointer; color: var(--accent); font-family: sans-serif; font-size: 0.88rem; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .nav-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .nav-btn:disabled { opacity: 0.3; cursor: default; }
+  .nav-btn:disabled:hover { background: var(--card); color: var(--accent); }
+  .ch-counter { font-family: sans-serif; font-size: 0.8rem; color: var(--muted); white-space: nowrap; text-align: center; line-height: 1.5; }
+
+  /* Floating arrows on desktop screens */
+  .float-nav { position: fixed; top: 50%; transform: translateY(-50%); z-index: 150; background: var(--accent); color: #fff; border: none; cursor: pointer; width: 36px; height: 64px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; opacity: 0.35; transition: opacity 0.2s; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+  .float-nav:hover { opacity: 1; }
+  .float-nav:disabled { opacity: 0.08; cursor: default; pointer-events: none; }
+  #floatPrev { left: 0; border-radius: 0 10px 10px 0; }
+  #floatNext { right: 0; border-radius: 10px 0 0 10px; }
+
+  /* Profile views */
+  .profile-back { display: inline-flex; align-items: center; gap: 6px; background: none; border: 1px solid rgba(124,92,58,0.3); border-radius: 8px; padding: 8px 14px; cursor: pointer; color: var(--accent); font-family: sans-serif; font-size: 0.85rem; margin-bottom: 18px; transition: all 0.2s; }
+  .profile-back:hover { background: var(--accent); color: #fff; }
+  .profile-header { background: var(--accent); border-radius: 14px; padding: 20px 18px; color: #fff; margin-bottom: 20px; }
+  .profile-header .p-name { font-size: 1.35rem; margin-bottom: 4px; }
+  .profile-header .p-role { font-size: 0.82rem; opacity: 0.75; font-style: italic; }
+  .profile-section { margin-bottom: 28px; }
+  .profile-section-title { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent); font-family: sans-serif; font-weight: 600; margin-bottom: 14px; padding-bottom: 6px; border-bottom: 1px solid rgba(124,92,58,0.2); }
+  .timeline-group { margin-bottom: 18px; }
+  .timeline-ch-label { font-size: 0.72rem; font-family: sans-serif; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  .timeline-ch-label::after { content: ''; flex: 1; height: 1px; background: rgba(124,92,58,0.15); }
+  .timeline-book-label { font-size: 0.65rem; font-family: sans-serif; color: var(--accent-light); font-style: italic; margin-left: 4px; }
+  .action-item { background: var(--card); border: 1px solid rgba(124,92,58,0.15); border-radius: 10px; padding: 12px 14px; font-size: 0.92rem; line-height: 1.65; color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+  .empty-note { font-size: 0.88rem; color: var(--muted); font-style: italic; }
+
+  /* Analysis layout styles */
+  .analysis-header { background: var(--accent); border-radius: 14px; padding: 18px; color: #fff; margin-bottom: 20px; }
+  .analysis-header h2 { font-size: 1.2rem; font-weight: normal; margin-bottom: 4px; }
+  .analysis-header p { font-size: 0.8rem; opacity: 0.75; font-style: italic; }
+  .analysis-tabs { display: flex; gap: 0; margin-bottom: 20px; background: var(--card); border-radius: 10px; overflow: hidden; border: 1px solid var(--section-border); }
+  .analysis-tab { flex: 1; background: none; border: none; padding: 10px 6px; font-size: 0.72rem; font-family: sans-serif; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); cursor: pointer; transition: all 0.2s; border-bottom: 2px solid transparent; }
+  .analysis-tab:hover { color: var(--accent); }
+  .analysis-tab.active { color: var(--accent); border-bottom-color: var(--accent); background: rgba(124,92,58,0.06); font-weight: 600; }
+  .analysis-panel { display: none; }
+  .analysis-panel.active { display: block; }
+  .analysis-book-group { margin-bottom: 28px; }
+  .analysis-book-label { font-size: 0.78rem; font-family: sans-serif; font-weight: 600; color: var(--accent); margin-bottom: 12px; padding: 8px 12px; background: rgba(124,92,58,0.08); border-radius: 8px; border-left: 3px solid var(--accent-light); }
+  .analysis-chapter-group { margin-bottom: 16px; padding-left: 8px; }
+  .analysis-ch-label { font-size: 0.7rem; font-family: sans-serif; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--section-border); display: flex; align-items: center; gap: 8px; }
+  .analysis-ch-label::after { content: ''; flex: 1; height: 1px; background: var(--section-border); }
+  
+  .analysis-relation-item { background: var(--relation-bg); border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; }
+  .arc-chars { font-size: 0.9rem; font-family: sans-serif; color: var(--accent); margin-bottom: 3px; }
+  .arc-type { font-size: 0.8rem; color: var(--muted); font-style: italic; }
+  
+  .analysis-symbol-item { background: var(--symbol-bg); border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; }
+  .analysis-symbol-header { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 3px; }
+  .asym-name { font-size: 0.88rem; font-family: sans-serif; font-weight: 700; color: var(--accent); }
+  .asym-chapter { font-size: 0.66rem; font-family: sans-serif; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent-light); background: rgba(124,92,58,0.1); padding: 2px 7px; border-radius: 10px; }
+  .asym-meaning { font-size: 0.85rem; color: var(--text); line-height: 1.5; }
+  
+  .analysis-device-item { background: var(--device-bg); border: 1px solid var(--section-border); border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; }
+  .adv-header { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+  .adv-name { font-size: 0.75rem; font-family: sans-serif; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.06em; }
+  .adv-chapter { font-size: 0.66rem; font-family: sans-serif; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent-light); background: rgba(124,92,58,0.1); padding: 2px 7px; border-radius: 10px; }
+  .adv-example { font-size: 0.85rem; color: var(--muted); font-style: italic; line-height: 1.5; }
+  
+  .device-filter-container { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; width: 100%; }
+  .device-filter-label { font-family: sans-serif; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); font-weight: 600; white-space: nowrap; }
+  .device-filter-select { flex: 1; background-color: var(--card); color: var(--text); border: 1px solid rgba(124,92,58,0.3); border-radius: 8px; padding: 10px 12px; font-family: sans-serif; font-size: 0.88rem; outline: none; cursor: pointer; transition: all 0.2s; }
+
+  /* ── MODALS ─────────────────────────────────────────────────────────────── */
+  #quoteModal { display: none; position: fixed; inset: 0; z-index: 600; background: rgba(0,0,0,0.72); align-items: center; justify-content: center; padding: 20px; }
+  #quoteModal.open { display: flex; }
+  .qm-box { background: var(--card); border-radius: 16px; padding: 20px; width: 100%; max-width: 480px; box-shadow: 0 8px 40px rgba(0,0,0,0.35); }
+  .qm-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .qm-title { font-size: 0.75rem; font-family: sans-serif; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); font-weight: 600; }
+  .qm-close { background: none; border: none; cursor: pointer; font-size: 1.2rem; color: var(--muted); line-height: 1; }
+  .qm-canvas-wrap { width: 100%; aspect-ratio: 1; border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
+  #quoteCanvas { width: 100%; height: 100%; display: block; }
+  .qm-actions { display: flex; gap: 10px; }
+  .qm-btn { flex: 1; padding: 11px; border-radius: 9px; font-family: sans-serif; font-size: 0.85rem; cursor: pointer; border: none; transition: all 0.18s; font-weight: 500; letter-spacing: 0.02em; }
+  .qm-btn-dl { background: var(--accent); color: #fff; }
+  .qm-btn-dl:hover { opacity: 0.88; }
+  .qm-btn-cancel { background: var(--tag-bg); color: var(--accent); border: 1px solid rgba(124,92,58,0.2); }
+  .qm-btn-cancel:hover { background: var(--accent); color: #fff; }
+</style>
+</head>
+<body>
+
+<!-- ── SYSTEM HEADER ───────────────────────────────────────────────────────── -->
+<header>
+  <button id="menuBtn" onclick="toggleDrawer()" aria-label="Open chapters list">
+    <span></span><span></span><span></span>
+  </button>
+  <h1 id="seriesTitle">Loading...</h1>
+  
+  <!-- File Import Interface -->
+  <button class="header-icon-btn" onclick="triggerImport()" title="Import new Book Notes JSON file">
+    <svg style="width:14px; height:14px; fill:currentColor;" viewBox="0 0 24 24">
+      <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+    </svg>
+    Import JSON
+  </button>
+  <input type="file" id="jsonFileInput" accept=".json" style="display:none;" onchange="handleJSONUpload(event)" />
+
+  <button class="header-icon-btn" id="analysisBtn" onclick="openAnalysisView()">Analysis</button>
+  <button class="header-icon-btn" id="rightDrawerBtn" onclick="toggleRightDrawer()">Index</button>
+</header>
+
+<!-- Floating Navigators -->
+<button class="float-nav" id="floatPrev" aria-label="Previous chapter" onclick="stepNav(-1)">&#8592;</button>
+<button class="float-nav" id="floatNext" aria-label="Next chapter" onclick="stepNav(1)">&#8594;</button>
+
+<div id="overlay" onclick="closeAllDrawers()"></div>
+
+<!-- ── LEFT DRAWER (CHAPTER FLOW) ──────────────────────────────────────────── -->
+<div id="drawer">
+  <div id="drawerHeader">
+    <div id="drawerHeaderTop">
+      <span id="drawerHeaderLabel">Books & Chapters</span>
+      <button id="themeToggle" onclick="toggleTheme()" aria-label="Toggle light or night theme">
+        <span id="themeIcon">🌙</span>
+        <span id="themeLabel">Night</span>
+      </button>
+    </div>
+  </div>
+  <div id="chapterList"></div>
+</div>
+
+<!-- ── RIGHT DRAWER (SEARCH & TOGGLES) ─────────────────────────────────────── -->
+<div id="rightDrawer">
+  <div id="rightDrawerHeader">
+    <div class="rd-tabs">
+      <button class="rd-tab active" id="rdTabChars" onclick="switchRdTab('chars')">Characters</button>
+      <button class="rd-tab" id="rdTabLocs" onclick="switchRdTab('locs')">Locations</button>
+      <button class="rd-tab" id="rdTabBooks" onclick="switchRdTab('books')">Books</button>
+    </div>
+  </div>
+
+  <!-- Characters Index Panel -->
+  <div class="rd-panel active" id="rdPanelChars">
+    <div class="sort-controls">
+      <button class="sort-btn active" id="sortDefault" onclick="setSort('default')">Default</button>
+      <button class="sort-btn" id="sortAsc" onclick="setSort('asc')">A → Z</button>
+      <button class="sort-btn" id="sortDesc" onclick="setSort('desc')">Z → A</button>
+      <button class="sort-btn" id="sortQuotes" onclick="setSort('quotes')">Quotes</button>
+    </div>
+    <div id="charList"></div>
+  </div>
+
+  <!-- Locations Index Panel -->
+  <div class="rd-panel" id="rdPanelLocs">
+    <div class="sort-controls">
+      <button class="sort-btn active" id="sortLocDefault" onclick="setLocSort('default')">Default</button>
+      <button class="sort-btn" id="sortLocAsc" onclick="setLocSort('asc')">A → Z</button>
+      <button class="sort-btn" id="sortLocDesc" onclick="setLocSort('desc')">Z → A</button>
+    </div>
+    <div id="locList"></div>
+  </div>
+
+  <!-- Book Custom Filter Config Panel -->
+  <div class="rd-panel" id="rdPanelBooks">
+    <div class="book-filter-control-panel">
+      <button class="filter-action-btn" onclick="bulkFilterBooks(true)">Select All</button>
+      <button class="filter-action-btn" onclick="bulkFilterBooks(false)">Deselect All</button>
+    </div>
+    <div id="bookFiltersList"></div>
+  </div>
+</div>
+
+<!-- ── DIALOGS ─────────────────────────────────────────────────────────────── -->
+<div id="spOverlay" onclick="closeSectionsPanel()"></div>
+<div id="sectionsPanel">
+  <div class="sp-title">
+    <span>Show / Hide Sections</span>
+    <button class="sp-close" onclick="closeSectionsPanel()">&#x2715;</button>
+  </div>
+  <div class="sp-toggles" id="spToggles"></div>
+</div>
+
+<div id="quoteModal">
+  <div class="qm-box">
+    <div class="qm-header">
+      <span class="qm-title">Quote Canvas Card</span>
+      <button class="qm-close" onclick="closeQuoteModal()">&#x2715;</button>
+    </div>
+    <div class="qm-canvas-wrap">
+      <canvas id="quoteCanvas" width="1080" height="1080"></canvas>
+    </div>
+    <div class="qm-actions">
+      <button class="qm-btn qm-btn-dl" onclick="downloadQuoteImage()">&#8595; Download PNG</button>
+      <button class="qm-btn qm-btn-cancel" onclick="closeQuoteModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MAIN CONTAINER ──────────────────────────────────────────────────────── -->
+<main id="main">
+  <!-- Interactive Viewports will render here -->
+</main>
+
+<script>
+// ── LOCAL STORAGE & PERSISTENCE ENGINE (INDEXEDDB) ───────────────────────────
+const DB_NAME = 'BookNotesPersistenceDB';
+const DB_VERSION = 1;
+const STORE_NAME = 'seriesDataStore';
+const SERIES_KEY = 'activeSeriesData';
+const BOOK_FILTER_KEY = 'bookFiltersState';
+
+let db = null;
+
+// Standard fallback structured series JSON
+const defaultMockSeriesData = {};
+
+function initIndexedDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    
+    request.onerror = (e) => reject('Database failed to initialize');
+    
+    request.onsuccess = (e) => {
+      db = e.target.result;
+      resolve(db);
+    };
+    
+    request.onupgradeneeded = (e) => {
+      const activeDb = e.target.result;
+      if (!activeDb.objectStoreNames.contains(STORE_NAME)) {
+        activeDb.createObjectStore(STORE_NAME);
+      }
+    };
+  });
+}
+
+function saveToDB(key, val) {
+  return new Promise((resolve, reject) => {
+    if (!db) { reject('Database unavailable'); return; }
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    const store = tx.objectStore(STORE_NAME);
+    const request = store.put(val, key);
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject('Save transaction aborted');
+  });
+}
+
+function getFromDB(key) {
+  return new Promise((resolve) => {
+    if (!db) { resolve(null); return; }
+    const tx = db.transaction(STORE_NAME, 'readonly');
+    const store = tx.objectStore(STORE_NAME);
+    const request = store.get(key);
+    request.onsuccess = (e) => resolve(e.target.result);
+    request.onerror = () => resolve(null);
+  });
+}
+
+// ── GLOBAL APPLICATION STATE ────────────────────────────────────────────────
+let seriesData = null;
+let flatChapters = [];      // Calculated list of readable indices: { bi, ci }
+let flatIndex = 0;          // Position pointing to flatChapters
+let currentView = 'chapter';
+let isNight = false;
+let sortMode = 'default';
+let sortLocMode = 'default';
+let rdActiveTab = 'chars';
+let activeAnalysisTab = 'relationships';
+let currentProfileName = '';
+let selectedDeviceFilter = 'All';
+
+// Book Selection/Filter Array of Boolean flags corresponding to seriesData.books
+let selectedBooksMask = []; 
+
+// Core collapsible sections
+const sectionDefs = [
+  { id: 'sec-summary',       label: 'Summary' },
+  { id: 'sec-events',        label: 'Key Events' },
+  { id: 'sec-characters',    label: 'Characters' },
+  { id: 'sec-emotions',      label: 'Emotions' },
+  { id: 'sec-quotes',        label: 'Quotes' },
+  { id: 'sec-relationships', label: 'Relationships' },
+  { id: 'sec-foreshadow',    label: 'Foreshadowing' },
+  { id: 'sec-symbols',       label: 'Symbols & Motifs' },
+  { id: 'sec-devices',       label: 'Literary Devices' },
+  { id: 'sec-locations',     label: 'Locations' },
+  { id: 'sec-keywords',      label: 'Keywords' },
+  { id: 'sec-moral',         label: 'Moral' }
+];
+const sectionVisibility = {};
+sectionDefs.forEach(s => { sectionVisibility[s.id] = true; });
+
+// ── INIT ENGINE ─────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', async () => {
+  try {
+    await initIndexedDB();
+    const storedSeries = await getFromDB(SERIES_KEY);
+    if (storedSeries && storedSeries.books && storedSeries.books.length > 0) {
+      seriesData = storedSeries;
+    } else {
+      seriesData = defaultMockSeriesData;
+      await saveToDB(SERIES_KEY, seriesData);
+    }
+    
+    // Load previously selected book configuration
+    const storedFilters = await getFromDB(BOOK_FILTER_KEY);
+    if (storedFilters && Array.isArray(storedFilters)) {
+      selectedBooksMask = storedFilters;
+    } else {
+      selectedBooksMask = new Array(seriesData.books.length).fill(true);
+    }
+
+    refreshAppWorkspace();
+  } catch (err) {
+    console.error("IndexedDB startup crash. Using transient fallback state.", err);
+    seriesData = defaultMockSeriesData;
+    selectedBooksMask = new Array(seriesData.books.length).fill(true);
+    refreshAppWorkspace();
+  }
+});
+
+function refreshAppWorkspace() {
+  if (seriesData && seriesData.books) {
+    document.getElementById('seriesTitle').textContent = seriesData.series || 'Series Notes';
+    
+    // Defensive check to ensure the size of the book selection mask matches loaded book length
+    if (!Array.isArray(selectedBooksMask) || selectedBooksMask.length !== seriesData.books.length) {
+      selectedBooksMask = new Array(seriesData.books.length).fill(true);
+    }
+  }
+  
+  rebuildFlatChapters();
+  renderSidebar();
+  renderRightDrawer();
+  
+  if (flatChapters.length > 0) {
+    // Keep index clamped
+    if (flatIndex >= flatChapters.length) flatIndex = 0;
+    renderChapter();
+  } else {
+    renderEmptyState();
+  }
+}
+
+// Rebuild active traversable chapters considering book filters
+function rebuildFlatChapters() {
+  flatChapters = [];
+  if (!seriesData || !seriesData.books) return;
+  for (let bi = 0; bi < seriesData.books.length; bi++) {
+    if (selectedBooksMask && selectedBooksMask[bi] === false) continue; // Filtered book skip
+    const bk = seriesData.books[bi];
+    if (!bk || !bk.chapters) continue;
+    for (let ci = 0; ci < bk.chapters.length; ci++) {
+      flatChapters.push({ bi, ci });
+    }
+  }
+}
+
+// ── IMPORT TRIGGER ENGINE ───────────────────────────────────────────────────
+function triggerImport() {
+  document.getElementById('jsonFileInput').click();
+}
+
+async function handleJSONUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      if (!parsed.series || !Array.isArray(parsed.books)) {
+        throw new Error("Invalid structure. Must contain a 'series' name and a 'books' array.");
+      }
+      
+      // Save valid data
+      seriesData = parsed;
+      await saveToDB(SERIES_KEY, seriesData);
+      
+      // Reset filter configurations
+      selectedBooksMask = new Array(seriesData.books.length).fill(true);
+      await saveToDB(BOOK_FILTER_KEY, selectedBooksMask);
+      
+      flatIndex = 0;
+      currentView = 'chapter';
+      refreshAppWorkspace();
+      notifyUser("Success: Series data imported & persisted safely.");
+    } catch (err) {
+      notifyUser("Error: Please provide a valid JSON file structure. Details: " + err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = ''; // Reset input element
+}
+
+function notifyUser(msg) {
+  const alertEl = document.createElement('div');
+  alertEl.style.position = 'fixed';
+  alertEl.style.bottom = '20px';
+  alertEl.style.left = '50%';
+  alertEl.style.transform = 'translateX(-50%)';
+  alertEl.style.background = 'var(--drawer-bg)';
+  alertEl.style.color = 'var(--drawer-text)';
+  alertEl.style.padding = '12px 24px';
+  alertEl.style.borderRadius = '30px';
+  alertEl.style.zIndex = '9999';
+  alertEl.style.fontFamily = 'sans-serif';
+  alertEl.style.fontSize = '0.85rem';
+  alertEl.style.boxShadow = '0 4px 20px rgba(0,0,0,0.3)';
+  alertEl.style.border = '1px solid var(--accent-light)';
+  alertEl.textContent = msg;
+  document.body.appendChild(alertEl);
+  setTimeout(() => { alertEl.remove(); }, 3200);
+}
+
+// Empty Viewport rendering in case no books are filtered
+function renderEmptyState() {
+  document.getElementById('main').innerHTML = `
+    <div class="db-empty-state">
+      <svg viewBox="0 0 24 24">
+        <path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM9 4h2v5l-1-.75L9 9V4zm9 16H6V4h1v9l2.5-1.88L12 13V4h6v16z"/>
+      </svg>
+      <h3>No Active Books Visible</h3>
+      <p>Ensure that at least one book in the "Books" filter tab of your Index drawer is selected to continue analyzing.</p>
+      <button class="import-action-btn" onclick="bulkFilterBooks(true)">Enable All Books</button>
+    </div>
+  `;
+  updateFloatBtns();
+}
+
+// ── NAVIGATION CONTROLS ──────────────────────────────────────────────────────
+function currentBook() { 
+  if (!flatChapters[flatIndex]) return null;
+  return seriesData.books[flatChapters[flatIndex].bi]; 
+}
+
+// Active chapter extraction
+function currentChapter() { 
+  if (!flatChapters[flatIndex]) return null;
+  const bk = currentBook();
+  return bk ? bk.chapters[flatChapters[flatIndex].ci] : null; 
+}
+
+function goToFlat(idx) {
+  if (idx < 0 || idx >= flatChapters.length) return;
+  flatIndex = idx;
+  currentView = 'chapter';
+  renderChapter();
+  closeAllDrawers();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function stepNav(dir) { goToFlat(flatIndex + dir); }
+
+function goToBookChapter(bi, ci) {
+  const targetIdx = flatChapters.findIndex(item => item.bi === bi && item.ci === ci);
+  if (targetIdx !== -1) {
+    goToFlat(targetIdx);
+  }
+}
+
+// ── LEFT DRAWER RENDERER (CHAPTER FLOW) ──────────────────────────────────────
+function renderSidebar() {
+  let html = '';
+  if (!seriesData || !seriesData.books) return;
+
+  for (let bi = 0; bi < seriesData.books.length; bi++) {
+    // Only show active books in the navigation sidebar list
+    if (selectedBooksMask && selectedBooksMask[bi] === false) continue;
+
+    const bk = seriesData.books[bi];
+    if (!bk || !bk.chapters) continue;
+    const isCurrentActiveBook = (currentView === 'chapter' && flatChapters[flatIndex] && flatChapters[flatIndex].bi === bi);
+    const collapsed = !isCurrentActiveBook ? ' collapsed' : '';
+    
+    html += `
+      <div class="book-group${collapsed}" id="bg-${bi}">
+        <div class="book-group-header${isCurrentActiveBook ? ' has-active' : ''}" onclick="toggleBookGroup(${bi})">
+          <span class="book-group-title">${bk.title || 'Untitled Book'}</span>
+          <span class="book-group-chevron">&#9660;</span>
+        </div>
+        <div class="book-chapters">
+    `;
+    
+    for (let ci = 0; ci < bk.chapters.length; ci++) {
+      const ch = bk.chapters[ci];
+      if (!ch) continue;
+      const isCurrentActiveChapter = (currentView === 'chapter' && flatChapters[flatIndex] && flatChapters[flatIndex].bi === bi && flatChapters[flatIndex].ci === ci);
+      
+      // Removed chapter toggle checkbox. Left-side elements are now pure and responsive chapter links.
+      html += `
+        <div class="ch-item${isCurrentActiveChapter ? ' active' : ''}" onclick="goToBookChapter(${bi}, ${ci})">
+          ${ch.chapter || `Chapter ${ci + 1}`}
+        </div>
+      `;
+    }
+    
+    html += `
+        </div>
+      </div>
+    `;
+  }
+  
+  if (!html) {
+    html = `<div style="padding: 16px; font-size: 0.85rem; color: rgba(255,255,255,0.4); text-align: center; font-style: italic;">No active books selected in filters.</div>`;
+  }
+  
+  document.getElementById('chapterList').innerHTML = html;
+}
+
+function toggleBookGroup(bi) {
+  const el = document.getElementById('bg-' + bi);
+  if (el) el.classList.toggle('collapsed');
+}
+
+// ── RIGHT DRAWER RENDERER (SEARCH & FILTER CHIPS) ───────────────────────────
+function switchRdTab(tab) {
+  rdActiveTab = tab;
+  ['chars', 'locs', 'books'].forEach(t => {
+    const tabBtn = document.getElementById(`rdTab${t.charAt(0).toUpperCase() + t.slice(1)}`);
+    const tabPanel = document.getElementById(`rdPanel${t.charAt(0).toUpperCase() + t.slice(1)}`);
+    if (tabBtn) tabBtn.classList.toggle('active', tab === t);
+    if (tabPanel) tabPanel.classList.toggle('active', tab === t);
+  });
+}
+
+function setSort(mode) {
+  sortMode = mode;
+  ['Default', 'Asc', 'Desc', 'Quotes'].forEach(m => {
+    const btn = document.getElementById('sort' + m);
+    if (btn) btn.classList.toggle('active', m.toLowerCase() === mode.toLowerCase());
+  });
+  renderRightDrawer();
+}
+
+function setLocSort(mode) {
+  sortLocMode = mode;
+  ['Default', 'Asc', 'Desc'].forEach(m => {
+    const btn = document.getElementById('sortLoc' + m);
+    if (btn) btn.classList.toggle('active', m.toLowerCase() === mode.toLowerCase());
+  });
+  renderRightDrawer();
+}
+
+// Dynamically toggles specific Book filters and saves config
+async function toggleBookFilter(bookIndex) {
+  selectedBooksMask[bookIndex] = !selectedBooksMask[bookIndex];
+  await saveToDB(BOOK_FILTER_KEY, selectedBooksMask);
+  refreshAppWorkspace();
+}
+
+async function bulkFilterBooks(enableAll) {
+  selectedBooksMask = new Array(seriesData.books.length).fill(enableAll);
+  await saveToDB(BOOK_FILTER_KEY, selectedBooksMask);
+  refreshAppWorkspace();
+}
+
+// Comprehensive global indices matching currently filtered books with crash safety guards
+function getCharacterIndex() {
+  const seen = {};
+  const chars = [];
+  if (!seriesData || !seriesData.books) return chars;
+  
+  for (let bi = 0; bi < seriesData.books.length; bi++) {
+    if (selectedBooksMask && selectedBooksMask[bi] === false) continue; // Filtered book skip
+    const bk = seriesData.books[bi];
+    if (!bk || !bk.chapters) continue;
+    
+    for (let ci = 0; ci < bk.chapters.length; ci++) {
+      const ch = bk.chapters[ci];
+      if (!ch) continue;
+      
+      const characters = Array.isArray(ch.characters) ? ch.characters : [];
+      for (let j = 0; j < characters.length; j++) {
+        const c = characters[j];
+        if (!c || !c.name) continue;
+        const cName = String(c.name);
+        if (!seen[cName]) {
+          seen[cName] = { 
+            name: cName, 
+            role: c.role || '', 
+            chaptersCount: 0, 
+            actionsCount: 0, 
+            quotesCount: 0 
+          };
+          chars.push(seen[cName]);
+        }
+        seen[cName].chaptersCount++;
+        if (c.actions && String(c.actions).trim()) seen[cName].actionsCount++;
+      }
+      
+      const quotes = Array.isArray(ch.quotes) ? ch.quotes : [];
+      for (let q = 0; q < quotes.length; q++) {
+        const quoteItem = quotes[q];
+        if (!quoteItem) continue;
+        const qcn = quoteItem.character_name;
+        if (!qcn) continue;
+        const qcnStr = String(qcn);
+        chars.forEach(charObj => {
+          const charName = charObj.name;
+          if (qcnStr === charName || charName.indexOf(qcnStr) !== -1 || qcnStr.indexOf(charName.split(' ')[0]) !== -1) {
+            charObj.quotesCount++;
+          }
+        });
+      }
+    }
+  }
+
+  // Alpha / Numeric custom sort operations
+  if (sortMode === 'asc' || sortMode === 'desc') {
+    const dir = sortMode === 'asc' ? 1 : -1;
+    chars.sort((a, b) => {
+      const na = Array.from(a.name || ''), nb = Array.from(b.name || '');
+      const len = Math.min(na.length, nb.length);
+      for (let k = 0; k < len; k++) {
+        const ca = na[k].codePointAt(0), cb = nb[k].codePointAt(0);
+        if (ca !== cb) return (ca - cb) * dir;
+      }
+      return (na.length - nb.length) * dir;
+    });
+  } else if (sortMode === 'quotes') {
+    chars.sort((a, b) => b.quotesCount - a.quotesCount);
+  }
+  return chars;
+}
+
+function getLocationIndex() {
+  const seen = {};
+  const locs = [];
+  if (!seriesData || !seriesData.books) return locs;
+  
+  for (let bi = 0; bi < seriesData.books.length; bi++) {
+    if (selectedBooksMask && selectedBooksMask[bi] === false) continue; // Filtered book skip
+    const bk = seriesData.books[bi];
+    if (!bk || !bk.chapters) continue;
+    
+    for (let ci = 0; ci < bk.chapters.length; ci++) {
+      const ch = bk.chapters[ci];
+      if (!ch || !ch.locations || !Array.isArray(ch.locations)) continue;
+      
+      for (let j = 0; j < ch.locations.length; j++) {
+        const l = ch.locations[j];
+        if (!l || !l.name) continue;
+        const lName = String(l.name);
+        if (!seen[lName]) {
+          seen[lName] = { name: lName, description: l.description || '', refs: [] };
+          locs.push(seen[lName]);
+        }
+        seen[lName].refs.push((bk.title || 'Untitled') + ' · ' + (ch.chapter || `Chapter ${ci + 1}`));
+      }
+    }
+  }
+
+  if (sortLocMode === 'asc' || sortLocMode === 'desc') {
+    const dir = sortLocMode === 'asc' ? 1 : -1;
+    locs.sort((a, b) => {
+      const na = Array.from(a.name || ''), nb = Array.from(b.name || '');
+      const len = Math.min(na.length, nb.length);
+      for (let k = 0; k < len; k++) {
+        const ca = na[k].codePointAt(0), cb = nb[k].codePointAt(0);
+        if (ca !== cb) return (ca - cb) * dir;
+      }
+      return (na.length - nb.length) * dir;
+    });
+  }
+  return locs;
+}
+
+function renderRightDrawer() {
+  // Characters render block
+  const chars = getCharacterIndex();
+  let charHTML = '';
+  for (let i = 0; i < chars.length; i++) {
+    const cleanName = String(chars[i].name).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    charHTML += `
+      <div class="char-index-item" onclick="openCharacterProfile('${cleanName}')">
+        <span class="ci-name">${chars[i].name}</span>
+        <span class="ci-role">${chars[i].role || 'No role provided'}</span>
+        <div class="ci-stats">
+          <span class="stat-badge" title="Chapters">
+            <svg viewBox="0 0 24 24"><path d="M21 4H3c-1.1 0-2 .9-2 2v13c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 15H3V6h18v13zM5 7h5v2H5V7zm0 4h5v2H5v-2zm0 4h5v2H5v-2zm7-8h7v2h-7V7zm0 4h7v2h-7v-2zm0 4h7v2h-7v-2z"/></svg>
+            ${chars[i].chaptersCount}
+          </span>
+          <span class="stat-badge" title="Quotes">
+            <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
+            ${chars[i].quotesCount}
+          </span>
+        </div>
+      </div>
+    `;
+  }
+  if (!charHTML) {
+    charHTML = '<div style="padding:16px 20px;font-size:0.85rem;color:rgba(245,240,232,0.4);font-style:italic;">No active characters found.</div>';
+  }
+  document.getElementById('charList').innerHTML = charHTML;
+
+  // Locations render block
+  const locs = getLocationIndex();
+  let locHTML = '';
+  if (!locs.length) {
+    locHTML = '<div style="padding:16px 20px;font-size:0.85rem;color:rgba(245,240,232,0.4);font-style:italic;">No locations found.</div>';
+  } else {
+    for (let i = 0; i < locs.length; i++) {
+      locHTML += `
+        <div class="loc-index-item">
+          <span class="li-name">${locs[i].name}</span>
+          <span class="li-desc">${locs[i].description}</span>
+          <span class="li-chapter">${locs[i].refs.join(' · ')}</span>
+        </div>
+      `;
+    }
+  }
+  document.getElementById('locList').innerHTML = locHTML;
+
+  // Book custom filters renderer
+  let filterHTML = '';
+  if (seriesData && seriesData.books) {
+    for (let i = 0; i < seriesData.books.length; i++) {
+      const bk = seriesData.books[i];
+      const isChecked = selectedBooksMask[i] ? 'checked' : '';
+      const chsCount = bk && bk.chapters ? bk.chapters.length : 0;
+      filterHTML += `
+        <div class="filter-book-item" onclick="toggleBookFilter(${i})">
+          <div class="filter-book-info">
+            <span class="filter-book-title">${bk.title || 'Untitled Book'}</span>
+            <span class="filter-book-meta">${chsCount} Chapters</span>
+          </div>
+          <label class="switch" onclick="event.stopPropagation();">
+            <input type="checkbox" ${isChecked} onchange="toggleBookFilter(${i})">
+            <span class="slider"></span>
+          </label>
+        </div>
+      `;
+    }
+  }
+  document.getElementById('bookFiltersList').innerHTML = filterHTML;
+}
+
+// ── COMPREHENSIVE LITERARY DEVICES ANALYSIS ─────────────────────────────────
+function openAnalysisView() {
+  try {
+    currentView = 'analysis';
+    closeAllDrawers();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    renderAnalysis();
+    renderSidebar();
+    updateFloatBtns();
+    const analysisBtn = document.getElementById('analysisBtn');
+    const rightDrawerBtn = document.getElementById('rightDrawerBtn');
+    if (analysisBtn) analysisBtn.classList.add('active-view');
+    if (rightDrawerBtn) rightDrawerBtn.classList.remove('active-view');
+  } catch (err) {
+    console.error("Crash during openAnalysisView:", err);
+  }
+}
+
+function switchAnalysisTab(tab) {
+  activeAnalysisTab = tab;
+  document.querySelectorAll('.analysis-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.analysis-panel').forEach(p => p.classList.remove('active'));
+  
+  const selectedTab = document.getElementById('atab-' + tab);
+  const selectedPanel = document.getElementById('apanel-' + tab);
+  if (selectedTab) selectedTab.classList.add('active');
+  if (selectedPanel) selectedPanel.classList.add('active');
+}
+
+function selectDeviceFilter(v) {
+  selectedDeviceFilter = v;
+  renderAnalysis();
+}
+
+function renderAnalysis() {
+  try {
+    let html = '<button class="profile-back" onclick="backToChapter()">&#8592; Back to Chapter</button>';
+    html += `
+      <div class="analysis-header">
+        <h2>Analysis Index</h2>
+        <p>${seriesData ? seriesData.series : 'Notes'} — Filtered Analytical Insights</p>
+      </div>
+    `;
+    
+    html += '<div class="analysis-tabs">';
+    ['relationships', 'symbols', 'devices'].forEach(tab => {
+      const labels = { relationships: 'Relationships', symbols: 'Symbols', devices: 'Literary Devices' };
+      html += `<button class="analysis-tab${activeAnalysisTab === tab ? ' active' : ''}" id="atab-${tab}" onclick="switchAnalysisTab('${tab}')">${labels[tab]}</button>`;
+    });
+    html += '</div>';
+
+    // PANEL: CHARACTER RELATIONSHIPS
+    html += `<div class="analysis-panel${activeAnalysisTab === 'relationships' ? ' active' : ''}" id="apanel-relationships">`;
+    let totalRelationsAdded = 0;
+    if (seriesData && seriesData.books) {
+      for (let bi = 0; bi < seriesData.books.length; bi++) {
+        if (selectedBooksMask && selectedBooksMask[bi] === false) continue; // Filter check
+        
+        const bk = seriesData.books[bi];
+        if (!bk || !bk.chapters) continue;
+        let hasAny = false;
+        let bhtml = `<div class="analysis-book-group"><div class="analysis-book-label">${bk.title || 'Untitled Book'}</div>`;
+        
+        for (let ci = 0; ci < bk.chapters.length; ci++) {
+          const ch = bk.chapters[ci];
+          if (!ch) continue;
+          const relationships = Array.isArray(ch.character_relationships) ? ch.character_relationships : [];
+          if (!relationships.length) continue;
+          hasAny = true;
+          totalRelationsAdded++;
+          bhtml += `<div class="analysis-chapter-group"><div class="analysis-ch-label">${ch.chapter || `Chapter ${ci + 1}`}</div>`;
+          relationships.forEach(r => {
+            if (!r || !r.characters) return;
+            bhtml += `
+              <div class="analysis-relation-item">
+                <div class="arc-chars">${Array.isArray(r.characters) ? r.characters.join(' — ') : ''}</div>
+                <div class="arc-type">${r.relationship || ''}</div>
+              </div>
+            `;
+          });
+          bhtml += '</div>';
+        }
+        bhtml += '</div>';
+        if (hasAny) html += bhtml;
+      }
+    }
+    if (totalRelationsAdded === 0) {
+      html += '<p class="empty-note">No character relationships recorded in currently active books.</p>';
+    }
+    html += '</div>';
+
+    // PANEL: SYMBOLS & MOTIFS
+    html += `<div class="analysis-panel${activeAnalysisTab === 'symbols' ? ' active' : ''}" id="apanel-symbols">`;
+    let totalSymbolsAdded = 0;
+    if (seriesData && seriesData.books) {
+      for (let bi = 0; bi < seriesData.books.length; bi++) {
+        if (selectedBooksMask && selectedBooksMask[bi] === false) continue;
+        
+        const bk = seriesData.books[bi];
+        if (!bk || !bk.chapters) continue;
+        let hasAny = false;
+        let bhtml = `<div class="analysis-book-group"><div class="analysis-book-label">${bk.title || 'Untitled Book'}</div>`;
+        
+        for (let ci = 0; ci < bk.chapters.length; ci++) {
+          const ch = bk.chapters[ci];
+          if (!ch) continue;
+          const symbols = Array.isArray(ch.symbols_motifs) ? ch.symbols_motifs : [];
+          if (!symbols.length) continue;
+          hasAny = true;
+          totalSymbolsAdded++;
+          bhtml += `<div class="analysis-chapter-group"><div class="analysis-ch-label">${ch.chapter || `Chapter ${ci + 1}`}</div>`;
+          symbols.forEach(s => {
+            if (!s) return;
+            bhtml += `
+              <div class="analysis-symbol-item">
+                <div class="analysis-symbol-header">
+                  <span class="asym-name">${s.symbol || ''}</span>
+                  <span class="asym-chapter">${ch.chapter || `Chapter ${ci + 1}`}</span>
+                </div>
+                <div class="asym-meaning">${s.meaning || ''}</div>
+              </div>
+            `;
+          });
+          bhtml += '</div>';
+        }
+        bhtml += '</div>';
+        if (hasAny) html += bhtml;
+      }
+    }
+    if (totalSymbolsAdded === 0) {
+      html += '<p class="empty-note">No symbols recorded in currently active books.</p>';
+    }
+    html += '</div>';
+
+    // PANEL: LITERARY DEVICES (WITH SPECIFIC COMPONENT FILTER)
+    html += `<div class="analysis-panel${activeAnalysisTab === 'devices' ? ' active' : ''}" id="apanel-devices">`;
+    const uniqueDevices = ['All'];
+    const deviceCounts = { 'All': 0 };
+    
+    if (seriesData && seriesData.books) {
+      for (let bi = 0; bi < seriesData.books.length; bi++) {
+        if (selectedBooksMask && selectedBooksMask[bi] === false) continue;
+        const bk = seriesData.books[bi];
+        if (!bk || !bk.chapters) continue;
+        for (let ci = 0; ci < bk.chapters.length; ci++) {
+          const ch = bk.chapters[ci];
+          if (!ch || !ch.literary_devices || !Array.isArray(ch.literary_devices)) continue;
+          ch.literary_devices.forEach(d => {
+            if (d && d.device) {
+              const devName = String(d.device);
+              if (uniqueDevices.indexOf(devName) === -1) {
+                uniqueDevices.push(devName);
+                deviceCounts[devName] = 0;
+              }
+              deviceCounts[devName]++;
+              deviceCounts['All']++;
+            }
+          });
+        }
+      }
+    }
+    
+    html += `
+      <div class="device-filter-container">
+        <label class="device-filter-label">Device:</label>
+        <select class="device-filter-select" onchange="selectDeviceFilter(this.value)">
+    `;
+    uniqueDevices.forEach(dn => {
+      html += `<option value="${String(dn).replace(/"/g, '&quot;')}"${selectedDeviceFilter === dn ? ' selected' : ''}>${dn} (${deviceCounts[dn]})</option>`;
+    });
+    html += '</select></div>';
+
+    let totalDevicesAdded = 0;
+    if (seriesData && seriesData.books) {
+      for (let bi = 0; bi < seriesData.books.length; bi++) {
+        if (selectedBooksMask && selectedBooksMask[bi] === false) continue;
+        
+        const bk = seriesData.books[bi];
+        if (!bk || !bk.chapters) continue;
+        let hasAny = false;
+        let bhtml = `<div class="analysis-book-group"><div class="analysis-book-label">${bk.title || 'Untitled Book'}</div>`;
+        
+        for (let ci = 0; ci < bk.chapters.length; ci++) {
+          const ch = bk.chapters[ci];
+          if (!ch) continue;
+          const devices = Array.isArray(ch.literary_devices) ? ch.literary_devices : [];
+          if (!devices.length) continue;
+          
+          let chHTML = '';
+          devices.forEach(d => {
+            if (!d || !d.device) return;
+            if (selectedDeviceFilter !== 'All' && d.device !== selectedDeviceFilter) return;
+            chHTML += `
+              <div class="analysis-device-item">
+                <div class="adv-header">
+                  <span class="adv-name">${d.device}</span>
+                  <span class="adv-chapter">${ch.chapter || `Chapter ${ci + 1}`}</span>
+                </div>
+                <div class="adv-example">${d.example || ''}</div>
+              </div>
+            `;
+          });
+          if (chHTML) {
+            hasAny = true;
+            totalDevicesAdded++;
+            bhtml += `<div class="analysis-chapter-group"><div class="analysis-ch-label">${ch.chapter || `Chapter ${ci + 1}`}</div>${chHTML}</div>`;
+          }
+        }
+        bhtml += '</div>';
+        if (hasAny) html += bhtml;
+      }
+    }
+    if (totalDevicesAdded === 0) {
+      html += '<p class="empty-note">No matching literary devices found in active books.</p>';
+    }
+    html += '</div>';
+
+    document.getElementById('main').innerHTML = html;
+  } catch (err) {
+    console.error("Crash during renderAnalysis:", err);
+    document.getElementById('main').innerHTML = `<div class="db-empty-state"><h3>Analytical Engine Failure</h3><p>${err.message}</p></div>`;
+  }
+}
+
+// ── CHARACTER PROFILE INTERFACE ──────────────────────────────────────────────
+function openCharacterProfile(name) {
+  try {
+    currentView = 'character';
+    currentProfileName = name;
+    closeAllDrawers();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    let role = '';
+    // Identify role matching character from database safely
+    if (seriesData && seriesData.books) {
+      for (let bi = 0; bi < seriesData.books.length && !role; bi++) {
+        const bk = seriesData.books[bi];
+        if (!bk || !bk.chapters) continue;
+        for (let ci = 0; ci < bk.chapters.length && !role; ci++) {
+          const ch = bk.chapters[ci];
+          if (!ch || !ch.characters) continue;
+          ch.characters.forEach(c => {
+            if (c && c.name === name) role = c.role || '';
+          });
+        }
+      }
+    }
+
+    const quotesByRef = [], actionsByRef = [], emotionsByRef = [];
+    if (seriesData && seriesData.books) {
+      for (let bi = 0; bi < seriesData.books.length; bi++) {
+        if (selectedBooksMask && selectedBooksMask[bi] === false) continue; // Filter validation
+        const bk = seriesData.books[bi];
+        if (!bk || !bk.chapters) continue;
+        
+        for (let ci = 0; ci < bk.chapters.length; ci++) {
+          const ch = bk.chapters[ci];
+          if (!ch) continue;
+          const refLabel = (bk.title || 'Untitled Book') + ' · ' + (ch.chapter || `Chapter ${ci + 1}`);
+          
+          // Actions
+          const characters = Array.isArray(ch.characters) ? ch.characters : [];
+          characters.forEach(c => {
+            if (c && c.name === name && c.actions) {
+              actionsByRef.push({ ref: refLabel, action: c.actions });
+            }
+          });
+          // Emotions
+          if (ch.character_emotions) {
+            ch.character_emotions.forEach(em => {
+              if (em && em.name && (em.name === name || name.indexOf(em.name) !== -1 || em.name.indexOf(name.split(' ')[0]) !== -1)) {
+                if (em.emotion) {
+                  emotionsByRef.push({ ref: refLabel, emotion: em.emotion });
+                }
+              }
+            });
+          }
+          // Quotes
+          const qs = [];
+          const quotes = Array.isArray(ch.quotes) ? ch.quotes : [];
+          quotes.forEach(q => {
+            if (!q) return;
+            const qcn = q.character_name;
+            if (qcn && (qcn === name || name.indexOf(qcn) !== -1 || qcn.indexOf(name.split(' ')[0]) !== -1)) {
+              if (q.quote) qs.push(q.quote);
+            }
+          });
+          if (qs.length) quotesByRef.push({ ref: refLabel, quotes: qs });
+        }
+      }
+    }
+
+    let html = '<button class="profile-back" onclick="backToChapter()">&#8592; Back</button>';
+    html += `
+      <div class="profile-header">
+        <div class="p-name">${name}</div>
+        <div class="p-role">${role || 'Character'}</div>
+      </div>
+    `;
+    
+    html += '<div class="profile-section"><div class="profile-section-title">Actions</div>';
+    if (!actionsByRef.length) html += '<p class="empty-note">No actions recorded in selected books.</p>';
+    else actionsByRef.forEach(a => {
+      html += `<div class="timeline-group"><div class="timeline-ch-label">${a.ref}</div><div class="action-item">${a.action}</div></div>`;
+    });
+    html += '</div>';
+
+    html += '<div class="profile-section"><div class="profile-section-title">Emotions</div>';
+    if (!emotionsByRef.length) html += '<p class="empty-note">No emotions recorded in selected books.</p>';
+    else emotionsByRef.forEach(e => {
+      html += `<div class="timeline-group"><div class="timeline-ch-label">${e.ref}</div><div class="action-item" style="font-style:italic;color:var(--muted)">${e.emotion}</div></div>`;
+    });
+    html += '</div>';
+
+    html += '<div class="profile-section"><div class="profile-section-title">Quotes</div>';
+    if (!quotesByRef.length) html += '<p class="empty-note">No quotes recorded in selected books.</p>';
+    else quotesByRef.forEach(qg => {
+      html += `
+        <div class="timeline-group"><div class="timeline-ch-label">${qg.ref}</div><div class="quotes-block">
+      `;
+      qg.quotes.forEach(q => {
+        html += `<div class="quote-item"><span class="quote-text">${q}</span></div>`;
+      });
+      html += '</div></div>';
+    });
+    html += '</div>';
+
+    document.getElementById('main').innerHTML = html;
+    renderSidebar();
+    updateFloatBtns();
+  } catch (err) {
+    console.error("Crash during openCharacterProfile:", err);
+  }
+}
+
+function backToChapter() {
+  currentView = 'chapter';
+  if (flatChapters.length > 0) renderChapter();
+  else renderEmptyState();
+}
+
+// ── RENDER ENGINE: ACTIVE CHAPTER VIEWPORT ───────────────────────────────────
+function toggleChar(idx) {
+  const popup = document.getElementById('popup-' + idx);
+  const btn = document.getElementById('chartag-' + idx);
+  if (!popup || !btn) return;
+  const isOpen = popup.classList.contains('show');
+  
+  document.querySelectorAll('.char-popup').forEach(p => p.classList.remove('show'));
+  document.querySelectorAll('.char-tag').forEach(t => t.classList.remove('active'));
+  
+  if (!isOpen) {
+    popup.classList.add('show');
+    btn.classList.add('active');
+  }
+}
+
+function collapseSection(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('collapsed');
+}
+
+function renderChapter() {
+  try {
+    const bk = currentBook();
+    const ch = currentChapter();
+    if (!bk || !ch) {
+      renderEmptyState();
+      return;
+    }
+    
+    const total = flatChapters.length;
+    const analysisBtn = document.getElementById('analysisBtn');
+    const rightDrawerBtn = document.getElementById('rightDrawerBtn');
+    if (analysisBtn) analysisBtn.classList.remove('active-view');
+    if (rightDrawerBtn) rightDrawerBtn.classList.remove('active-view');
+
+    function secLabel(id, label) {
+      return `<div class="section-label">${label}<button class="section-collapse-btn" onclick="collapseSection('${id}')">&#x25BC;</button></div>`;
+    }
+    function secBlock(id, label, bodyHTML) {
+      return `<div class="section-block${!sectionVisibility[id] ? ' hidden-section' : ''}" id="${id}">${secLabel(id, label)}<div class="section-body">${bodyHTML}</div></div>`;
+    }
+
+    const summaryHTML = `<p class="summary-text">${ch.summary || 'No summary available.'}</p>`;
+
+    let eventsHTML = '<div class="events-list">';
+    const keyEvents = Array.isArray(ch.key_events) ? ch.key_events : [];
+    keyEvents.forEach((ev, i) => {
+      eventsHTML += `<div class="event-item"><span class="event-num">${i + 1}</span><div class="event-text">${ev}</div></div>`;
+    });
+    if (!keyEvents.length) eventsHTML += '<div class="empty-note">No key events recorded.</div>';
+    eventsHTML += '</div>';
+
+    let charsHTML = '<div class="char-tags">';
+    const characters = Array.isArray(ch.characters) ? ch.characters : [];
+    characters.forEach((c, i) => {
+      if (!c || !c.name) return;
+      let emotionStr = '';
+      if (ch.character_emotions && Array.isArray(ch.character_emotions)) {
+        ch.character_emotions.forEach(em => {
+          if (em && em.name) {
+            const emName = String(em.name);
+            const charName = String(c.name);
+            const firstWord = charName.split(' ')[0] || '';
+            if (emName === charName || charName.indexOf(emName) !== -1 || (firstWord && emName.indexOf(firstWord) !== -1)) {
+              emotionStr = em.emotion || '';
+            }
+          }
+        });
+      }
+      const cleanEscapedName = String(c.name).replace(/'/g, "\\'");
+      charsHTML += `
+        <div>
+          <button class="char-tag" id="chartag-${i}" onclick="toggleChar(${i})">${c.name}</button>
+          <div class="char-popup" id="popup-${i}">
+            <strong>${c.name}</strong>
+            <div class="role">${c.role || ''}</div>
+            <div class="actions">${c.actions || ''}</div>
+            ${emotionStr ? `<div class="cp-emotion-label">Emotion</div><div class="cp-emotion">${emotionStr}</div>` : ''}
+            <div style="margin-top:10px;">
+              <button onclick="openCharacterProfile('${cleanEscapedName}')" style="background:none;border:1px solid rgba(124,92,58,0.3);border-radius:6px;padding:5px 10px;font-size:0.75rem;font-family:sans-serif;color:var(--accent);cursor:pointer;">
+                View Profile &#8594;
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    if (!characters.length) charsHTML += '<div class="empty-note">No characters recorded.</div>';
+    charsHTML += '</div>';
+
+    let emotionsHTML = '<div class="emotions-grid">';
+    const characterEmotions = Array.isArray(ch.character_emotions) ? ch.character_emotions : [];
+    characterEmotions.forEach(em => {
+      if (!em || !em.name) return;
+      emotionsHTML += `
+        <div class="emotion-row">
+          <div class="emotion-name">${em.name}</div>
+          <div class="emotion-text">${em.emotion || ''}</div>
+        </div>
+      `;
+    });
+    if (!characterEmotions.length) emotionsHTML += '<div class="empty-note">No emotions recorded.</div>';
+    emotionsHTML += '</div>';
+
+    let quotesHTML = '<div class="quotes-block">';
+    const quotes = Array.isArray(ch.quotes) ? ch.quotes : [];
+    quotes.forEach(q => {
+      if (!q || !q.quote) return;
+      const quoteText = String(q.quote);
+      const charName = String(q.character_name || 'Unknown');
+      const chName = String(ch.chapter || '');
+      
+      const sq = quoteText.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      const sc = charName.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      const scp = chName.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      quotesHTML += `
+        <div class="quote-item">
+          <span class="quote-text">${quoteText}</span>
+          <div class="quote-footer">
+            <span class="quote-author">— ${charName}</span>
+            <button class="quote-share-btn" onclick="openQuoteModal('${sq}','${sc}','${scp}')">
+              <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
+              Image
+            </button>
+          </div>
+        </div>
+      `;
+    });
+    if (!quotes.length) quotesHTML += '<div class="empty-note">No quotes recorded.</div>';
+    quotesHTML += '</div>';
+
+    let relHTML = '<div class="relations-list">';
+    const relationships = Array.isArray(ch.character_relationships) ? ch.character_relationships : [];
+    relationships.forEach(r => {
+      if (!r) return;
+      const rChars = Array.isArray(r.characters) ? r.characters : [];
+      if (rChars.length === 0) return;
+      relHTML += `
+        <div class="relation-item">
+          <div style="flex:1">
+            <div class="relation-chars">${rChars.join('<span class="relation-sep"> — </span>')}</div>
+            <div class="relation-type">${r.relationship || ''}</div>
+          </div>
+        </div>
+      `;
+    });
+    if (!relationships.length) relHTML += '<div class="empty-note">No relationships recorded.</div>';
+    relHTML += '</div>';
+
+    let foreshadowHTML = '<div class="foreshadow-list">';
+    const foreshadowing = Array.isArray(ch.foreshadowing) ? ch.foreshadowing : [];
+    foreshadowing.forEach(f => {
+      foreshadowHTML += `<div class="foreshadow-item">${f}</div>`;
+    });
+    if (!foreshadowing.length) foreshadowHTML += '<div class="empty-note">No foreshadowing recorded.</div>';
+    foreshadowHTML += '</div>';
+
+    let symbolsHTML = '<div class="symbols-grid">';
+    const symbols = Array.isArray(ch.symbols_motifs) ? ch.symbols_motifs : [];
+    symbols.forEach(s => {
+      if (!s) return;
+      symbolsHTML += `
+        <div class="symbol-item">
+          <div class="symbol-name">${s.symbol || ''}</div>
+          <div class="symbol-meaning">${s.meaning || ''}</div>
+        </div>
+      `;
+    });
+    if (!symbols.length) symbolsHTML += '<div class="empty-note">No symbols recorded.</div>';
+    symbolsHTML += '</div>';
+
+    let devicesHTML = '<div class="devices-list">';
+    const literaryDevices = Array.isArray(ch.literary_devices) ? ch.literary_devices : [];
+    literaryDevices.forEach(d => {
+      if (!d) return;
+      devicesHTML += `
+        <div class="device-item">
+          <div class="device-name">${d.device || ''}</div>
+          <div class="device-example">${d.example || ''}</div>
+        </div>
+      `;
+    });
+    if (!literaryDevices.length) devicesHTML += '<div class="empty-note">No literary devices recorded.</div>';
+    devicesHTML += '</div>';
+
+    let locationsHTML = '<div class="locations-list">';
+    const locations = Array.isArray(ch.locations) ? ch.locations : [];
+    locations.forEach(l => {
+      if (!l) return;
+      locationsHTML += `
+        <div class="location-item">
+          <div class="location-name">${l.name || ''}</div>
+          <div class="location-desc">${l.description || ''}</div>
+        </div>
+      `;
+    });
+    if (!locations.length) locationsHTML += '<div class="empty-note">No locations recorded.</div>';
+    locationsHTML += '</div>';
+
+    let keywordsHTML = '<div class="keywords-row">';
+    const keywords = Array.isArray(ch.keywords) ? ch.keywords : [];
+    keywords.forEach(k => {
+      keywordsHTML += `<span class="keyword-chip">${k}</span>`;
+    });
+    if (!keywords.length) keywordsHTML += '<div class="empty-note">No keywords recorded.</div>';
+    keywordsHTML += '</div>';
+
+    const moralHTML = `<div class="moral-block"><div class="moral-text">${ch.moral || 'No moral themes recorded.'}</div></div>`;
+
+    const bkChNum = flatChapters[flatIndex].ci + 1;
+    const totalChsInBook = bk.chapters.length;
+    const currentOverallNumber = flatIndex + 1;
+    const counterHTML = `${bk.title || 'Untitled Book'}<br>Ch ${bkChNum} of ${totalChsInBook} &nbsp;·&nbsp; ${currentOverallNumber} / ${total} overall`;
+
+    document.getElementById('main').innerHTML = `
+      <div class="chapter-card">
+        <div class="card-header">
+          <div class="ch-label">${seriesData.series || 'Series'} · ${bk.title || 'Untitled Book'}</div>
+          <h2>${ch.chapter || `Chapter ${bkChNum}`}</h2>
+          ${ch.mood ? `<div class="mood-badge-row"><span class="mood-badge">${ch.mood}</span></div>` : ''}
+        </div>
+        <div class="sections-toggle-bar">
+          <button class="sections-toggle-btn" onclick="openSectionsPanel()">Sections &#x25BE;</button>
+        </div>
+        <div class="card-body">
+          ${secBlock('sec-summary',       'Summary',            summaryHTML)}
+          ${secBlock('sec-events',        'Key Events',         eventsHTML)}
+          ${secBlock('sec-characters',    'Characters',         charsHTML)}
+          ${secBlock('sec-emotions',      'Character Emotions', emotionsHTML)}
+          ${secBlock('sec-quotes',        'Quotes',             quotesHTML)}
+          ${secBlock('sec-relationships', 'Relationships',      relHTML)}
+          ${secBlock('sec-foreshadow',    'Foreshadowing',      foreshadowHTML)}
+          ${secBlock('sec-symbols',       'Symbols & Motifs',   symbolsHTML)}
+          ${secBlock('sec-devices',       'Literary Devices',   devicesHTML)}
+          ${secBlock('sec-locations',     'Locations',          locationsHTML)}
+          ${secBlock('sec-keywords',      'Keywords',           keywordsHTML)}
+          ${secBlock('sec-moral',         'Moral',              moralHTML)}
+        </div>
+      </div>
+      <div class="nav-buttons">
+        <button class="nav-btn" ${flatIndex === 0 ? 'disabled' : ''} onclick="stepNav(-1)">&#8592; Prev</button>
+        <span class="ch-counter">${counterHTML}</span>
+        <button class="nav-btn" ${flatIndex === total - 1 ? 'disabled' : ''} onclick="stepNav(1)">Next &#8594;</button>
+      </div>
+    `;
+
+    renderSidebar();
+    updateFloatBtns();
+  } catch (err) {
+    console.error("Critical rendering exception caught in renderChapter():", err);
+    document.getElementById('main').innerHTML = `
+      <div class="db-empty-state">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+        <h3>Failed to Render Chapter Content</h3>
+        <p>A rendering error occurred inside the layout pipeline. This is usually caused by missing or differently formatted fields in your uploaded JSON file.</p>
+        <div style="font-family: monospace; font-size: 0.78rem; text-align: left; padding: 12px; background: rgba(220,50,50,0.06); border: 1px solid rgba(220,50,50,0.15); border-radius: 6px; margin-top: 15px; color: #a00; overflow-x: auto; max-width: 100%;">
+          Error trace: ${err.message}
+        </div>
+        <button class="import-action-btn" style="margin-top: 20px; background: var(--accent);" onclick="goToFlat(0)">Reset to Chapter 1</button>
+      </div>
+    `;
+  }
+}
+
+// ── DESIGN: QUOTE IMAGE CARD GENERATOR ───────────────────────────────────────
+let currentQuoteData = null;
+
+function openQuoteModal(quoteText, characterName, chapterTitle) {
+  currentQuoteData = { quote: quoteText, character: characterName, chapter: chapterTitle };
+  drawQuoteCanvas(quoteText, characterName);
+  document.getElementById('quoteModal').classList.add('open');
+}
+
+function closeQuoteModal() {
+  document.getElementById('quoteModal').classList.remove('open');
+  currentQuoteData = null;
+}
+
+function drawQuoteCanvas(quoteText, characterName) {
+  const canvas = document.getElementById('quoteCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = 1080, H = 1080;
+  canvas.width = W; 
+  canvas.height = H;
+  
+  const bgGrad = ctx.createLinearGradient(0, 0, W, H);
+  bgGrad.addColorStop(0, '#2a1a0a'); 
+  bgGrad.addColorStop(0.45, '#3d2610'); 
+  bgGrad.addColorStop(1, '#1e1208');
+  ctx.fillStyle = bgGrad; 
+  ctx.fillRect(0, 0, W, H);
+  
+  ctx.save(); 
+  ctx.globalAlpha = 0.03;
+  for (let i = 0; i < 4000; i++) { 
+    ctx.fillStyle = Math.random() > 0.5 ? '#fff' : '#000'; 
+    ctx.fillRect(Math.random() * W, Math.random() * H, 1, 1); 
+  }
+  ctx.restore();
+  
+  const bPad = 48;
+  ctx.save(); 
+  ctx.strokeStyle = '#c9a97a'; 
+  ctx.globalAlpha = 0.35; 
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(bPad, bPad, W - bPad * 2, H - bPad * 2);
+  ctx.globalAlpha = 0.15; 
+  ctx.lineWidth = 0.5;
+  ctx.strokeRect(bPad + 10, bPad + 10, W - (bPad + 10) * 2, H - (bPad + 10) * 2); 
+  ctx.restore();
+  
+  drawCornerOrnament(ctx, bPad + 2, bPad + 2, 0); 
+  drawCornerOrnament(ctx, W - bPad - 2, bPad + 2, 90);
+  drawCornerOrnament(ctx, W - bPad - 2, H - bPad - 2, 180); 
+  drawCornerOrnament(ctx, bPad + 2, H - bPad - 2, 270);
+  
+  ctx.save(); 
+  ctx.font = '260px Georgia,serif'; 
+  ctx.fillStyle = '#c9a97a'; 
+  ctx.globalAlpha = 0.09;
+  ctx.textAlign = 'left'; 
+  ctx.textBaseline = 'top'; 
+  ctx.fillText('\u201C', 68, 60); 
+  ctx.restore();
+  
+  const ruleY = 200;
+  ctx.save(); 
+  ctx.strokeStyle = '#c9a97a'; 
+  ctx.globalAlpha = 0.4; 
+  ctx.lineWidth = 1;
+  ctx.beginPath(); 
+  ctx.moveTo(120, ruleY); 
+  ctx.lineTo(960, ruleY); 
+  ctx.stroke();
+  ctx.globalAlpha = 0.7; 
+  ctx.fillStyle = '#c9a97a'; 
+  ctx.save();
+  ctx.translate(W / 2, ruleY); 
+  ctx.rotate(Math.PI / 4); 
+  ctx.fillRect(-6,-6,12,12); 
+  ctx.restore(); ctx.restore();
+  
+  const quotePad = 110, quoteMaxW = W - quotePad * 2;
+  const qsz = pickFontSize(ctx, quoteText, quoteMaxW, W, H);
+  ctx.save(); 
+  ctx.fillStyle = '#f5e8d0'; 
+  ctx.textAlign = 'center'; 
+  ctx.textBaseline = 'alphabetic';
+  const lines = wrapText(ctx, quoteText, quoteMaxW, qsz);
+  const lineH = qsz * 1.72, totalTextH = lines.length * lineH;
+  const quoteStartY = (H / 2) - (totalTextH / 2) + 30;
+  
+  ctx.font = 'italic ' + qsz + 'px "Noto Serif Tamil","Latha","Tamil MN",Georgia,serif';
+  lines.forEach((line, i) => { 
+    ctx.fillText(line, W / 2, quoteStartY + i * lineH); 
+  }); 
+  ctx.restore();
+  
+  const rule2Y = quoteStartY + totalTextH + 56;
+  ctx.save(); 
+  ctx.strokeStyle = '#c9a97a'; 
+  ctx.globalAlpha = 0.4; 
+  ctx.lineWidth = 1;
+  ctx.beginPath(); 
+  ctx.moveTo(120, rule2Y); 
+  ctx.lineTo(960, rule2Y); 
+  ctx.stroke();
+  ctx.globalAlpha = 0.7; 
+  ctx.fillStyle = '#c9a97a'; 
+  ctx.save();
+  ctx.translate(W / 2, rule2Y); 
+  ctx.rotate(Math.PI / 4); 
+  ctx.fillRect(-6,-6,12,12); 
+  ctx.restore(); ctx.restore();
+  
+  ctx.save(); 
+  ctx.font = '500 38px "Noto Serif Tamil","Latha",Georgia,sans-serif';
+  ctx.fillStyle = '#c9a97a'; 
+  ctx.textAlign = 'center'; 
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText('— ' + characterName, W / 2, rule2Y + 70); 
+  ctx.restore();
+  
+  const barY = H - bPad - 68;
+  ctx.save(); 
+  ctx.font = '500 30px "Noto Serif Tamil","Latha",Georgia,sans-serif';
+  ctx.fillStyle = '#c9a97a'; 
+  ctx.globalAlpha = 0.9; 
+  ctx.textAlign = 'center'; 
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText(currentBook() ? currentBook().title + '  ·  ' + (seriesData ? seriesData.series : '') : (seriesData ? seriesData.series : ''), W / 2, barY + 34); 
+  ctx.restore();
+  
+  ctx.save(); 
+  ctx.strokeStyle = '#c9a97a'; 
+  ctx.globalAlpha = 0.22; 
+  ctx.lineWidth = 1;
+  ctx.beginPath(); 
+  ctx.moveTo(280, barY + 6); 
+  ctx.lineTo(800, barY + 6); 
+  ctx.stroke(); 
+  ctx.restore();
+}
+
+function drawCornerOrnament(ctx, x, y, angleDeg) {
+  ctx.save(); 
+  ctx.translate(x, y); 
+  ctx.rotate(angleDeg * Math.PI / 180);
+  ctx.strokeStyle = '#c9a97a'; 
+  ctx.globalAlpha = 0.45; 
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); 
+  ctx.moveTo(0, 28); 
+  ctx.lineTo(0, 0); 
+  ctx.lineTo(28, 0); 
+  ctx.stroke();
+  ctx.globalAlpha = 0.3; 
+  ctx.lineWidth = 0.8;
+  ctx.beginPath(); 
+  ctx.moveTo(0, 18); 
+  ctx.lineTo(0, 8); 
+  ctx.lineTo(8, 8); 
+  ctx.stroke(); 
+  ctx.restore();
+}
+
+function pickFontSize(ctx, text, maxW, W, H) {
+  const sizes = [72, 64, 56, 50, 46, 42, 38, 34, 30, 26];
+  const maxLines = 7;
+  const availH = H * 0.46;
+  
+  for (let s = 0; s < sizes.length; s++) {
+    const sz = sizes[s];
+    ctx.font = 'italic ' + sz + 'px "Noto Serif Tamil","Latha",Georgia,serif';
+    const ls = wrapText(ctx, text, maxW, sz);
+    if (ls.length <= maxLines && ls.length * sz * 1.72 <= availH) return sz;
+  }
+  return 26;
+}
+
+function wrapText(ctx, text, maxW, fontSize) {
+  ctx.font = 'italic ' + fontSize + 'px "Noto Serif Tamil","Latha",Georgia,serif';
+  const words = text.split(' ');
+  const lines = [];
+  let cur = '';
+  
+  for (let i = 0; i < words.length; i++) {
+    const test = cur ? cur + ' ' + words[i] : words[i];
+    if (ctx.measureText(test).width > maxW && cur !== '') { 
+      lines.push(cur); 
+      cur = words[i]; 
+    } else { 
+      cur = test; 
+    }
+  }
+  if (cur) lines.push(cur);
+  return lines;
+}
+
+function downloadQuoteImage() {
+  if (!currentQuoteData) return;
+  const canvas = document.getElementById('quoteCanvas');
+  const a = document.createElement('a');
+  a.download = 'quote_' + (currentQuoteData.character || 'quote').replace(/\s+/g, '_') + '.png';
+  a.href = canvas.toDataURL('image/png'); 
+  a.click();
+}
+
+// ── UTILITY: SHOW / HIDE SYSTEMS ─────────────────────────────────────────────
+function toggleDrawer() {
+  document.getElementById('drawer').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('open');
+  document.getElementById('rightDrawer').classList.remove('open');
+}
+
+function toggleRightDrawer() {
+  document.getElementById('rightDrawer').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('open');
+  document.getElementById('drawer').classList.remove('open');
+}
+
+function closeAllDrawers() {
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('rightDrawer').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+
+function toggleTheme() {
+  isNight = !isNight;
+  document.body.classList.toggle('night', isNight);
+  document.getElementById('themeIcon').textContent = isNight ? '☀️' : '🌙';
+  document.getElementById('themeLabel').textContent = isNight ? 'Light' : 'Night';
+}
+
+function updateFloatBtns() {
+  const onCh = currentView === 'chapter';
+  const floatPrev = document.getElementById('floatPrev');
+  const floatNext = document.getElementById('floatNext');
+  if (floatPrev) floatPrev.disabled = !onCh || flatIndex === 0 || flatChapters.length === 0;
+  if (floatNext) floatNext.disabled = !onCh || flatIndex === flatChapters.length - 1 || flatChapters.length === 0;
+}
+
+// ── SECTION COLLAPSE PANEL ───────────────────────────────────────────────────
+function openSectionsPanel() {
+  let html = '';
+  sectionDefs.forEach(s => {
+    html += `<button class="sp-toggle${!sectionVisibility[s.id] ? ' hidden' : ''}" onclick="toggleSection('${s.id}')">${s.label}</button>`;
+  });
+  document.getElementById('spToggles').innerHTML = html;
+  document.getElementById('sectionsPanel').classList.add('open');
+  document.getElementById('spOverlay').classList.add('open');
+}
+
+function closeSectionsPanel() {
+  document.getElementById('sectionsPanel').classList.remove('open');
+  document.getElementById('spOverlay').classList.remove('open');
+}
+
+function toggleSection(id) {
+  sectionVisibility[id] = !sectionVisibility[id];
+  const btns = document.querySelectorAll('#spToggles .sp-toggle');
+  sectionDefs.forEach((s, idx) => { 
+    if (s.id === id && btns[idx]) btns[idx].classList.toggle('hidden', !sectionVisibility[id]); 
+  });
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('hidden-section', !sectionVisibility[id]);
+}
+</script>
+</body>
+</html>

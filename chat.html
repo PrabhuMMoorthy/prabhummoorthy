@@ -1,211 +1,303 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instant PeerJS File Share</title>
+    <title>⚡ QR P2P Share & Chat</title>
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 20px; max-width: 500px; margin: 0 auto; background: #f8f9fa; color: #333; }
-        button { background: #007bff; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; margin: 5px 0; display: block; width: 100%; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 15px; max-width: 550px; margin: 0 auto; background: #f1f5f9; color: #1e293b; }
+        button { background: #007bff; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; margin: 6px 0; display: block; width: 100%; }
         button:disabled { background: #cbd5e1; cursor: not-allowed; }
-        input[type="text"], input[type="file"] { width: 100%; padding: 10px; margin: 8px 0; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; }
-        .box { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        .status-badge { display: inline-block; padding: 5px 10px; border-radius: 20px; font-size: 14px; font-weight: bold; background: #fee2e2; color: #991b1b; }
+        input[type="text"], input[type="file"] { width: 100%; padding: 12px; margin: 6px 0; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 6px; }
+        
+        .box { background: white; padding: 18px; border-radius: 10px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 16px; }
+        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; background: #fee2e2; color: #991b1b; }
         .connected { background: #dcfce7; color: #166534; }
-        .peer-id-display { font-family: monospace; font-size: 18px; font-weight: bold; color: #007bff; display: inline-block; padding: 4px 8px; background: #e6f2ff; border-radius: 4px; }
-        progress { width: 100%; height: 20px; margin-top: 10px; }
-        #download-link { display: block; text-align: center; margin-top: 15px; background: #22c55e; color: white; padding: 12px; text-decoration: none; border-radius: 5px; font-weight: bold; }
-    </style>
+        
+        /* QR Code Layout */
+        #qrcode-container { text-align: center; }
+        #qrcode { display: flex; justify-content: center; margin: 12px 0; }
+        #reader { width: 100%; max-width: 320px; margin: 0 auto; border: none !important; position: relative; }
+        
+        /* File Interface */
+        progress { width: 100%; height: 16px; margin-top: 10px; border-radius: 8px; }
+        #download-link { display: block; text-align: center; margin-top: 12px; background: #22c55e; color: white; padding: 10px; text-decoration: none; border-radius: 6px; font-weight: bold; }
+        
+        /* Chat Box Layout */
+        #chat-area { height: 160px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; background: #fafafa; margin-bottom: 8px; display: flex; flex-direction: column; gap: 4px; }
+        .msg { padding: 6px 10px; border-radius: 6px; max-width: 80%; width: fit-content; font-size: 14px; word-break: break-all; }
+        .msg.me { background: #007bff; color: white; align-self: flex-end; }
+        .msg.peer { background: #e2e8f0; color: #1e293b; align-self: flex-start; }
+        .msg.sys { background: transparent; color: #64748b; font-size: 12px; font-style: italic; align-self: center; }
+        .chat-input-wrapper { display: flex; gap: 6px; }
+
+        header { display:flex; align-items:center; justify-content:space-between; background:#fff; padding:12px 16px; border-radius:10px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom:16px; }
+        header h2 { margin:0; font-size:1.1rem; color:#1e293b; }
+        header #nav-toggle { color:#1e293b; }
+</style>
+    <script src="navigation.js" defer></script>
 </head>
 <body>
 
-    <h2>⚡ PeerJS Automated File Share</h2>
-    <p>Hosted via GitHub Pages. Real-time P2P file transfers without manual copying.</p>
+    <header><h2>⚡ QR P2P Share & Chat</h2></header>
     
-    <div class="box">
-        Network Status: <span id="status" class="status-badge">Initializing...</span>
-        <div style="margin-top: 10px;">
-            Your Share ID: <span id="my-id" class="peer-id-display">Generating...</span>
-        </div>
+    <div class="box" id="qrcode-container">
+        <div>Network: <span id="status" class="status-badge">Initializing...</span></div>
+        <div id="qrcode"></div>
+        <small style="color: #64748b; display: block; margin-bottom: 8px;">Your Current Session QR Code</small>
+        <button id="copy-id-btn" style="background: #e2e8f0; color: #475569; font-size: 12px; padding: 6px; width: auto; margin: 0 auto;">📋 Copy Text ID</button>
     </div>
 
     <div class="box" id="connection-setup">
         <h3>Connect to a Peer</h3>
-        <input type="text" id="remote-id" placeholder="Enter Friend's Share ID...">
-        <button id="connect-btn">Connect & Link Devices</button>
+        <button id="start-scan-btn">📷 Open QR Camera Scanner</button>
+        <button id="stop-scan-btn" style="background: #dc2626; display: none;">❌ Close Camera / Reset</button>
+        <div id="reader" style="display: none;"></div>
+        
+        <p style="margin: 15px 0; color: #777; text-align: center;">— OR MANUALLY TYPE ID —</p>
+        <input type="text" id="remote-id" placeholder="Paste Target Share ID here...">
+        <button id="connect-btn" style="background: #475569;">Connect Manually</button>
     </div>
 
     <div class="box" id="transfer-section" style="display: none;">
-        <h3>Share Files</h3>
+        <h3>📦 Direct File Transfer</h3>
         <input type="file" id="file-input">
-        <button id="send-file-btn">Send File</button>
+        <button id="send-file-btn">Send File Chunk-by-Chunk</button>
         
-        <div id="progress-container" style="display: none; margin-top: 15px;">
-            <p id="progress-text">Transferring: 0%</p>
+        <div id="progress-container" style="display: none; margin-top: 10px;">
+            <p id="progress-text" style="font-size: 13px; font-weight: bold; margin: 0;">Transferring: 0%</p>
             <progress id="progress-bar" value="0" max="100"></progress>
         </div>
-
         <div id="incoming-file-box"></div>
     </div>
 
+    <div class="box" id="chat-section" style="display: none;">
+        <h3>💬 Encrypted Chat</h3>
+        <div id="chat-area"></div>
+        <div class="chat-input-wrapper">
+            <input type="text" id="chat-input" placeholder="Type a message..." style="margin:0;">
+            <button id="chat-send-btn" style="width: auto; margin:0; padding: 0 20px;">Send</button>
+        </div>
+    </div>
+
     <script>
-        // Initialize PeerJS and auto-connect to their free public signaling cloud
         const peer = new Peer();
         let conn = null;
+        let html5QrcodeScanner = null;
+        let myCurrentId = "";
 
-        // File Assembly Storage
         let receivedChunks = [];
         let expectedSize = 0;
         let receivedSize = 0;
         let incomingFileName = '';
-        const CHUNK_SIZE = 16384; // 16KB optimization standard for WebRTC buffers
+        const CHUNK_SIZE = 16384; 
 
         const el = id => document.getElementById(id);
 
-        // --- 1. GENERATE UNIQUE ID ---
+        // --- 1. SET UP PEER ID & GENERATE QR ---
         peer.on('open', (id) => {
-            el('my-id').textContent = id;
-            el('status').textContent = "Ready";
+            myCurrentId = id;
+            el('status').textContent = "Awaiting Pairing";
             el('status').className = "status-badge";
             el('status').style.background = "#fef08a";
             el('status').style.color = "#854d0e";
+            
+            new QRCode(el("qrcode"), { text: id, width: 160, height: 160 });
         });
 
-        // --- 2. OUTBOUND CONNECTION (You input an ID and click connect) ---
+        el('copy-id-btn').onclick = () => {
+            if (!myCurrentId) return;
+            navigator.clipboard.writeText(myCurrentId);
+            alert("ID copied to clipboard!");
+        };
+
+        // --- 2. CAMERA FEED CONTROLS ---
+        el('start-scan-btn').onclick = () => {
+            el('start-scan-btn').style.display = "none";
+            el('stop-scan-btn').style.display = "block";
+            el('reader').style.display = "block";
+            
+            html5QrcodeScanner = new Html5Qrcode("reader");
+            
+            const onScanSuccess = (decodedText) => {
+                el('remote-id').value = decodedText;
+                stopScanner();
+                el('connect-btn').click(); 
+            };
+
+            html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 220 }, onScanSuccess)
+                .catch(() => { 
+                    alert("Camera blocked. Enter ID manually."); 
+                    stopScanner(); 
+                });
+        };
+
+        el('stop-scan-btn').onclick = stopScanner;
+
+        function stopScanner() {
+            if (html5QrcodeScanner && html5QrcodeScanner.isScanning) {
+                html5QrcodeScanner.stop().then(() => {
+                    cleanScannerDOM();
+                }).catch(() => { cleanScannerDOM(); });
+            } else {
+                cleanScannerDOM();
+            }
+        }
+
+        function cleanScannerDOM() {
+            el('reader').style.display = "none";
+            el('stop-scan-btn').style.display = "none";
+            el('start-scan-btn').style.display = "block";
+            el('reader').innerHTML = ""; 
+        }
+
+        // --- 3. CONNECTION ROUTINES ---
         el('connect-btn').onclick = () => {
             const remoteId = el('remote-id').value.trim();
-            if (!remoteId) return alert("Please enter a valid Share ID.");
-
-            el('status').textContent = "Connecting...";
-            
-            // Connect to remote peer
-            conn = peer.connect(remoteId, { label: 'file-transfer', reliable: true });
+            if (!remoteId) return alert("Please specify an ID.");
+            el('status').textContent = "Handshaking...";
+            conn = peer.connect(remoteId, { label: 'p2p-pipe', reliable: true });
             setupConnectionHandlers();
         };
 
-        // --- 3. INBOUND CONNECTION (Someone else enters your ID) ---
         peer.on('connection', (incomingConn) => {
             conn = incomingConn;
             setupConnectionHandlers();
         });
 
-        // --- 4. WEBRTC DATA PIPE HANDLERS ---
         function setupConnectionHandlers() {
             conn.on('open', () => {
-                el('status').textContent = "Connected!";
+                stopScanner();
+                el('status').textContent = "Connected";
                 el('status').className = "status-badge connected";
+                
                 el('connection-setup').style.display = "none";
                 el('transfer-section').style.display = "block";
+                el('chat-section').style.display = "block";
+                
+                appendSystemMsg("Direct network pipeline opened.");
             });
 
-            conn.on('data', handleIncomingData);
-
-            conn.on('close', () => {
-                alert("Connection lost.");
-                location.reload();
-            });
+            conn.on('data', handleIncomingPayload);
+            conn.on('close', () => { alert("Peer closed connection."); location.reload(); });
         }
-        
-        // --- 5. FIXED SENDING LOGIC (With Native Backpressure Handling) ---
+
+        // --- 4. STREAM UPLOADER (WITH EXPLICIT TERMINATION PACKET) ---
         el('send-file-btn').onclick = async () => {
             const file = el('file-input').files[0];
-            if (!file) return alert("Select a file first!");
+            if (!file) return alert("Choose a file first.");
 
             el('progress-container').style.display = 'block';
+            el('incoming-file-box').innerHTML = ''; // Clear previous links
             
-            // Notify receiver of incoming file details
-            conn.send(JSON.stringify({ name: file.name, size: file.size }));
+            // Send Metadata
+            conn.send(JSON.stringify({ type: 'FILE_META', name: file.name, size: file.size }));
 
             const reader = file.stream().getReader();
-            const rawChannel = conn.dataChannel; // Access the underlying WebRTC channel
-            
-            // Set the safety threshold to 512KB. 
-            // If the buffer drops below this, the browser will fire the event to send more data.
+            const rawChannel = conn.dataChannel;
             rawChannel.bufferedAmountLowThreshold = 524288; 
 
             let offset = 0;
             let currentChunkArray = null;
             let currentChunkOffset = 0;
 
-            // This inner function pulls data from the file stream and pushes it to the peer
             async function sendNextChunks() {
                 while (true) {
-                    // Safety Brake: If the queue is filling up (> 1MB), STOP and wait.
-                    // The 'bufferedamountlow' listener below will re-trigger this function.
-                    if (rawChannel.bufferedAmount > 1048576) {
-                        return; 
-                    }
+                    if (rawChannel.bufferedAmount > 1048576) return; 
 
-                    // If we don't have a chunk active, read a new block from the file stream
                     if (!currentChunkArray || currentChunkOffset >= currentChunkArray.length) {
                         const { done, value } = await reader.read();
                         if (done) {
-                            el('progress-text').textContent = "Sent successfully!";
-                            return; // Entire file has successfully streamed
+                            // Small delay ensures final data chunks completely clear the buffer
+                            setTimeout(() => {
+                                conn.send(JSON.stringify({ type: 'FILE_END' }));
+                                el('progress-text').textContent = "Sent successfully!";
+                            }, 300);
+                            return;
                         }
                         currentChunkArray = value;
                         currentChunkOffset = 0;
                     }
 
-                    // Slice out a 16KB packet from our active block
                     const chunk = currentChunkArray.slice(currentChunkOffset, currentChunkOffset + CHUNK_SIZE);
                     rawChannel.send(chunk);
 
                     currentChunkOffset += CHUNK_SIZE;
                     offset += chunk.length;
 
-                    // Smooth UI progress calculation
                     const percent = Math.round((offset / file.size) * 100);
                     el('progress-bar').value = percent;
-                    el('progress-text').textContent = `Sending: ${percent}%`;
+                    el('progress-text').textContent = `Sending File: ${percent}%`;
                 }
             }
 
-            // Tell the browser: "When the network queue drops down, call sendNextChunks to resume"
-            rawChannel.onbufferedamountlow = () => {
-                sendNextChunks();
-            };
-
-            // Kick off the initial stream blast
+            rawChannel.onbufferedamountlow = () => sendNextChunks();
             sendNextChunks();
         };
 
+        // --- 5. CHAT TEXT TRANSMISSION ---
+        function executeTextSend() {
+            const text = el('chat-input').value.trim();
+            if (!text || !conn) return;
+            
+            conn.send(JSON.stringify({ type: 'CHAT_TEXT', body: text }));
+            appendChatMessage('me', text);
+            el('chat-input').value = '';
+        }
+        el('chat-send-btn').onclick = executeTextSend;
+        el('chat-input').onkeydown = (e) => { if (e.key === 'Enter') executeTextSend(); };
 
-        // --- 6. RECEIVING & CONCATENATING DATA ---
-        function handleIncomingData(data) {
-            // Check if packet is text (metadata) or array buffer (raw file segment)
+        // --- 6. UNPACK HANDLERS ---
+        function handleIncomingPayload(data) {
             if (typeof data === 'string') {
-                const metadata = JSON.parse(data);
-                incomingFileName = metadata.name;
-                expectedSize = metadata.size;
-                receivedSize = 0;
-                receivedChunks = [];
+                const packet = JSON.parse(data);
                 
-                el('progress-container').style.display = 'block';
-                el('progress-text').textContent = `Incoming: ${incomingFileName}...`;
+                if (packet.type === 'CHAT_TEXT') {
+                    appendChatMessage('peer', packet.body);
+                } 
+                else if (packet.type === 'FILE_META') {
+                    incomingFileName = packet.name;
+                    expectedSize = packet.size;
+                    receivedSize = 0;
+                    receivedChunks = [];
+                    el('incoming-file-box').innerHTML = ''; 
+                    
+                    el('progress-container').style.display = 'block';
+                    el('progress-text').textContent = `Downloading: ${incomingFileName}`;
+                }
+                else if (packet.type === 'FILE_END') {
+                    el('progress-text').textContent = "Download complete!";
+                    const receivedBlob = new Blob(receivedChunks);
+                    const downloadUrl = URL.createObjectURL(receivedBlob);
+                    
+                    el('incoming-file-box').innerHTML = `
+                        <a id="download-link" href="${downloadUrl}" download="${incomingFileName}">💾 Save ${incomingFileName}</a>
+                    `;
+                    appendSystemMsg(`Received file: ${incomingFileName}`);
+                }
                 return;
             }
 
-            // Append chunk
+            // Capture incoming binary array fragments
             receivedChunks.push(data);
             receivedSize += data.byteLength;
 
-            const percent = Math.round((receivedSize / expectedSize) * 100);
+            const percent = Math.min(Math.round((receivedSize / expectedSize) * 100), 99);
             el('progress-bar').value = percent;
-            el('progress-text').textContent = `Receiving: ${percent}%`;
+            el('progress-text').textContent = `Receiving File: ${percent}%`;
+        }
 
-            if (receivedSize >= expectedSize) {
-                el('progress-text').textContent = "Download Complete!";
-                
-                const receivedBlob = new Blob(receivedChunks);
-                const downloadUrl = URL.createObjectURL(receivedBlob);
-                
-                el('incoming-file-box').innerHTML = `
-                    <p>🎉 New File Received:</p>
-                    <a id="download-link" href="${downloadUrl}" download="${incomingFileName}">💾 Save ${incomingFileName}</a>
-                `;
-            }
+        function appendChatMessage(sender, text) {
+            const wrap = el('chat-area');
+            wrap.innerHTML += `<div class="msg ${sender}">${text}</div>`;
+            wrap.scrollTop = wrap.scrollHeight;
+        }
+        function appendSystemMsg(text) {
+            appendChatMessage('sys', text);
         }
     </script>
 </body>

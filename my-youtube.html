@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My YouTube Dashboard</title>
+<script src="navigation.js" defer></script>
+<link rel="stylesheet" href="my-youtube.css">
+</head>
+<body>
+
+<header>
+  <h1>▶ My YouTube</h1>
+  <button id="refresh-btn" class="header-btn">⟳ Refresh</button>
+  <button id="add-btn" class="header-btn" style="display:none">+ Add</button>
+  <button id="nav-toggle" title="Menu">☰</button>
+</header>
+
+<div id="tab-bar">
+  <button class="tab-btn active" data-tab="channels">📺 Channels</button>
+  <button class="tab-btn" data-tab="videos">🎬 Videos</button>
+  <button class="tab-btn" data-tab="playlists">▶ Playlists</button>
+</div>
+
+<div id="search-bar">
+  <input id="search-input" type="search" placeholder="🔍  Search channels..." />
+</div>
+
+<div id="stats"></div>
+<div id="refresh-status"></div>
+
+<!-- Channels Panel -->
+<div id="panel-channels" class="tab-panel active">
+  <div id="list"></div>
+</div>
+
+<!-- Videos Panel -->
+<div id="panel-videos" class="tab-panel">
+  <div id="videos-status"></div>
+  <div id="videos-grid"></div>
+</div>
+
+<!-- Playlists Panel -->
+<div id="panel-playlists" class="tab-panel">
+  <div id="playlists-status"></div>
+  <div id="playlists-list"></div>
+</div>
+
+<!-- Channel Modal -->
+<div id="modal-overlay">
+  <div id="modal">
+    <h2>Add a Channel</h2>
+    <input id="input-name" type="text" placeholder="Channel name (e.g. Veritasium)" />
+    <input id="input-url" type="text" placeholder="Channel URL or @handle" />
+    <p class="modal-hint">Paste the full URL like:<br><code>https://www.youtube.com/@veritasium</code><br>or just the handle: <code>@veritasium</code></p>
+    <div class="modal-actions">
+      <button id="cancel-btn">Cancel</button>
+      <button id="save-btn">Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- Playlist Modal -->
+<div id="pl-modal-overlay">
+  <div id="pl-modal">
+    <h2>Add a Playlist</h2>
+    <input id="pl-input-name" type="text" placeholder="Playlist name (e.g. Lo-fi Beats)" />
+    <input id="pl-input-url" type="text" placeholder="Playlist URL" />
+    <p class="modal-hint">Paste a URL like:<br><code>https://www.youtube.com/playlist?list=PLxxxxxx</code><br>or just the playlist ID: <code>PLxxxxxx</code></p>
+    <div class="modal-actions">
+      <button id="pl-cancel-btn">Cancel</button>
+      <button id="pl-save-btn">Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div id="confirm-overlay">
+  <div id="confirm-modal">
+    <h2><span>⚠</span> <span id="confirm-title">Remove?</span></h2>
+    <p id="confirm-message">Are you sure?</p>
+    <div class="modal-actions">
+      <button id="confirm-cancel">Cancel</button>
+      <button id="confirm-ok">Remove</button>
+    </div>
+  </div>
+</div>
+
+
+<script src="my-youtube.js" defer></script>
+</body>
+</html>
