@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSV Editor</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: sans-serif; background: #f0f2f5; padding: 12px; }
+
+  #header-container {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;
+    background: #fff; padding: 6px 12px; border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.1); margin-bottom: 12px;
+  }
+  h1 { font-size: 1.05rem; color: #333; margin: 0; white-space: nowrap; }
+
+  #toolbar { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+  .btn-group { display: flex; gap: 3px; border-right: 1px solid #e5e7eb; padding-right: 4px; align-items: center; }
+  .btn-group:last-child { border-right: none; padding-right: 0; }
+
+  button {
+    display: inline-flex; align-items: center; justify-content: center; gap: 3px;
+    padding: 4px 8px; border: none; border-radius: 4px;
+    cursor: pointer; font-size: .8rem; font-weight: 600;
+    transition: opacity .15s; white-space: nowrap;
+  }
+  button:hover { opacity: .85; }
+  button:disabled { opacity: .35; cursor: default; }
+  
+  .btn-primary   { background: #4f46e5; color: #fff; }
+  .btn-danger    { background: #ef4444; color: #fff; }
+  .btn-success   { background: #22c55e; color: #fff; }
+  .btn-warning   { background: #f59e0b; color: #fff; }
+  .btn-secondary { background: #6b7280; color: #fff; }
+  .btn-teal      { background: #0d9488; color: #fff; }
+
+  .btn-text { font-size: .75rem; }
+
+  /* Mobile Responsive Scale-Down (Option 2) */
+  @media (max-width: 768px) {
+    #header-container { padding: 6px; gap: 6px; justify-content: center; }
+    h1 { font-size: .95rem; width: 100%; text-align: center; margin-bottom: 2px; }
+    #toolbar { justify-content: center; width: 100%; gap: 2px; }
+    .btn-group { padding-right: 3px; gap: 2px; }
+    button { padding: 4px 5px; font-size: .7rem; gap: 2px; }
+    .btn-text { font-size: .65rem; }
+  }
+
+  #drop-zone {
+    border: 2px dashed #4f46e5; border-radius: 8px;
+    padding: 24px; text-align: center; color: #4f46e5;
+    background: #fff; cursor: pointer; margin-bottom: 12px;
+    transition: background .2s;
+  }
+  #drop-zone.dragover { background: #eef2ff; }
+  #drop-zone p { font-size: .9rem; }
+
+  #table-wrap {
+    overflow: auto; background: #fff; border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.1); max-height: 76vh;
+    width: 100%;
+  }
+  table { border-collapse: collapse; width: 100%; font-size: .85rem; }
+  th, td { border: 1px solid #e5e7eb; padding: 6px 10px; white-space: nowrap; }
+  th {
+    background: #f9fafb; position: sticky; top: 0; z-index: 2;
+    user-select: none;
+  }
+  th.selected-col { background: #eef2ff; }
+  td.selected-col { background: #f5f3ff; }
+  th .col-header { display: flex; align-items: center; gap: 6px; }
+  th .col-name { flex: 1; min-width: 60px; text-align: left; }
+  td[contenteditable="true"]:focus { outline: 2px solid #4f46e5; background: #eef2ff; }
+  tr:hover td { background: #fafafa; }
+  .row-num {
+    background: #f3f4f6; color: #9ca3af;
+    text-align: center; font-size: .75rem;
+    position: sticky; left: 0; z-index: 1; width: 40px;
+  }
+  #status { margin-top: 6px; font-size: .8rem; color: #6b7280; padding-left: 4px; }
+
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.4); z-index: 100;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal { background: #fff; border-radius: 10px; padding: 20px; min-width: 280px; max-width: 90vw; }
+  .modal h2 { margin-bottom: 12px; font-size: 1rem; }
+  .modal input {
+    width: 100%; border: 1px solid #d1d5db; border-radius: 6px;
+    padding: 8px; margin-bottom: 12px; font-size: .9rem;
+  }
+  .modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
+</style>
+</head>
+<body>
+
+<div id="header-container">
+  <h1>📊 CSV Editor</h1>
+  <div id="toolbar">
+    <div class="btn-group">
+      <button class="btn-primary" onclick="document.getElementById('file-input').click()">📂<span class="btn-text">Open</span></button>
+      <button class="btn-teal" onclick="createNewCSV()">✨<span class="btn-text">New</span></button>
+      <input type="file" id="file-input" accept=".csv" onchange="loadFile(event)" style="display:none">
+    </div>
+    
+    <div class="btn-group">
+      <button class="btn-primary" id="btn-add-col" onclick="addColumn()" disabled>➕<span class="btn-text">+Col</span></button>
+      <button class="btn-danger"    id="btn-del-col"   onclick="deleteSelectedCols()" disabled>🗑️<span class="btn-text">-Col</span></button>
+      <button class="btn-teal"      id="btn-clear-col" onclick="clearColumnData()" disabled>🧹<span class="btn-text">Clr</span></button>
+      <button class="btn-warning"   id="btn-dup-col"   onclick="duplicateSelectedCol()" disabled>📋<span class="btn-text">Dup</span></button>
+      <button class="btn-secondary" id="btn-mv-left"   onclick="moveCol(-1)" disabled>←</button>
+      <button class="btn-secondary" id="btn-mv-right"  onclick="moveCol(1)"  disabled>→</button>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn-warning"   id="btn-add-row"   onclick="addRow()" disabled>➕<span class="btn-text">+Row</span></button>
+      <button class="btn-danger"    id="btn-del-row"   onclick="deleteLastRow()" disabled>➖<span class="btn-text">-Row</span></button>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn-success"   id="btn-export"    onclick="exportCSV()" disabled>💾<span class="btn-text">Export</span></button>
+      <button class="btn-secondary" id="btn-clear"     onclick="clearAll()" disabled>✖<span class="btn-text">Reset</span></button>
+    </div>
+  </div>
+</div>
+
+<div id="drop-zone" onclick="document.getElementById('file-input').click()"
+     ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+  <p>📥 Drop a CSV file here or <strong>click to browse</strong> · Supports comma, semicolon & tab delimiters</p>
+</div>
+
+<div id="table-wrap" style="display:none"></div>
+<div id="status"></div>
+
+<div class="modal-overlay" id="rename-modal">
+  <div class="modal">
+    <h2>✏️ Rename Column</h2>
+    <input type="text" id="rename-input" placeholder="New column name">
+    <div class="modal-btns">
+      <button class="btn-secondary" onclick="closeRenameModal()">Cancel</button>
+      <button class="btn-primary"   onclick="confirmRename()">Rename</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let data = [];
+let headers = [];
+let selectedCols = new Set();
+let renameTarget = null;
+
+// ── File loading ──────────────────────────────────────────────
+function loadFile(e) { readFile(e.target.files[0]); e.target.value = ''; }
+function onDragOver(e)  { e.preventDefault(); document.getElementById('drop-zone').classList.add('dragover'); }
+function onDragLeave()  { document.getElementById('drop-zone').classList.remove('dragover'); }
+function onDrop(e)      { e.preventDefault(); onDragLeave(); readFile(e.dataTransfer.files[0]); }
+
+function readFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => parseCSV(ev.target.result);
+  reader.readAsText(file);
+}
+
+function detectDelimiter(line) {
+  const counts = { ',': 0, ';': 0, '\t': 0 };
+  let inQ = false;
+  for (const ch of line) {
+    if (ch === '"') { inQ = !inQ; continue; }
+    if (!inQ && counts[ch] !== undefined) counts[ch]++;
+  }
+  if (counts['\t'] >= counts[','] && counts['\t'] >= counts[';']) return '\t';
+  if (counts[';'] >= counts[',']) return ';';
+  return ',';
+}
+
+function unwrapLine(line) {
+  line = line.trim();
+  if (line.startsWith('"') && line.endsWith('"')) {
+    line = line.slice(1, -1);
+    line = line.replace(/""/g, '"');
+  }
+  return line;
+}
+
+function parseCSV(text) {
+  const rawLines = text.split(/\r?\n/).filter(l => l.trim() !== '');
+  if (rawLines.length === 0) { createNewCSV(); return; }
+  const lines = rawLines.map(unwrapLine);
+  const delim = detectDelimiter(lines[0]);
+  const rows = lines.map(l => splitCSVRow(l, delim));
+  headers = rows[0].map(h => h.trim());
+  data = rows.slice(1).map(r => {
+    while (r.length < headers.length) r.push('');
+    return r.slice(0, headers.length).map(c => c.trim());
+  });
+  selectedCols.clear();
+  renderTable();
+  setStatus(`Loaded ${data.length} rows × ${headers.length} columns`);
+  document.getElementById('drop-zone').style.display = 'none';
+  enableButtons(true);
+}
+
+// ── Manual File Creation ──────────────────────────────────────
+function createNewCSV() {
+  headers = ['Column 1'];
+  data = [['']];
+  selectedCols.clear();
+  renderTable();
+  setStatus('Created blank CSV grid.');
+  document.getElementById('drop-zone').style.display = 'none';
+  enableButtons(true);
+}
+
+function splitCSVRow(row, delim) {
+  const result = [];
+  let cur = '';
+  let inQ = false;
+  for (let i = 0; i < row.length; i++) {
+    const ch = row[i];
+    if (ch === '"') {
+      if (inQ && row[i + 1] === '"') { cur += '"'; i++; }
+      else inQ = !inQ;
+      continue;
+    }
+    if (ch === delim && !inQ) { result.push(cur); cur = ''; continue; }
+    cur += ch;
+  }
+  result.push(cur);
+  return result;
+}
+
+// ── Render ────────────────────────────────────────────────────
+function renderTable() {
+  const wrap = document.getElementById('table-wrap');
+  wrap.style.display = 'block';
+  let html = '<table><thead><tr><th class="row-num">#</th>';
+  headers.forEach((h, ci) => {
+    const sel = selectedCols.has(ci) ? ' selected-col' : '';
+    html += `<th class="${sel}" onclick="toggleCol(${ci},event)">
+      <div class="col-header">
+        <span class="col-name">${escHtml(h)}</span>
+        <button style="background:#e0e7ff;color:#4f46e5;padding:2px 5px;font-size:.7rem;border-radius:3px"
+          onclick="openRename(${ci},event)">✏️</button>
+      </div></th>`;
+  });
+  html += '</tr></thead><tbody>';
+  data.forEach((row, ri) => {
+    html += `<tr><td class="row-num">${ri + 1}</td>`;
+    row.forEach((cell, ci) => {
+      const sel = selectedCols.has(ci) ? ' selected-col' : '';
+      html += `<td class="${sel}" contenteditable="true"
+        onblur="updateCell(${ri},${ci},this.innerText)">${escHtml(cell)}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+  updateColButtons();
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function updateCell(ri, ci, val) { data[ri][ci] = val; }
+
+// ── Column selection ──────────────────────────────────────────
+function toggleCol(ci, e) {
+  if (e.shiftKey) {
+    selectedCols.has(ci) ? selectedCols.delete(ci) : selectedCols.add(ci);
+  } else {
+    if (selectedCols.has(ci) && selectedCols.size === 1) selectedCols.clear();
+    else { selectedCols.clear(); selectedCols.add(ci); }
+  }
+  renderTable();
+}
+
+function updateColButtons() {
+  const one = selectedCols.size === 1;
+  const any = selectedCols.size > 0;
+  document.getElementById('btn-del-col').disabled   = !any;
+  document.getElementById('btn-clear-col').disabled = !one;
+  document.getElementById('btn-dup-col').disabled   = !one;
+  document.getElementById('btn-mv-left').disabled   = !one || Math.min(...selectedCols) === 0;
+  document.getElementById('btn-mv-right').disabled  = !one || Math.max(...selectedCols) === headers.length - 1;
+}
+
+// ── Column operations ─────────────────────────────────────────
+function addColumn() {
+  const colName = `Column ${headers.length + 1}`;
+  headers.push(colName);
+  data.forEach(r => r.push(''));
+  renderTable();
+  setStatus(`Added column "${colName}".`);
+}
+
+function deleteSelectedCols() {
+  if (!selectedCols.size) return;
+  const keep = headers.map((_, i) => !selectedCols.has(i));
+  headers = headers.filter((_, i) => keep[i]);
+  data = data.map(r => r.filter((_, i) => keep[i]));
+  if (headers.length === 0) {
+    headers.push('Column 1');
+    data = data.map(() => ['']);
+    if (data.length === 0) data.push(['']);
+  }
+  selectedCols.clear();
+  renderTable();
+  setStatus(`Deleted column(s). Now ${headers.length} columns.`);
+}
+
+function clearColumnData() {
+  if (selectedCols.size !== 1) return;
+  const ci = [...selectedCols][0];
+  data.forEach(r => r[ci] = '');
+  renderTable();
+  setStatus(`Cleared all data in "${headers[ci]}".`);
+}
+
+function duplicateSelectedCol() {
+  if (selectedCols.size !== 1) return;
+  const ci = [...selectedCols][0];
+  headers.splice(ci + 1, 0, headers[ci] + '_copy');
+  data.forEach(r => r.splice(ci + 1, 0, r[ci]));
+  selectedCols.clear(); selectedCols.add(ci + 1);
+  renderTable();
+  setStatus(`Duplicated column "${headers[ci + 1]}".`);
+}
+
+function moveCol(dir) {
+  if (selectedCols.size !== 1) return;
+  const ci = [...selectedCols][0];
+  const ni = ci + dir;
+  if (ni < 0 || ni >= headers.length) return;
+  [headers[ci], headers[ni]] = [headers[ni], headers[ci]];
+  data.forEach(r => { [r[ci], r[ni]] = [r[ni], r[ci]]; });
+  selectedCols.clear(); selectedCols.add(ni);
+  renderTable();
+}
+
+// ── Row operations ────────────────────────────────────────────
+function addRow() {
+  data.push(new Array(headers.length).fill(''));
+  renderTable();
+  setStatus(`Row added. Total: ${data.length} rows.`);
+}
+
+function deleteLastRow() {
+  if (!data.length) return;
+  data.pop();
+  if (data.length === 0) {
+    data.push(new Array(headers.length).fill(''));
+  }
+  renderTable();
+  setStatus(`Last row deleted. Total: ${data.length} rows.`);
+}
+
+// ── Rename ────────────────────────────────────────────────────
+function openRename(ci, e) {
+  e.stopPropagation();
+  renameTarget = ci;
+  document.getElementById('rename-input').value = headers[ci];
+  document.getElementById('rename-modal').classList.add('open');
+  setTimeout(() => document.getElementById('rename-input').focus(), 50);
+}
+function closeRenameModal() { document.getElementById('rename-modal').classList.remove('open'); }
+function confirmRename() {
+  const val = document.getElementById('rename-input').value.trim();
+  if (val && renameTarget !== null) { headers[renameTarget] = val; renderTable(); }
+  closeRenameModal();
+}
+document.getElementById('rename-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') confirmRename();
+  if (e.key === 'Escape') closeRenameModal();
+});
+
+// ── Export ────────────────────────────────────────────────────
+function exportCSV() {
+  let filename = prompt("Enter a name for your exported CSV file:", "edited.csv");
+  if (filename === null) return; 
+  filename = filename.trim();
+  if (!filename) filename = "edited.csv";
+  if (!filename.toLowerCase().endsWith('.csv')) filename += '.csv';
+
+  const rows = [headers, ...data];
+  const csv = rows.map(r =>
+    r.map(c => /[",\n]/.test(c) ? `"${c.replace(/"/g,'""')}"` : c).join(',')
+  ).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+  a.download = filename;
+  a.click();
+  setStatus(`CSV successfully exported as "${filename}"!`);
+}
+
+// ── Misc ──────────────────────────────────────────────────────
+function clearAll() {
+  data = []; headers = []; selectedCols.clear();
+  document.getElementById('table-wrap').style.display = 'none';
+  document.getElementById('drop-zone').style.display = 'block';
+  enableButtons(false);
+  setStatus('');
+}
+
+function enableButtons(on) {
+  ['btn-add-col', 'btn-add-row', 'btn-del-row', 'btn-export', 'btn-clear'].forEach(id => {
+    document.getElementById(id).disabled = !on;
+  });
+  if (!on) {
+    ['btn-del-col', 'btn-clear-col', 'btn-dup-col', 'btn-mv-left', 'btn-mv-right'].forEach(id => {
+      document.getElementById(id).disabled = true;
+    });
+  }
+}
+
+function setStatus(msg) { document.getElementById('status').textContent = msg; }
+</script>
+</body>
+</html>
