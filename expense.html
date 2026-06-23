@@ -42,6 +42,13 @@ body.dark .settings-section > div {background-color: #0f172a !important;}
 body.dark #rule-engine-drawer {background-color: #0f172a !important;color: #f8fafc !important;}
 body.dark th {background-color: #1e293b !important;color: #94a3b8 !important;}
 body.dark .modal-bg > div {background-color: #1e293b !important;color: #f8fafc !important;}
+
+/* Category Accordion Legibility Tweaks */
+.legend-card {border: 1px solid #f1f5f9; background-color: #f8fafc; transition: all 0.2s;}
+.legend-card:hover {background-color: #f1f5f9;}
+body.dark .legend-card {border-color: #334155 !important; background-color: #1e293b !important;}
+body.dark .legend-card:hover {background-color: #2a3447 !important;}
+body.dark .subcat-progress-bg {background-color: #334155 !important;}
 </style>
 <script>
   (function() {
@@ -65,43 +72,37 @@ body.dark .modal-bg > div {background-color: #1e293b !important;color: #f8fafc !
 </head>
 <body class="max-w-lg mx-auto min-h-screen flex flex-col relative">
 
-<header class="bg-indigo-600 text-white px-4 pt-6 pb-4 sticky top-0 z-20 shadow-md transition-colors duration-200">
-  <div class="flex justify-between items-center mb-3">
-    <h1 class="text-xl font-bold tracking-tight" id="hdr-title">Dashboard</h1>
-    <div class="flex items-center gap-2">
-      <button onclick="toggleTheme()" id="theme-toggle-btn" class="w-9 h-9 flex items-center justify-center rounded-full bg-indigo-700 hover:bg-indigo-800 transition-colors flex-shrink-0">
-        <svg id="theme-icon-moon" class="w-5 h-5 text-indigo-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
-        <svg id="theme-icon-sun" class="w-5 h-5 text-yellow-300 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M14.25 12a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/></svg>
+<header class="bg-indigo-600 text-white px-4 py-2.5 sticky top-0 z-20 shadow-md transition-colors duration-200">
+  <div class="flex justify-between items-center gap-2">
+    <div class="flex items-center gap-2 min-w-0">
+      <h1 class="text-lg font-bold tracking-tight truncate" id="hdr-title">Dashboard</h1>
+
+    </div>
+    <div class="flex items-center gap-1.5 flex-shrink-0">
+      <button onclick="toggleTheme()" id="theme-toggle-btn" class="w-8 h-8 flex items-center justify-center rounded-full bg-indigo-700 hover:bg-indigo-800 transition-colors">
+        <svg id="theme-icon-moon" class="w-4.5 h-4.5 text-indigo-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+        <svg id="theme-icon-sun" class="w-4.5 h-4.5 text-yellow-300 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M14.25 12a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/></svg>
       </button>
-      <button onclick="showPage('settings')" id="hdr-settings-btn" class="w-9 h-9 flex items-center justify-center rounded-full bg-indigo-700 hover:bg-indigo-800 transition-colors flex-shrink-0">
-        <svg class="w-5 h-5 text-indigo-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+      <button onclick="showPage('settings')" id="hdr-settings-btn" class="w-8 h-8 flex items-center justify-center rounded-full bg-indigo-700 hover:bg-indigo-800 transition-colors">
+        <svg class="w-4.5 h-4.5 text-indigo-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
       </button>
     </div>
   </div>
-  <div class="flex items-center justify-between gap-2 border-t border-indigo-500 border-opacity-20 pt-3" id="hdr-view-controls">
+  <div class="flex items-center justify-between gap-2 border-t border-indigo-500 border-opacity-20 mt-2 pt-2" id="hdr-view-controls">
     <div class="flex items-center gap-1">
-      <button onclick="setDashboardView('month')" id="vpill-month" class="view-pill active">Month</button>
-      <button onclick="setDashboardView('year')"  id="vpill-year"  class="view-pill">Year</button>
-      <button onclick="setDashboardView('all')"   id="vpill-all"   class="view-pill">All Time</button>
+      <button onclick="setDashboardView('month')" id="vpill-month" class="view-pill text-[12px] px-2 py-0.5">Month</button>
+      <button onclick="setDashboardView('year')"  id="vpill-year"  class="view-pill text-[12px] px-2 py-0.5">Year</button>
+      <button onclick="setDashboardView('all')"   id="vpill-all"   class="view-pill text-[12px] px-2 py-0.5 active">All Time</button>
     </div>
-    <div id="month-nav" class="flex items-center gap-1.5 bg-indigo-700 px-2 py-1 rounded-lg">
-      <button onclick="changeDashboardMonth(-1)" class="hover:text-indigo-200 px-1 text-xs font-bold">◀</button>
-      <span id="hdr-month" class="text-white text-xs font-semibold whitespace-nowrap min-w-[55px] text-center"></span>
-      <button onclick="changeDashboardMonth(1)"  class="hover:text-indigo-200 px-1 text-xs font-bold">▶</button>
+    <div id="month-nav" class="flex items-center gap-1 bg-indigo-700 px-1.5 py-0.5 rounded-lg hidden">
+      <button onclick="changeDashboardMonth(-1)" class="hover:text-indigo-200 px-1 text-[12px] font-bold">◀</button>
+      <span id="hdr-month" class="text-white text-[12px] font-semibold whitespace-nowrap min-w-[50px] text-center"></span>
+      <button onclick="changeDashboardMonth(1)"  class="hover:text-indigo-200 px-1 text-[12px] font-bold">▶</button>
     </div>
-    <div id="year-nav" class="flex items-center gap-1.5 bg-indigo-700 px-2 py-1 rounded-lg hidden">
-      <button onclick="changeDashboardYear(-1)" class="hover:text-indigo-200 px-1 text-xs font-bold">◀</button>
-      <span id="hdr-year" class="text-white text-xs font-semibold whitespace-nowrap min-w-[40px] text-center"></span>
-      <button onclick="changeDashboardYear(1)"  class="hover:text-indigo-200 px-1 text-xs font-bold">▶</button>
-    </div>
-  </div>
-  <div id="hdr-amount" class="mt-3.5 bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-3 flex justify-between items-center shadow-inner">
-    <div>
-      <p class="text-indigo-200 text-xs font-medium uppercase tracking-wider">Total Spent</p>
-      <p class="text-2xl font-black mt-0.5 tracking-tight" id="hdr-total">₹0</p>
-    </div>
-    <div class="w-8 h-8 rounded-full bg-white bg-opacity-10 flex items-center justify-center text-indigo-200">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.265.483c.456.83 1.342 1.335 2.274 1.335h.082a2.27 2.27 0 002.274-2.274c0-1.002-.422-1.668-1.234-2.18l-.513-.324A4.12 4.12 0 0110.3 9.497a2.27 2.27 0 012.274-2.274h.082c.932 0 1.818.505 2.274 1.335l.265.483"/></svg>
+    <div id="year-nav" class="flex items-center gap-1 bg-indigo-700 px-1.5 py-0.5 rounded-lg hidden">
+      <button onclick="changeDashboardYear(-1)" class="hover:text-indigo-200 px-1 text-[12px] font-bold">◀</button>
+      <span id="hdr-year" class="text-white text-[12px] font-semibold whitespace-nowrap min-w-[36px] text-center"></span>
+      <button onclick="changeDashboardYear(1)"  class="hover:text-indigo-200 px-1 text-[12px] font-bold">▶</button>
     </div>
   </div>
 </header>
@@ -109,57 +110,61 @@ body.dark .modal-bg > div {background-color: #1e293b !important;color: #f8fafc !
 <main class="flex-1 overflow-y-auto pb-20">
 
   <div id="page-dashboard" class="page p-4 space-y-4 slide-up">
+    <div class="bg-indigo-600 rounded-xl px-4 py-2 shadow-sm flex items-center justify-between" id="hdr-amount">
+      <span class="text-indigo-200 text-xs font-semibold uppercase tracking-wider">Total</span>
+      <span class="text-lg font-black text-white" id="hdr-total">₹0</span>
+    </div>
     <div class="bg-white rounded-2xl p-4 shadow-sm">
-      <h2 class="font-semibold text-gray-700 mb-3 text-sm" id="dash-donut-title">This Month by Category</h2>
+      <h2 class="font-semibold text-gray-700 mb-3 text-base" id="dash-donut-title">This Month by Category</h2>
       <div class="relative h-48"><canvas id="pie-chart"></canvas></div>
-      <div id="pie-legend" class="mt-3 grid grid-cols-2 gap-1 text-xs"></div>
+      <div id="pie-legend" class="mt-4 space-y-2 text-sm"></div>
     </div>
     <div class="bg-white rounded-2xl p-4 shadow-sm" id="dash-trend-card" style="display:none">
-      <h2 class="font-semibold text-gray-700 mb-3 text-sm" id="dash-trend-title">Monthly Trend</h2>
+      <h2 class="font-semibold text-gray-700 mb-3 text-base" id="dash-trend-title">Monthly Trend</h2>
       <div class="relative h-44"><canvas id="dash-trend-chart"></canvas></div>
     </div>
     <div class="bg-white rounded-2xl p-4 shadow-sm">
-      <h2 class="font-semibold text-gray-700 mb-3 text-sm" id="dash-top5-title">Top Categories</h2>
+      <h2 class="font-semibold text-gray-700 mb-3 text-base" id="dash-top5-title">Top Categories</h2>
       <div class="relative h-44"><canvas id="dash-top5-chart"></canvas></div>
     </div>
   </div>
 
   <div id="page-add" class="page p-4 hidden">
     <div class="bg-white rounded-2xl p-4 shadow-sm space-y-4">
-      <h2 class="font-semibold text-gray-700 text-lg" id="form-title">Add Expense</h2>
+      <h2 class="font-semibold text-gray-700 text-xl" id="form-title">Add Expense</h2>
       <input type="hidden" id="edit-id"/>
-      <div><label class="text-xs text-gray-500 mb-1 block">Amount *</label>
+      <div><label class="text-sm text-gray-500 mb-1 block">Amount *</label>
         <input id="f-amount" type="number" min="0" step="0.01" placeholder="0.00" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-xl font-bold text-indigo-600 bg-gray-50"/></div>
-      <div><label class="text-xs text-gray-500 mb-1 block">Date *</label>
+      <div><label class="text-sm text-gray-500 mb-1 block">Date *</label>
         <input id="f-date" type="date" class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50"/></div>
-      <div><label class="text-xs text-gray-500 mb-1 block">Category *</label>
+      <div><label class="text-sm text-gray-500 mb-1 block">Category *</label>
         <select id="f-category" onchange="loadSubcats()" class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50"><option value="">Select category</option></select></div>
-      <div><label class="text-xs text-gray-500 mb-1 block">Subcategory</label>
+      <div><label class="text-sm text-gray-500 mb-1 block">Subcategory</label>
         <select id="f-subcat" class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50"><option value="">None</option></select></div>
-      <div><label class="text-xs text-gray-500 mb-1 block">Notes</label>
+      <div><label class="text-sm text-gray-500 mb-1 block">Notes</label>
         <textarea id="f-notes" rows="2" placeholder="Optional note..." class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 resize-none"></textarea></div>
-      <button onclick="saveExpense()" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold text-base">Save Expense</button>
-      <button onclick="cancelEdit()" id="cancel-btn" class="w-full text-gray-400 py-2 text-sm hidden">Cancel</button>
+      <button onclick="saveExpense()" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold text-lg">Save Expense</button>
+      <button onclick="cancelEdit()" id="cancel-btn" class="w-full text-gray-400 py-2 text-base hidden">Cancel</button>
     </div>
   </div>
 
   <div id="page-reports" class="page p-4 space-y-4 hidden">
     <div class="bg-white rounded-2xl p-4 shadow-sm space-y-3">
       <div class="flex gap-1.5 overflow-x-auto pills-scroll py-0.5" id="r-preset-pills">
-        <button onclick="applyPillPreset('current-month')" id="btn-current-month" class="flex-shrink-0 text-xs px-3 py-1.5 rounded-full font-medium border border-indigo-600 bg-indigo-600 text-white">Current Month</button>
-        <button onclick="applyPillPreset('prev-month')"    id="btn-prev-month"    class="flex-shrink-0 text-xs px-3 py-1.5 rounded-full font-medium border border-gray-200 bg-white text-gray-600">◀ Prev Month</button>
-        <button onclick="applyPillPreset('last-3-months')" id="btn-last-3-months" class="flex-shrink-0 text-xs px-3 py-1.5 rounded-full font-medium border border-gray-200 bg-white text-gray-600">Last 3 M</button>
-        <button onclick="applyPillPreset('custom')"        id="btn-custom"        class="flex-shrink-0 text-xs px-3 py-1.5 rounded-full font-medium border border-gray-200 bg-white text-gray-600">Custom</button>
+        <button onclick="applyPillPreset('current-month')" id="btn-current-month" class="flex-shrink-0 text-sm px-3 py-1.5 rounded-full font-medium border border-indigo-600 bg-indigo-600 text-white">Current Month</button>
+        <button onclick="applyPillPreset('prev-month')"    id="btn-prev-month"    class="flex-shrink-0 text-sm px-3 py-1.5 rounded-full font-medium border border-gray-200 bg-white text-gray-600">◀ Prev Month</button>
+        <button onclick="applyPillPreset('last-3-months')" id="btn-last-3-months" class="flex-shrink-0 text-sm px-3 py-1.5 rounded-full font-medium border border-gray-200 bg-white text-gray-600">Last 3 M</button>
+        <button onclick="applyPillPreset('custom')"        id="btn-custom"        class="flex-shrink-0 text-sm px-3 py-1.5 rounded-full font-medium border border-gray-200 bg-white text-gray-600">Custom</button>
       </div>
       <div class="grid grid-cols-2 gap-2">
-        <div><label class="text-xs text-gray-400 mb-0.5 block">From</label>
-          <input id="r-from" type="date" onchange="onManualDateChange()" class="w-full border border-gray-100 rounded-lg px-2.5 py-1.5 text-xs bg-gray-50"/></div>
-        <div><label class="text-xs text-gray-400 mb-0.5 block">To</label>
-          <input id="r-to" type="date" onchange="onManualDateChange()" class="w-full border border-gray-100 rounded-lg px-2.5 py-1.5 text-xs bg-gray-50"/></div>
+        <div><label class="text-sm text-gray-400 mb-0.5 block">From</label>
+          <input id="r-from" type="date" onchange="onManualDateChange()" class="w-full border border-gray-100 rounded-lg px-2.5 py-1.5 text-sm bg-gray-50"/></div>
+        <div><label class="text-sm text-gray-400 mb-0.5 block">To</label>
+          <input id="r-to" type="date" onchange="onManualDateChange()" class="w-full border border-gray-100 rounded-lg px-2.5 py-1.5 text-sm bg-gray-50"/></div>
       </div>
       <div class="grid grid-cols-2 gap-2">
-        <select id="r-cat" onchange="loadReports()" class="w-full border border-gray-100 rounded-lg px-2.5 py-1.5 text-xs bg-gray-50"><option value="">All Categories</option></select>
-        <select id="r-sort" onchange="loadReports()" class="w-full border border-gray-100 rounded-lg px-2.5 py-1.5 text-xs bg-gray-50">
+        <select id="r-cat" onchange="loadReports()" class="w-full border border-gray-100 rounded-lg px-2.5 py-1.5 text-sm bg-gray-50"><option value="">All Categories</option></select>
+        <select id="r-sort" onchange="loadReports()" class="w-full border border-gray-100 rounded-lg px-2.5 py-1.5 text-sm bg-gray-50">
           <option value="date-desc">Newest First</option>
           <option value="date-asc">Oldest First</option>
           <option value="amt-desc">Amount: High to Low</option>
@@ -167,33 +172,20 @@ body.dark .modal-bg > div {background-color: #1e293b !important;color: #f8fafc !
         </select>
       </div>
       <div class="relative flex items-center">
-        <input id="r-search" type="text" oninput="loadReports()" placeholder="Search transactions... (Long press a row to select)" class="w-full border border-gray-100 rounded-lg pl-8 pr-3 py-1.5 text-xs bg-gray-50"/>
-        <span class="absolute left-2.5 text-gray-400 text-xs">🔍</span>
+        <input id="r-search" type="text" oninput="loadReports()" placeholder="Search transactions... (Long press a row to select)" class="w-full border border-gray-100 rounded-lg pl-8 pr-3 py-1.5 text-sm bg-gray-50"/>
+        <span class="absolute left-2.5 text-gray-400 text-sm">🔍</span>
       </div>
     </div>
     <div class="bg-white rounded-2xl p-4 shadow-sm">
-      <h2 class="font-semibold text-gray-700 mb-3 text-sm" id="bar-chart-title">6-Month Trend</h2>
+      <h2 class="font-semibold text-gray-700 mb-3 text-base" id="bar-chart-title">6-Month Trend</h2>
       <div class="relative h-44"><canvas id="bar-chart"></canvas></div>
     </div>
     <div class="bg-white rounded-2xl p-4 shadow-sm">
       <div class="flex justify-between items-center mb-3">
-        <h2 class="font-semibold text-gray-700 text-sm">Transactions</h2>
-        <span id="r-total" class="text-sm font-bold text-indigo-600"></span>
+        <h2 class="font-semibold text-gray-700 text-base">Transactions</h2>
+        <span id="r-total" class="text-base font-bold text-indigo-600"></span>
       </div>
       <div id="report-list" class="space-y-1"></div>
-    </div>
-    <div class="bg-white rounded-2xl p-4 shadow-sm space-y-2">
-      <h2 class="font-semibold text-gray-700 mb-1 text-sm">Data</h2>
-      <button onclick="exportCSV()" class="w-full border border-indigo-300 text-indigo-600 py-2 rounded-xl text-sm font-medium">⬇ Export CSV</button>
-      <label class="w-full border border-gray-300 text-gray-600 py-2 rounded-xl text-sm font-medium flex items-center justify-center cursor-pointer">
-        ⬆ Import CSV<input type="file" accept=".csv" onchange="importCSV(event)" class="hidden"/>
-      </label>
-      <label class="w-full border border-green-400 text-green-700 py-2 rounded-xl text-sm font-medium flex items-center justify-center cursor-pointer">
-        📊 Import Paytm XLSX<input type="file" accept=".xlsx,.xls" onchange="startPaytmImport(event)" class="hidden"/>
-      </label>
-      <label class="w-full border border-blue-400 text-blue-700 py-2 rounded-xl text-sm font-medium flex items-center justify-center cursor-pointer">
-        🏦 Import Bank CSV<input type="file" accept=".csv" onchange="startBankCSVImport(event)" class="hidden"/>
-      </label>
     </div>
   </div>
 
@@ -201,14 +193,14 @@ body.dark .modal-bg > div {background-color: #1e293b !important;color: #f8fafc !
     <div class="bg-white rounded-2xl p-4 shadow-sm space-y-3">
       <h2 class="font-semibold text-gray-700">Manage Categories & Subcategories</h2>
       <div class="flex gap-2">
-        <input id="new-cat" type="text" placeholder="New category name" class="flex-1 border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 text-sm"/>
-        <button onclick="addCategory()" class="bg-indigo-600 text-white px-4 rounded-xl font-medium text-sm">Add</button>
+        <input id="new-cat" type="text" placeholder="New category name" class="flex-1 border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 text-base"/>
+        <button onclick="addCategory()" class="bg-indigo-600 text-white px-4 rounded-xl font-medium text-base">Add</button>
       </div>
       <div id="cat-manage-list" class="space-y-3"></div>
     </div>
   </div>
 
-  <div id="page-settings" class="page hidden text-sm">
+  <div id="page-settings" class="page hidden text-base">
     <div class="divide-y divide-gray-100">
       <div class="settings-section" id="section-preferences">
         <button onclick="toggleSettingsSection('preferences')" class="w-full flex items-center justify-between px-4 py-4 bg-white hover:bg-gray-50 transition-colors">
@@ -216,15 +208,37 @@ body.dark .modal-bg > div {background-color: #1e293b !important;color: #f8fafc !
             <div class="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center">
               <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
             </div>
-            <div class="text-left"><p class="font-semibold text-gray-800 text-sm">Preferences</p><p class="text-xs text-gray-400">Currency, display options</p></div>
+            <div class="text-left"><p class="font-semibold text-gray-800 text-base">Preferences</p><p class="text-sm text-gray-400">Currency, display options</p></div>
           </div>
           <svg id="chevron-preferences" class="w-4 h-4 text-gray-400 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
         </button>
         <div id="body-preferences" class="hidden bg-gray-50 px-4 py-4 space-y-3 border-t border-gray-100">
-          <div><label class="text-xs text-gray-500 mb-1 block">Global Currency Symbol</label>
-            <select id="s-currency" onchange="updateCurrencySymbol()" class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-white text-sm">
+          <div><label class="text-sm text-gray-500 mb-1 block">Global Currency Symbol</label>
+            <select id="s-currency" onchange="updateCurrencySymbol()" class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-white text-base">
               <option value="₹">₹ (INR)</option><option value="$">$ (USD)</option><option value="€">€ (EUR)</option><option value="£">£ (GBP)</option><option value="¥">¥ (JPY)</option>
             </select></div>
+        </div>
+      </div>
+      <div class="settings-section" id="section-import">
+        <button onclick="toggleSettingsSection('import')" class="w-full flex items-center justify-between px-4 py-4 bg-white hover:bg-gray-50 transition-colors">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center">
+              <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            </div>
+            <div class="text-left"><p class="font-semibold text-gray-800 text-base">Import Data</p><p class="text-sm text-gray-400">Import CSV, Paytm or Bank statements</p></div>
+          </div>
+          <svg id="chevron-import" class="w-4 h-4 text-gray-400 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+        <div id="body-import" class="hidden bg-gray-50 px-4 py-4 space-y-2 border-t border-gray-100">
+          <label class="w-full border border-gray-300 text-gray-600 py-2.5 rounded-xl text-base font-medium flex items-center justify-center cursor-pointer bg-white">
+            ⬆ Import CSV<input type="file" accept=".csv" onchange="importCSV(event)" class="hidden"/>
+          </label>
+          <label class="w-full border border-green-400 text-green-700 py-2.5 rounded-xl text-base font-medium flex items-center justify-center cursor-pointer bg-white">
+            📊 Import Paytm XLSX<input type="file" accept=".xlsx,.xls" onchange="startPaytmImport(event)" class="hidden"/>
+          </label>
+          <label class="w-full border border-blue-400 text-blue-700 py-2.5 rounded-xl text-base font-medium flex items-center justify-center cursor-pointer bg-white">
+            🏦 Import Bank CSV<input type="file" accept=".csv" onchange="startBankCSVImport(event)" class="hidden"/>
+          </label>
         </div>
       </div>
       <div class="settings-section" id="section-rules">
@@ -233,7 +247,7 @@ body.dark .modal-bg > div {background-color: #1e293b !important;color: #f8fafc !
             <div class="w-8 h-8 rounded-xl bg-purple-50 flex items-center justify-center">
               <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
             </div>
-            <div class="text-left"><p class="font-semibold text-gray-800 text-sm">Rule Engine</p><p class="text-xs text-gray-400">Manage auto-categorization rules</p></div>
+            <div class="text-left"><p class="font-semibold text-gray-800 text-base">Rule Engine</p><p class="text-sm text-gray-400">Manage auto-categorization rules</p></div>
           </div>
           <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
         </button>
@@ -244,20 +258,21 @@ body.dark .modal-bg > div {background-color: #1e293b !important;color: #f8fafc !
             <div class="w-8 h-8 rounded-xl bg-green-50 flex items-center justify-center">
               <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
             </div>
-            <div class="text-left"><p class="font-semibold text-gray-800 text-sm">Backup</p><p class="text-xs text-gray-400">Export or restore your data</p></div>
+            <div class="text-left"><p class="font-semibold text-gray-800 text-base">Backup</p><p class="text-sm text-gray-400">Export or restore your data</p></div>
           </div>
           <svg id="chevron-backup" class="w-4 h-4 text-gray-400 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
         </button>
         <div id="body-backup" class="hidden bg-gray-50 px-4 py-4 space-y-2 border-t border-gray-100">
-          <p class="text-xs text-gray-400 mb-1">Export or restore all categories, transactions, and budgets as a single JSON file.</p>
-          <button onclick="exportJSONBackup()" class="w-full border border-indigo-300 text-indigo-600 py-2.5 rounded-xl text-sm font-medium bg-white">⬇ Export JSON Backup</button>
-          <label class="w-full border border-gray-300 text-gray-600 py-2.5 rounded-xl text-sm font-medium flex items-center justify-center cursor-pointer bg-white">
+          <p class="text-sm text-gray-400 mb-1">Export or restore all categories, transactions, and budgets as a single JSON file.</p>
+          <button onclick="exportCSV()" class="w-full border border-indigo-300 text-indigo-600 py-2.5 rounded-xl text-base font-medium bg-white">⬇ Export CSV</button>
+          <button onclick="exportJSONBackup()" class="w-full border border-indigo-300 text-indigo-600 py-2.5 rounded-xl text-base font-medium bg-white">⬇ Export JSON Backup</button>
+          <label class="w-full border border-gray-300 text-gray-600 py-2.5 rounded-xl text-base font-medium flex items-center justify-center cursor-pointer bg-white">
             ⬆ Restore JSON Backup<input type="file" accept=".json" onchange="importJSONBackup(event)" class="hidden"/>
           </label>
           <div class="border-t border-gray-200 pt-2 mt-1 space-y-2">
-            <p class="text-xs text-gray-400">Export or merge only your categorization rules.</p>
-            <button onclick="exportRulesOnly()" class="w-full border border-purple-300 text-purple-600 py-2.5 rounded-xl text-sm font-medium bg-white">⬇ Export Rules Only</button>
-            <label class="w-full border border-purple-200 text-purple-500 py-2.5 rounded-xl text-sm font-medium flex items-center justify-center cursor-pointer bg-white">
+            <p class="text-sm text-gray-400">Export or merge only your categorization rules.</p>
+            <button onclick="exportRulesOnly()" class="w-full border border-purple-300 text-purple-600 py-2.5 rounded-xl text-base font-medium bg-white">⬇ Export Rules Only</button>
+            <label class="w-full border border-purple-200 text-purple-500 py-2.5 rounded-xl text-base font-medium flex items-center justify-center cursor-pointer bg-white">
               ⬆ Import Rules Only<input type="file" accept=".json" onchange="importRulesOnly(event)" class="hidden"/>
             </label>
           </div>
@@ -269,13 +284,13 @@ body.dark .modal-bg > div {background-color: #1e293b !important;color: #f8fafc !
             <div class="w-8 h-8 rounded-xl bg-red-50 flex items-center justify-center">
               <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
             </div>
-            <div class="text-left"><p class="font-semibold text-gray-500 text-sm">Delete Data</p><p class="text-xs text-gray-400">Permanently reset everything</p></div>
+            <div class="text-left"><p class="font-semibold text-gray-500 text-base">Delete Data</p><p class="text-sm text-gray-400">Permanently reset everything</p></div>
           </div>
           <svg id="chevron-delete" class="w-4 h-4 text-gray-400 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
         </button>
         <div id="body-delete" class="hidden bg-red-50 px-4 py-4 space-y-2 border-t border-red-100">
-          <p class="text-xs text-gray-500 mb-1">Permanently erase all entries, categories, budgets and rules.</p>
-          <button onclick="factoryResetApp()" class="w-full bg-red-500 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-red-600">⚠️ Reset All Data</button>
+          <p class="text-sm text-gray-500 mb-1">Permanently erase all entries, categories, budgets and rules.</p>
+          <button onclick="factoryResetApp()" class="w-full bg-red-500 text-white py-2.5 rounded-xl text-base font-medium hover:bg-red-600">⚠️ Reset All Data</button>
         </div>
       </div>
     </div>
@@ -288,23 +303,23 @@ body.dark .modal-bg > div {background-color: #1e293b !important;color: #f8fafc !
         <button onclick="closeRuleEngineDrawer()" class="w-8 h-8 flex items-center justify-center rounded-full bg-indigo-700 hover:bg-indigo-800">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
         </button>
-        <div class="flex-1"><h1 class="text-lg font-bold">Rule Engine</h1><p class="text-indigo-200 text-xs" id="rules-drawer-subtitle">Loading…</p></div>
-        <button onclick="trainImportRules()" class="px-3 py-1.5 bg-white text-indigo-600 text-xs font-bold rounded-xl shadow-sm">🔄 Train</button>
+        <div class="flex-1"><h1 class="text-xl font-bold">Rule Engine</h1><p class="text-indigo-200 text-sm" id="rules-drawer-subtitle">Loading…</p></div>
+        <button onclick="trainImportRules()" class="px-3 py-1.5 bg-white text-indigo-600 text-sm font-bold rounded-xl shadow-sm">🔄 Train</button>
       </div>
     </div>
     <div class="flex-1 overflow-y-auto">
       <div class="bg-gray-50 border-b border-gray-100 px-4 py-3 space-y-2">
-        <p class="text-xs font-semibold text-gray-600">Add Manual Rule</p>
-        <input id="rule-keyword" type="text" placeholder="Keyword (e.g. Zomato, Apollo)" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs bg-white"/>
+        <p class="text-sm font-semibold text-gray-600">Add Manual Rule</p>
+        <input id="rule-keyword" type="text" placeholder="Keyword (e.g. Zomato, Apollo)" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white"/>
         <div class="grid grid-cols-2 gap-2">
-          <select id="rule-category" onchange="loadSettingsRuleSubcats()" class="border border-gray-200 rounded-lg px-2 py-2 text-xs bg-white"><option value="">Category</option></select>
-          <select id="rule-subcategory" class="border border-gray-200 rounded-lg px-2 py-2 text-xs bg-white"><option value="">Subcategory</option></select>
+          <select id="rule-category" onchange="loadSettingsRuleSubcats()" class="border border-gray-200 rounded-lg px-2 py-2 text-sm bg-white"><option value="">Category</option></select>
+          <select id="rule-subcategory" class="border border-gray-200 rounded-lg px-2 py-2 text-sm bg-white"><option value="">Select Subcategory</option></select>
         </div>
-        <button onclick="addManualRule()" class="w-full bg-indigo-50 text-indigo-600 border border-indigo-200 text-xs font-semibold py-2 rounded-lg hover:bg-indigo-100">➕ Add Rule</button>
+        <button onclick="addManualRule()" class="w-full bg-indigo-50 text-indigo-600 border border-indigo-200 text-sm font-semibold py-2 rounded-lg hover:bg-indigo-100">➕ Add Rule</button>
       </div>
       <div class="overflow-x-auto">
-        <table class="w-full text-xs text-left border-collapse">
-          <thead class="bg-gray-50 text-gray-400 text-xs uppercase font-bold sticky top-0 z-10">
+        <table class="w-full text-sm text-left border-collapse">
+          <thead class="bg-gray-50 text-gray-400 text-sm uppercase font-bold sticky top-0 z-10">
             <tr>
               <th class="px-3 py-2.5 whitespace-nowrap cursor-pointer select-none hover:text-gray-600" onclick="sortRulesBy('keyword')"><span class="flex items-center gap-1">Keyword <span id="sort-ind-keyword" class="text-gray-300">↕</span></span></th>
               <th class="px-3 py-2.5 whitespace-nowrap cursor-pointer select-none hover:text-gray-600" onclick="sortRulesBy('category')"><span class="flex items-center gap-1">Category · Sub <span id="sort-ind-category" class="text-gray-300">↕</span></span></th>
@@ -315,7 +330,7 @@ body.dark .modal-bg > div {background-color: #1e293b !important;color: #f8fafc !
           </thead>
           <tbody id="rules-table-body" class="divide-y divide-gray-100 bg-white text-gray-700"></tbody>
         </table>
-        <div id="rules-empty-state" class="text-center p-6 text-xs text-gray-400 hidden">No rules yet. Tap "Train" to auto-generate from your transaction history.</div>
+        <div id="rules-empty-state" class="text-center p-6 text-sm text-gray-400 hidden">No rules yet. Tap "Train" to auto-generate from your transaction history.</div>
       </div>
     </div>
   </div>
@@ -324,13 +339,13 @@ body.dark .modal-bg > div {background-color: #1e293b !important;color: #f8fafc !
   <div id="bulk-action-bar" class="fixed left-0 right-0 max-w-lg mx-auto bg-indigo-700 text-white px-4 py-3 flex items-center justify-between z-30 transition-transform duration-300 transform translate-y-full hidden shadow-lg rounded-t-xl" style="bottom: 64px;">
     <div class="flex items-center gap-3">
       <input type="checkbox" id="bulk-select-all" onchange="toggleSelectAll(this.checked)" class="w-5 h-5 accent-white rounded"/>
-      <span id="bulk-count" class="font-semibold text-sm">0 selected</span>
+      <span id="bulk-count" class="font-semibold text-base">0 selected</span>
     </div>
     <div class="flex items-center gap-4">
-      <button onclick="openBulkEditModal()" class="text-sm font-medium hover:text-indigo-200">Edit</button>
-      <button onclick="confirmBulkDelete()" class="text-sm font-medium text-red-300 hover:text-red-200">Delete</button>
+      <button onclick="openBulkEditModal()" class="text-base font-medium hover:text-indigo-200">Edit</button>
+      <button onclick="confirmBulkDelete()" class="text-base font-medium text-red-300 hover:text-red-200">Delete</button>
       <div class="w-px h-4 bg-indigo-500"></div>
-      <button onclick="exitBulkMode()" class="text-sm font-medium hover:text-gray-300 text-xl leading-none">&times;</button>
+      <button onclick="exitBulkMode()" class="text-base font-medium hover:text-gray-300 text-xl leading-none">&times;</button>
     </div>
   </div>
 
@@ -339,21 +354,21 @@ body.dark .modal-bg > div {background-color: #1e293b !important;color: #f8fafc !
 <nav class="fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-white border-t border-gray-100 flex z-20 shadow-lg">
   <button onclick="showPage('dashboard')" class="nav-btn active flex-1 flex flex-col items-center py-3 text-gray-400" data-page="dashboard">
     <svg class="w-5 h-5 stroke-current" fill="none" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-    <span class="text-xs mt-1">Dashboard</span>
+    <span class="text-sm mt-1">Dashboard</span>
   </button>
   <button onclick="showPage('add')" class="nav-btn flex-1 flex flex-col items-center py-3 text-gray-400" data-page="add">
     <div class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center" style="margin-top:-20px">
       <svg class="w-6 h-6" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
     </div>
-    <span class="text-xs mt-1 text-gray-400">Add</span>
+    <span class="text-sm mt-1 text-gray-400">Add</span>
   </button>
   <button onclick="showPage('reports')" class="nav-btn flex-1 flex flex-col items-center py-3 text-gray-400" data-page="reports">
     <svg class="w-5 h-5 stroke-current" fill="none" stroke-width="2" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 4-6"/></svg>
-    <span class="text-xs mt-1">Reports</span>
+    <span class="text-sm mt-1">Reports</span>
   </button>
   <button onclick="showPage('budget')" class="nav-btn flex-1 flex flex-col items-center py-3 text-gray-400" data-page="budget">
     <svg class="w-5 h-5 stroke-current" fill="none" stroke-width="2" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-    <span class="text-xs mt-1">Categories</span>
+    <span class="text-sm mt-1">Categories</span>
   </button>
 </nav>
 
@@ -363,7 +378,7 @@ body.dark .modal-bg > div {background-color: #1e293b !important;color: #f8fafc !
   <div class="absolute bottom-0 left-0 right-0 max-w-lg mx-auto bg-white rounded-t-3xl flex flex-col" style="height:88vh">
     <div class="px-4 pt-4 pb-2 border-b border-gray-100 flex-shrink-0">
       <div class="flex justify-between items-center mb-2">
-        <h2 class="font-bold text-gray-800 text-base" id="import-modal-title">Import Statement</h2>
+        <h2 class="font-bold text-gray-800 text-lg" id="import-modal-title">Import Statement</h2>
         <button onclick="closeImportModal()" class="text-gray-400 text-xl w-8 h-8 flex items-center justify-center">✕</button>
       </div>
       <div class="flex gap-1">
@@ -374,30 +389,30 @@ body.dark .modal-bg > div {background-color: #1e293b !important;color: #f8fafc !
     </div>
     <div id="import-step-1" class="flex-col flex-1 overflow-hidden" style="display:none">
       <div class="px-4 py-2 bg-yellow-50 border-b border-yellow-100 flex-shrink-0 flex items-center justify-between">
-        <p class="text-xs text-yellow-800"><strong id="tr-count">0</strong> transfers — decide each</p>
-        <button onclick="skipAllTransfers()" class="text-xs text-red-500 font-medium border border-red-200 px-2 py-1 rounded-lg">Skip All</button>
+        <p class="text-sm text-yellow-800"><strong id="tr-count">0</strong> transfers — decide each</p>
+        <button onclick="skipAllTransfers()" class="text-sm text-red-500 font-medium border border-red-200 px-2 py-1 rounded-lg">Skip All</button>
       </div>
       <div id="transfer-review-list" class="overflow-y-auto flex-1 divide-y divide-gray-100"></div>
       <div class="p-3 border-t border-gray-100 flex-shrink-0">
-        <button onclick="goToPreview()" class="w-full bg-indigo-600 text-white py-3 rounded-xl text-sm font-semibold">Next: Full Preview →</button>
+        <button onclick="goToPreview()" class="w-full bg-indigo-600 text-white py-3 rounded-xl text-base font-semibold">Next: Full Preview →</button>
       </div>
     </div>
     <div id="import-step-2" class="flex-col flex-1 overflow-hidden" style="display:none">
       <div class="px-3 pt-2 pb-1 border-b border-gray-100 flex-shrink-0">
         <div id="preview-filter-pills" class="flex gap-1.5 overflow-x-auto pills-scroll pb-1"></div>
-        <p id="preview-count-label" class="text-xs text-gray-400 mt-1"></p>
+        <p id="preview-count-label" class="text-sm text-gray-400 mt-1"></p>
       </div>
       <div id="preview-list" class="overflow-y-auto flex-1 divide-y divide-gray-100"></div>
       <div class="p-3 border-t border-gray-100 flex-shrink-0 flex gap-2">
-        <button onclick="backToTransfers()" class="border border-gray-300 text-gray-600 py-3 px-4 rounded-xl text-sm">← Back</button>
-        <button onclick="confirmImport()" id="confirm-import-btn" class="flex-1 bg-green-600 text-white py-3 rounded-xl text-sm font-semibold">Import</button>
+        <button onclick="backToTransfers()" class="border border-gray-300 text-gray-600 py-3 px-4 rounded-xl text-base">← Back</button>
+        <button onclick="confirmImport()" id="confirm-import-btn" class="flex-1 bg-green-600 text-white py-3 rounded-xl text-base font-semibold">Import</button>
       </div>
     </div>
     <div id="import-step-3" class="flex-col flex-1 items-center justify-center p-8" style="display:none">
       <div class="text-center">
         <div class="text-6xl mb-4">✅</div>
         <h3 class="text-xl font-bold text-gray-800 mb-2" id="import-done-msg"></h3>
-        <p class="text-gray-500 text-sm mb-6">Review and adjust them in Reports.</p>
+        <p class="text-gray-500 text-base mb-6">Review and adjust them in Reports.</p>
         <button onclick="closeImportModal()" class="bg-indigo-600 text-white px-8 py-3 rounded-xl font-semibold">Done</button>
       </div>
     </div>
@@ -407,8 +422,8 @@ body.dark .modal-bg > div {background-color: #1e293b !important;color: #f8fafc !
 <!-- Delete Modal -->
 <div id="del-modal" class="fixed inset-0 modal-bg z-50 items-center justify-center hidden">
   <div class="bg-white rounded-2xl p-6 mx-6 shadow-xl">
-    <h3 class="font-bold text-lg mb-2">Delete Expense?</h3>
-    <p class="text-gray-500 text-sm mb-5">This action cannot be undone.</p>
+    <h3 class="font-bold text-xl mb-2">Delete Expense?</h3>
+    <p class="text-gray-500 text-base mb-5">This action cannot be undone.</p>
     <div class="flex gap-3">
       <button onclick="closeDelModal()" class="flex-1 border border-gray-200 py-2 rounded-xl text-gray-600">Cancel</button>
       <button onclick="confirmDelete()" class="flex-1 bg-red-500 text-white py-2 rounded-xl font-semibold">Delete</button>
@@ -419,12 +434,12 @@ body.dark .modal-bg > div {background-color: #1e293b !important;color: #f8fafc !
 <!-- Bulk Edit Modal -->
 <div id="bulk-edit-modal" class="fixed inset-0 modal-bg z-50 items-center justify-center hidden">
   <div class="bg-white rounded-2xl p-6 mx-6 shadow-xl w-full max-w-sm">
-    <h3 class="font-bold text-lg mb-4 text-gray-800">Bulk Edit Categories</h3>
+    <h3 class="font-bold text-xl mb-4 text-gray-800">Bulk Edit Categories</h3>
     <div class="space-y-4">
-      <div><label class="text-xs text-gray-500 mb-1 block">Category</label>
-        <select id="bulk-category" onchange="loadBulkSubcats()" class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 text-sm"></select></div>
-      <div><label class="text-xs text-gray-500 mb-1 block">Subcategory</label>
-        <select id="bulk-subcategory" class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 text-sm"><option value="">None</option></select></div>
+      <div><label class="text-sm text-gray-500 mb-1 block">Category</label>
+        <select id="bulk-category" onchange="loadBulkSubcats()" class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 text-base"></select></div>
+      <div><label class="text-sm text-gray-500 mb-1 block">Subcategory</label>
+        <select id="bulk-subcategory" class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 text-base"><option value="">None</option></select></div>
     </div>
     <div class="flex gap-3 mt-6">
       <button onclick="closeBulkEditModal()" class="flex-1 border border-gray-200 py-2.5 rounded-xl text-gray-600 font-medium">Cancel</button>
@@ -433,7 +448,7 @@ body.dark .modal-bg > div {background-color: #1e293b !important;color: #f8fafc !
   </div>
 </div>
 
-<div id="toast" class="fixed bottom-24 left-1/2 bg-gray-800 text-white text-sm px-5 py-2 rounded-full shadow-lg opacity-0 transition-opacity z-50 pointer-events-none whitespace-nowrap" style="transform:translateX(-50%)"></div>
+<div id="toast" class="fixed bottom-24 left-1/2 bg-gray-800 text-white text-base px-5 py-2 rounded-full shadow-lg opacity-0 transition-opacity z-50 pointer-events-none whitespace-nowrap" style="transform:translateX(-50%)"></div>
 
 <script>
 // ─── DB ───
@@ -479,7 +494,6 @@ const SKIP_TAGS = ['Self-Transfer','Money Received'];
 const SYSTEM_COLORS = ['#6366f1','#f59e0b','#10b981','#f43f5e','#3b82f6','#8b5cf6','#ec4899','#14b8a6','#f97316','#06b6d4','#84cc16','#a855f7','#64748b','#b45309','#047857','#1d4ed8','#be123c'];
 
 // ─── Bank CSV Smart Categorisation Rules ───
-// Priority order matters — more specific patterns first (e.g. Swiggy Instamart before Swiggy)
 const BANK_KEYWORD_RULES = [
   // ── Food › Groceries ──
   {p:'swiggy instamart',  cat:'Food',         sub:'Groceries'},
@@ -588,7 +602,12 @@ let pendingDeleteId=null, currentPage='dashboard';
 let importAuto=[], importTransfers=[], importCats=[], previewRows=[], previewFilter='';
 let reportsReferenceDate=new Date(), selectedPreset='current-month';
 let isBulkMode=false, selectedTxnIds=new Set(), longPressTimer=null, currentReportTxns=[];
-let dashView='month', dashboardDate=new Date();
+
+// Default to All Time selection initially
+let dashView='all', dashboardDate=new Date();
+
+// Track expanded categories in the dashboard accordion legend
+const expandedCategories = new Set();
 
 // ─── Dashboard View ───
 function setDashboardView(v){
@@ -613,7 +632,6 @@ async function init(){
   if(!count) {
     await db.categories.bulkAdd(DEFAULT_CATS);
   } else {
-    // For existing users: ensure Investments and Loan EMI exist (migration fallback)
     const invEx = await db.categories.where('name').equalsIgnoreCase('Investments').first();
     if (!invEx) await db.categories.add({name:'Investments', subcategories:['Gold','Stocks','Bonds']});
     const bills = await db.categories.where('name').equalsIgnoreCase('Bills').first();
@@ -651,25 +669,107 @@ async function showPage(name){
   if(name==='settings') await loadSettings();
 }
 
+// ─── Toggle Accordion Legened ───
+function toggleLegendAccordion(catName) {
+  const body = document.getElementById(`acc-body-${catName.replace(/\s+/g, '-')}`);
+  const chev = document.getElementById(`acc-chev-${catName.replace(/\s+/g, '-')}`);
+  if (!body) return;
+
+  const isClosed = body.classList.contains('hidden');
+  if (isClosed) {
+    body.classList.remove('hidden');
+    chev.style.transform = 'rotate(180deg)';
+    expandedCategories.add(catName);
+  } else {
+    body.classList.add('hidden');
+    chev.style.transform = 'rotate(0deg)';
+    expandedCategories.delete(catName);
+  }
+}
+
 // ─── Dashboard ───
 async function loadDashboard(){
   const {from,to}=getDashRange(), y=dashboardDate.getFullYear();
   document.getElementById('hdr-month').textContent=dashboardDate.toLocaleString('default',{month:'long',year:'numeric'});
   document.getElementById('hdr-year').textContent=String(y);
+  
   const txns=await db.transactions.where('date').between(from,to,true,true).toArray();
   const total=txns.reduce((s,t)=>s+t.amount,0);
   document.getElementById('hdr-total').textContent=fmt(total);
   document.getElementById('dash-donut-title').textContent={month:'This Month by Category',year:`${y} by Category`,all:'All Time by Category'}[dashView];
+  
+  // Aggregate both high-level categories and subcategories
   const catMap={};
-  txns.forEach(t=>catMap[t.category]=(catMap[t.category]||0)+t.amount);
+  const subcatMap={}; // { Category: { Subcategory: Amount } }
+  
+  txns.forEach(t=>{
+    catMap[t.category]=(catMap[t.category]||0)+t.amount;
+    if(!subcatMap[t.category]) subcatMap[t.category]={};
+    const subKey = t.subcategory || 'Unspecified';
+    subcatMap[t.category][subKey] = (subcatMap[t.category][subKey] || 0) + t.amount;
+  });
+  
   const cats=Object.keys(catMap),vals=cats.map(c=>catMap[c]),colors=cats.map(c=>getCategoryColor(c));
   if(pieChart) pieChart.destroy();
+  
   if(cats.length){
-    pieChart=new Chart(document.getElementById('pie-chart'),{type:'doughnut',data:{labels:cats,datasets:[{data:vals,backgroundColor:colors,borderWidth:0}]},options:{plugins:{legend:{display:false}},cutout:'65%',responsive:true,maintainAspectRatio:false}});
-    document.getElementById('pie-legend').innerHTML=cats.map((c,i)=>`<div class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full" style="background:${colors[i]};min-width:10px"></span><span class="text-gray-600 truncate">${c}</span><span class="ml-auto font-medium">${fmt(vals[i])}</span></div>`).join('');
+    const pieLabelsPlugin={id:'pieLabels',afterDatasetsDraw(chart){const{ctx,data}=chart;const ds=chart.getDatasetMeta(0);const total=data.datasets[0].data.reduce((a,b)=>a+b,0);ds.data.forEach((arc,i)=>{const pct=total>0?data.datasets[0].data[i]/total:0;if(pct<0.05)return;const{x,y}=arc.tooltipPosition();const label=data.labels[i];const amt=fmt(data.datasets[0].data[i]);ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 11px Segoe UI,sans-serif';ctx.fillStyle='#fff';ctx.shadowColor='rgba(0,0,0,0.4)';ctx.shadowBlur=3;ctx.fillText(label,x,y-7);ctx.font='10px Segoe UI,sans-serif';ctx.fillText(amt,x,y+7);ctx.restore();});}}
+    pieChart=new Chart(document.getElementById('pie-chart'),{type:'doughnut',plugins:[pieLabelsPlugin],data:{labels:cats,datasets:[{data:vals,backgroundColor:colors,borderWidth:0}]},options:{plugins:{legend:{display:false}},cutout:'55%',responsive:true,maintainAspectRatio:false}});
+    
+    // Render the interactive Accordion Legend List (Option B)
+    document.getElementById('pie-legend').innerHTML = cats.map((c,i)=>{
+      const categoryTotal = vals[i];
+      const categoryColor = colors[i];
+      const overallPercent = total > 0 ? Math.round((categoryTotal / total) * 100) : 0;
+      
+      // Get subcategories for this specific category sorted from highest to lowest spent
+      const subcats = Object.entries(subcatMap[c] || {}).sort((a,b) => b[1] - a[1]);
+      
+      const subcatRowsHtml = subcats.map(([subName, subAmt]) => {
+        const subPercent = categoryTotal > 0 ? Math.round((subAmt / categoryTotal) * 100) : 0;
+        return `
+          <div class="space-y-1">
+            <div class="flex justify-between items-center text-[12px]">
+              <span class="text-gray-600 dark:text-gray-300 font-medium">${subName}</span>
+              <span class="text-gray-500 dark:text-gray-400 font-semibold">${fmt(subAmt)} (${subPercent}%)</span>
+            </div>
+            <div class="w-full bg-gray-100 dark:bg-gray-700/50 subcat-progress-bg rounded-full h-1 overflow-hidden">
+              <div class="h-full rounded-full transition-all duration-500" style="width: ${subPercent}%; background-color: ${categoryColor}"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      const cleanId = c.replace(/\s+/g, '-');
+      const isExpanded = expandedCategories.has(c);
+
+      return `
+        <div class="legend-card rounded-xl p-3 shadow-sm cursor-pointer border border-gray-100" onclick="toggleLegendAccordion('${c.replace(/'/g, "\\'")}')">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full" style="background:${categoryColor}; min-width:10px"></span>
+              <span class="text-gray-700 dark:text-gray-200 font-semibold text-[13px] truncate max-w-[120px]">${c}</span>
+              <span class="text-[13px] text-gray-400 bg-gray-100 dark:bg-slate-700/50 dark:text-gray-300 px-1.5 py-0.5 rounded-full">${overallPercent}% of total</span>
+            </div>
+            <div class="flex items-center gap-1 text-gray-500 dark:text-gray-400">
+              <span class="font-bold text-gray-800 dark:text-gray-100 text-[13px]">${fmt(categoryTotal)}</span>
+              <svg id="acc-chev-${cleanId}" class="w-4 h-4 transition-transform duration-200" style="transform: ${isExpanded ? 'rotate(180deg)' : 'rotate(0deg)'}" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path d="M19 9l-7 7-7-7"/>
+              </svg>
+            </div>
+          </div>
+          
+          <!-- Dropdown Section containing Subcategories -->
+          <div id="acc-body-${cleanId}" class="${isExpanded ? '' : 'hidden'} mt-3 pt-3 border-t border-gray-100 dark:border-gray-700/50 space-y-2.5" onclick="event.stopPropagation()">
+            ${subcatRowsHtml || `<p class="text-gray-400 text-[12px] italic">No subcategories defined</p>`}
+          </div>
+        </div>
+      `;
+    }).join('');
   } else {
-    document.getElementById('pie-legend').innerHTML='<p class="text-gray-400 text-xs text-center col-span-2 py-4">No data for this period</p>';
+    document.getElementById('pie-legend').innerHTML='<p class="text-gray-400 text-sm text-center col-span-2 py-4">No data for this period</p>';
   }
+  
   const trendCard=document.getElementById('dash-trend-card');
   if(dashView==='month'){trendCard.style.display='none';if(dashTrendChart){dashTrendChart.destroy();dashTrendChart=null;}}
   else{
@@ -688,6 +788,7 @@ async function loadDashboard(){
     const tlp={id:'tl',afterDatasetsDraw(chart){const{ctx}=chart;chart.data.datasets.forEach((ds,i)=>{const meta=chart.getDatasetMeta(i);meta.data.forEach((bar,idx)=>{const v=ds.data[idx];if(!v)return;ctx.save();ctx.font='bold 8px Segoe UI,sans-serif';ctx.fillStyle='#6366f1';ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText(getCurrencySymbol()+Number(v).toLocaleString('en-IN',{maximumFractionDigits:0}),bar.x,bar.y-2);ctx.restore();});});}};
     dashTrendChart=new Chart(document.getElementById('dash-trend-chart'),{type:'bar',plugins:[tlp],data:{labels:months,datasets:[{data:totals,backgroundColor:'#6366f1',borderRadius:5,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{y:{display:false},x:{grid:{display:false},ticks:{font:{size:9},maxRotation:0}}},layout:{padding:{top:18}},responsive:true,maintainAspectRatio:false}});
   }
+  
   document.getElementById('dash-top5-title').textContent={month:'Top Categories — This Month',year:`Top Categories — ${y}`,all:'Top Categories — All Time'}[dashView];
   const sorted=Object.entries(catMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
   if(dashTop5Chart) dashTop5Chart.destroy();
@@ -721,9 +822,8 @@ async function saveExpense(){
   if(!category) return showToast('Select a category');
   const rec={amount,date,category,subcategory:document.getElementById('f-subcat').value,notes:document.getElementById('f-notes').value.trim()};
   const editId=document.getElementById('edit-id').value;
-  if(editId){await db.transactions.update(parseInt(editId),rec);showToast('Updated!');}
-  else{await db.transactions.add(rec);showToast('Saved!');}
-  resetForm(); await showPage('dashboard');
+  if(editId){await db.transactions.update(parseInt(editId),rec);showToast('Updated!');resetForm();await showPage(editReturnPage);}
+  else{await db.transactions.add(rec);showToast('Saved!');resetForm();await showPage('dashboard');}
 }
 function resetForm(){
   ['f-amount','f-notes'].forEach(id=>document.getElementById(id).value='');
@@ -735,8 +835,10 @@ function resetForm(){
   const now=new Date(),y=now.getFullYear(),m=String(now.getMonth()+1).padStart(2,'0'),d=String(now.getDate()).padStart(2,'0');
   document.getElementById('f-date').value=`${y}-${m}-${d}`;
 }
+let editReturnPage='dashboard';
 async function editExpense(id){
   const t=await db.transactions.get(id); if(!t) return;
+  editReturnPage=currentPage;
   await showPage('add'); await loadCategoryDropdowns();
   document.getElementById('edit-id').value=id;
   document.getElementById('f-amount').value=t.amount;
@@ -748,7 +850,7 @@ async function editExpense(id){
   document.getElementById('form-title').textContent='Edit Expense';
   document.getElementById('cancel-btn').classList.remove('hidden');
 }
-function cancelEdit(){resetForm();showPage('dashboard');}
+function cancelEdit(){resetForm();showPage(editReturnPage);}
 
 // ─── Delete ───
 function deleteExpense(id){pendingDeleteId=id;document.getElementById('del-modal').classList.remove('hidden');document.getElementById('del-modal').style.display='flex';}
@@ -783,7 +885,7 @@ function toggleSelectAll(checked){if(checked)currentReportTxns.forEach(t=>select
 function updateBulkUI(){
   document.getElementById('bulk-count').textContent=`${selectedTxnIds.size} selected`;
   document.getElementById('bulk-select-all').checked=currentReportTxns.length>0&&selectedTxnIds.size===currentReportTxns.length;
-  document.getElementById('report-list').innerHTML=currentReportTxns.length?currentReportTxns.map(t=>txnRow(t)).join(''):'<p class="text-gray-400 text-sm text-center py-4">No transactions matched filters</p>';
+  document.getElementById('report-list').innerHTML=currentReportTxns.length?currentReportTxns.map(t=>txnRow(t)).join(''):'<p class="text-gray-400 text-base text-center py-4">No transactions matched filters</p>';
 }
 async function openBulkEditModal(){
   if(selectedTxnIds.size===0) return showToast('No transactions selected');
@@ -823,8 +925,8 @@ function applyPillPreset(preset){
   selectedPreset=preset;
   ['current-month','prev-month','last-3-months','custom'].forEach(p=>{
     document.getElementById('btn-'+p).className=p===preset
-      ?'flex-shrink-0 text-xs px-3 py-1.5 rounded-full font-medium border border-indigo-600 bg-indigo-600 text-white transition-all'
-      :'flex-shrink-0 text-xs px-3 py-1.5 rounded-full font-medium border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-all';
+      ?'flex-shrink-0 text-sm px-3 py-1.5 rounded-full font-medium border border-indigo-600 bg-indigo-600 text-white transition-all'
+      :'flex-shrink-0 text-sm px-3 py-1.5 rounded-full font-medium border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-all';
   });
   const f=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   if(preset==='current-month'){
@@ -849,8 +951,8 @@ function onManualDateChange(){
   selectedPreset='custom';
   ['current-month','prev-month','last-3-months','custom'].forEach(p=>{
     document.getElementById('btn-'+p).className=p==='custom'
-      ?'flex-shrink-0 text-xs px-3 py-1.5 rounded-full font-medium border border-indigo-600 bg-indigo-600 text-white transition-all'
-      :'flex-shrink-0 text-xs px-3 py-1.5 rounded-full font-medium border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-all';
+      ?'flex-shrink-0 text-sm px-3 py-1.5 rounded-full font-medium border border-indigo-600 bg-indigo-600 text-white transition-all'
+      :'flex-shrink-0 text-sm px-3 py-1.5 rounded-full font-medium border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-all';
   });
   document.getElementById('btn-prev-month').textContent='◀ Prev Month';
   loadReports();
@@ -877,7 +979,7 @@ async function loadReports(){
   else if(sortType==='amt-asc') txns.sort((a,b)=>a.amount-b.amount);
   currentReportTxns=txns;
   document.getElementById('r-total').textContent=fmt(txns.reduce((s,t)=>s+t.amount,0));
-  document.getElementById('report-list').innerHTML=txns.length?txns.map(t=>txnRow(t)).join(''):'<p class="text-gray-400 text-sm text-center py-4">No transactions matched filters</p>';
+  document.getElementById('report-list').innerHTML=txns.length?txns.map(t=>txnRow(t)).join(''):'<p class="text-gray-400 text-base text-center py-4">No transactions matched filters</p>';
   const months=[],totals=[],now=new Date();
   for(let i=5;i>=0;i--){
     const d=new Date(now.getFullYear(),now.getMonth()-i,1);
@@ -900,13 +1002,13 @@ async function loadBudget(){
     const isDef=DEFAULT_CATS.find(d=>d.name===c.name);
     return `<div class="border border-gray-100 rounded-xl p-3 space-y-2">
       <div class="flex justify-between items-center">
-        <span class="font-medium text-gray-700 text-sm">${c.name}</span>
-        ${!isDef?`<button onclick="deleteCategory(${c.id},'${c.name.replace(/'/g,"\\'")}')" class="text-xs text-red-400 border border-red-200 px-2 py-0.5 rounded-lg">Delete</button>`:'<span class="text-xs text-gray-300">Default</span>'}
+        <span class="font-medium text-gray-700 text-base">${c.name}</span>
+        ${!isDef?`<button onclick="deleteCategory(${c.id},'${c.name.replace(/'/g,"\\'")}')" class="text-sm text-red-400 border border-red-200 px-2 py-0.5 rounded-lg">Delete</button>`:'<span class="text-sm text-gray-300">Default</span>'}
       </div>
       <div class="flex flex-wrap gap-1">${(c.subcategories||[]).map(s=>`<span class="chip">${s}<button onclick="deleteSubcat(${c.id},'${s}')" class="text-indigo-400 font-bold">✕</button></span>`).join('')}</div>
       <div class="flex gap-2">
-        <input id="newsub-${c.id}" type="text" placeholder="Add subcategory..." class="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-xs bg-gray-50"/>
-        <button onclick="addSubcat(${c.id})" class="bg-indigo-100 text-indigo-600 px-3 py-1.5 rounded-lg text-xs font-medium">Add</button>
+        <input id="newsub-${c.id}" type="text" placeholder="Add subcategory..." class="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-sm bg-gray-50"/>
+        <button onclick="addSubcat(${c.id})" class="bg-indigo-100 text-indigo-600 px-3 py-1.5 rounded-lg text-sm font-medium">Add</button>
       </div>
     </div>`;
   }).join('');
@@ -937,27 +1039,21 @@ async function deleteSubcat(catId,subName){
   showToast('Removed'); await loadBudget();
 }
 
-// ─── Bank CSV Import ──────────────────────────────────────────
-// Parse a single quoted CSV line like: "22-12-2025,-,UPI/...,186.00,,354887.94,5639"
+// ─── Bank CSV Import ───
 function parseBankCSVLine(raw) {
-  // Strip surrounding quotes if present
   let line = raw.trim();
   if (line.startsWith('"') && line.endsWith('"')) line = line.slice(1, -1);
-  // Split by comma — simple split works since fields don't contain commas
   return line.split(',').map(f => f.trim());
 }
 
 function extractBankMerchant(particulars) {
-  // PARTICULARS format: UPI/P2M/{ref}/{MERCHANT NAME}/desc/BANK or NEFT/ref/NAME/...
   const parts = particulars.split('/');
   if (parts.length >= 4) {
-    // parts[0]=UPI or NEFT, parts[1]=P2M/P2A/ref, parts[2]=ref, parts[3]=name
-    const type = parts[1].toUpperCase(); // P2M, P2A, etc
+    const type = parts[1].toUpperCase();
     let name = '';
     if (parts[0].toUpperCase() === 'UPI') {
       name = parts[3] || '';
     } else if (parts[0].toUpperCase() === 'NEFT') {
-      // NEFT/ref/NAME/...
       name = parts[2] || '';
     } else {
       name = parts[3] || particulars;
@@ -968,7 +1064,6 @@ function extractBankMerchant(particulars) {
 }
 
 function isBankP2A(particulars) {
-  // P2A = person to person (UPI/P2A/...)
   return /UPI\/P2A\//i.test(particulars);
 }
 
@@ -982,7 +1077,6 @@ async function startBankCSVImport(e) {
     const text = await file.text();
     const allLines = text.split('\n');
 
-    // ── Step 1: Find header row ──
     let headerIdx = -1;
     for (let i = 0; i < allLines.length; i++) {
       const l = allLines[i].toUpperCase();
@@ -1002,8 +1096,6 @@ async function startBankCSVImport(e) {
 
     if (colDate < 0 || colPart < 0 || (colDR < 0 && colCR < 0)) return showToast('Missing expected columns in CSV.');
 
-    // ── Step 1.5: Auto-Detect Expense Column via Balance Math ──
-    // Some banks map Deposits -> DR and Withdrawals -> CR. We calculate balance drops to confirm the real expense column.
     let expenseCol = colDR >= 0 ? colDR : colCR; 
     if (colBal >= 0 && colDR >= 0 && colCR >= 0) {
       let prevBal = null, prevRow = null;
@@ -1021,10 +1113,10 @@ async function startBankCSVImport(e) {
           const prvDR = parseFloat((prevRow[colDR] || '').replace(/,/g, ''));
           const prvCR = parseFloat((prevRow[colCR] || '').replace(/,/g, ''));
 
-          if (diff < -0.01) { // Chronological expense
+          if (diff < -0.01) {
             if (!isNaN(curCR) && Math.abs(curCR - expectedAmt) < 0.1) { expenseCol = colCR; break; }
             if (!isNaN(curDR) && Math.abs(curDR - expectedAmt) < 0.1) { expenseCol = colDR; break; }
-          } else if (diff > 0.01) { // Reverse-chronological expense
+          } else if (diff > 0.01) {
             if (!isNaN(prvCR) && Math.abs(prvCR - expectedAmt) < 0.1) { expenseCol = colCR; break; }
             if (!isNaN(prvDR) && Math.abs(prvDR - expectedAmt) < 0.1) { expenseCol = colDR; break; }
           }
@@ -1034,8 +1126,7 @@ async function startBankCSVImport(e) {
       }
     }
 
-    // ── Step 2: Parse data rows ──
-    const DATE_RE = /^\d{2}[-/]\d{2}[-/]\d{4}$/; // More relaxed date check
+    const DATE_RE = /^\d{2}[-/]\d{2}[-/]\d{4}$/;
     importAuto = []; importTransfers = [];
     importCats = await db.categories.toArray();
     const rules = await db.importRules.toArray();
@@ -1050,12 +1141,9 @@ async function startBankCSVImport(e) {
       if (!DATE_RE.test(dateRaw)) continue;
 
       const particulars = (fields[colPart] || '').trim();
-      
-      // Pull amount dynamically from the detected expense column
       const expenseRaw = (fields[expenseCol] || '').replace(/,/g, '').trim();
       const expenseAmt = parseFloat(expenseRaw);
 
-      // Skips purely positive income (e.g. Salary, Refunds)
       if (isNaN(expenseAmt) || expenseAmt <= 0) continue; 
 
       const [dd, mm, yyyy] = dateRaw.split(/[-/]/);
@@ -1064,16 +1152,15 @@ async function startBankCSVImport(e) {
 
       let category = 'Others', subcategory = '', matched = false;
       const nl = particulars.toLowerCase() + ' ' + merchant.toLowerCase();
-      // 1st priority: user Rule Engine
+      
       for (const r of rules) {
         if (nl.includes(r.keyword.toLowerCase())) { category = r.category; subcategory = r.subcategory || ''; matched = true; break; }
       }
-      // 2nd priority: built-in BANK_KEYWORD_RULES
+      
       if (!matched) {
         const bankMatch = applyBankKeywordRules(particulars, merchant);
         if (bankMatch) { category = bankMatch.category; subcategory = bankMatch.subcategory; matched = true; }
       }
-      // Fallback: Others (unchanged)
 
       const rec = { date, amount: expenseAmt, notes: merchant, category, subcategory, _include: true, _particulars: particulars };
 
@@ -1088,7 +1175,6 @@ async function startBankCSVImport(e) {
     openImportModal();
   } catch(err) { showToast('Error reading file'); console.error(err); }
 }
-
 
 // ─── Paytm Import ───
 async function startPaytmImport(e){
@@ -1145,10 +1231,10 @@ function renderTransferReview(){
   document.getElementById('transfer-review-list').innerHTML=importTransfers.length
     ?importTransfers.map((r,i)=>`<div class="flex items-center gap-2 px-3 py-2.5 ${r._include?'bg-white':'bg-gray-50'}">
         <input type="checkbox" ${r._include?'checked':''} onchange="toggleTransfer(${i},this.checked)" class="w-4 h-4 accent-indigo-600 flex-shrink-0"/>
-        <div class="flex-1 min-w-0"><p class="text-xs font-medium text-gray-800 break-words">${r.notes}</p><p class="text-xs text-gray-400">${r.date} · ${fmt(r.amount)}</p></div>
-        <select onchange="importTransfers[${i}].category=this.value" class="text-xs border border-gray-200 rounded-lg px-1.5 py-1 bg-white flex-shrink-0 ${r._include?'':'opacity-30 pointer-events-none'}">${catOpts.replace(`value="${r.category}"`,`value="${r.category}" selected`)}</select>
+        <div class="flex-1 min-w-0"><p class="text-sm font-medium text-gray-800 break-words">${r.notes}</p><p class="text-sm text-gray-400">${r.date} · ${fmt(r.amount)}</p></div>
+        <select onchange="importTransfers[${i}].category=this.value" class="text-sm border border-gray-200 rounded-lg px-1.5 py-1 bg-white flex-shrink-0 ${r._include?'':'opacity-30 pointer-events-none'}">${catOpts.replace(`value="${r.category}"`,`value="${r.category}" selected`)}</select>
       </div>`).join('')
-    :'<p class="text-gray-400 text-center py-8 text-sm">No transfers found</p>';
+    :'<p class="text-gray-400 text-center py-8 text-base">No transfers found</p>';
 }
 function toggleTransfer(i,checked){importTransfers[i]._include=checked;renderTransferReview();}
 function skipAllTransfers(){importTransfers.forEach(r=>r._include=false);renderTransferReview();}
@@ -1168,7 +1254,7 @@ async function goToPreview(){
 }
 function renderPills(){
   const uc=['All',...new Set(previewRows.map(r=>r.category))];
-  document.getElementById('preview-filter-pills').innerHTML=uc.map(c=>`<button onclick="setPreviewFilter('${c}')" class="flex-shrink-0 text-xs px-3 py-1 rounded-full font-medium border transition-all ${(c==='All'&&!previewFilter)||(c===previewFilter)?'bg-indigo-600 text-white border-indigo-600':'bg-white text-gray-600 border-gray-200'}">${c}</button>`).join('');
+  document.getElementById('preview-filter-pills').innerHTML=uc.map(c=>`<button onclick="setPreviewFilter('${c}')" class="flex-shrink-0 text-sm px-3 py-1 rounded-full font-medium border transition-all ${(c==='All'&&!previewFilter)||(c===previewFilter)?'bg-indigo-600 text-white border-indigo-600':'bg-white text-gray-600 border-gray-200'}">${c}</button>`).join('');
 }
 function setPreviewFilter(c){previewFilter=c==='All'?'':c;renderPills();renderPreviewList();}
 function renderPreviewList(){
@@ -1182,11 +1268,11 @@ function renderPreviewList(){
         const dc=r._duplicate?`<span class="chip" style="background:#fee2e2;color:#b91c1c;font-size:10px;">Duplicate</span>`:'';
         return `<div class="flex items-center gap-2 px-3 py-2.5 ${r._include?'bg-white':'bg-gray-50 opacity-60'}">
           <input type="checkbox" ${r._include?'checked':''} onchange="togglePreview(${i},this.checked)" class="w-4 h-4 accent-indigo-600 flex-shrink-0"/>
-          <div class="flex-1 min-w-0 space-y-0.5"><p class="text-xs font-medium text-gray-800 break-words">${r.notes}</p><p class="text-xs text-gray-400">${r.date} · ${fmt(r.amount)}</p>${dc}</div>
-          <select onchange="previewRows[${i}].category=this.value;renderPills();" class="text-xs border border-gray-200 rounded-lg px-1.5 py-1 bg-white flex-shrink-0">${catOpts.replace(`value="${r.category}"`,`value="${r.category}" selected`)}</select>
+          <div class="flex-1 min-w-0 space-y-0.5"><p class="text-sm font-medium text-gray-800 break-words">${r.notes}</p><p class="text-sm text-gray-400">${r.date} · ${fmt(r.amount)}</p>${dc}</div>
+          <select onchange="previewRows[${i}].category=this.value;renderPills();" class="text-sm border border-gray-200 rounded-lg px-1.5 py-1 bg-white flex-shrink-0">${catOpts.replace(`value="${r.category}"`,`value="${r.category}" selected`)}</select>
         </div>`;
       }).join('')
-    :'<p class="text-gray-400 text-center py-8 text-sm">No rows in this category</p>';
+    :'<p class="text-gray-400 text-center py-8 text-base">No rows in this category</p>';
   document.getElementById('confirm-import-btn').textContent=`Import ${sel} rows`;
 }
 function togglePreview(i,checked){previewRows[i]._include=checked;renderPreviewList();}
@@ -1354,7 +1440,7 @@ async function renderRulesMatrix(){
     return `<tr class="hover:bg-gray-50 transition-colors">
       <td class="px-3 py-2.5 font-medium text-gray-900 whitespace-nowrap">${r.keyword}</td>
       <td class="px-3 py-2.5 text-gray-500 whitespace-nowrap"><span class="inline-flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:${getCategoryColor(r.category)}"></span>${r.category}${r.subcategory?` · ${r.subcategory}`:''}</span></td>
-      <td class="px-3 py-2.5 text-center whitespace-nowrap"><span class="px-1.5 py-0.5 rounded text-xs font-bold uppercase ${bs}">${r.type}</span></td>
+      <td class="px-3 py-2.5 text-center whitespace-nowrap"><span class="px-1.5 py-0.5 rounded text-sm font-bold uppercase ${bs}">${r.type}</span></td>
       <td class="px-3 py-2.5 text-center whitespace-nowrap ${cnt>0?'text-indigo-600 font-semibold':'text-gray-300'}">${cnt}</td>
       <td class="px-3 py-2.5 text-right"><button onclick="deleteRule(${r.id},'${r.keyword.replace(/'/g,"\\'")}')" class="text-red-400 hover:text-red-600 font-semibold px-1">✕</button></td>
     </tr>`;
@@ -1374,29 +1460,29 @@ function txnRow(t){
   if(isBulkMode){
     return `<div class="flex items-center gap-3 py-3 border-b border-gray-50 last:border-0 cursor-pointer no-select" onclick="toggleBulkSelect(${t.id})">
       <input type="checkbox" ${isChecked} class="w-5 h-5 accent-indigo-600 flex-shrink-0 pointer-events-none rounded"/>
-      <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style="background:${col}">${t.category?t.category[0]:'?'}</div>
+      <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0" style="background:${col}">${t.category?t.category[0]:'?'}</div>
       <div class="flex-1 min-w-0 space-y-0.5">
-        <p class="font-medium text-gray-800 text-sm">${t.category}${t.subcategory?' · '+t.subcategory:''}</p>
-        <p class="text-xs text-gray-500 break-words leading-relaxed">${t.notes||'<span class="text-gray-300 italic">No notes</span>'}</p>
-        <p class="text-xs text-gray-400 font-medium">${ds}</p>
+        <p class="font-medium text-gray-800 text-base">${t.category}${t.subcategory?' · '+t.subcategory:''}</p>
+        <p class="text-sm text-gray-500 break-words leading-relaxed">${t.notes||'<span class="text-gray-300 italic">No notes</span>'}</p>
+        <p class="text-sm text-gray-400 font-medium">${ds}</p>
       </div>
-      <span class="font-bold text-gray-800 text-sm whitespace-nowrap ml-2">${fmt(t.amount)}</span>
+      <span class="font-bold text-gray-800 text-base whitespace-nowrap ml-2">${fmt(t.amount)}</span>
     </div>`;
   }
   return `<div class="flex items-start gap-3 py-3 border-b border-gray-50 last:border-0 no-select"
       onmousedown="startLongPress(${t.id})" onmouseup="cancelLongPress()" onmouseleave="cancelLongPress()"
       ontouchstart="startLongPress(${t.id})" ontouchend="cancelLongPress()" ontouchmove="cancelLongPress()">
-    <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-0.5" style="background:${col}">${t.category?t.category[0]:'?'}</div>
+    <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0 mt-0.5" style="background:${col}">${t.category?t.category[0]:'?'}</div>
     <div class="flex-1 min-w-0 space-y-0.5">
-      <p class="font-medium text-gray-800 text-sm">${t.category}${t.subcategory?' · '+t.subcategory:''}</p>
-      <p class="text-xs text-gray-500 break-words leading-relaxed">${t.notes||'<span class="text-gray-300 italic">No notes</span>'}</p>
-      <p class="text-xs text-gray-400 font-medium">${ds}</p>
+      <p class="font-medium text-gray-800 text-base">${t.category}${t.subcategory?' · '+t.subcategory:''}</p>
+      <p class="text-sm text-gray-500 break-words leading-relaxed">${t.notes||'<span class="text-gray-300 italic">No notes</span>'}</p>
+      <p class="text-sm text-gray-400 font-medium">${ds}</p>
     </div>
     <div class="flex flex-col items-end gap-2 flex-shrink-0 ml-2">
-      <span class="font-bold text-gray-800 text-sm whitespace-nowrap">${fmt(t.amount)}</span>
+      <span class="font-bold text-gray-800 text-base whitespace-nowrap">${fmt(t.amount)}</span>
       <div class="flex items-center gap-1.5 opacity-80">
-        <button onclick="editExpense(${t.id})" class="p-1 hover:bg-gray-100 rounded text-xs">✏️</button>
-        <button onclick="deleteExpense(${t.id})" class="p-1 hover:bg-gray-100 rounded text-xs">🗑️</button>
+        <button onclick="editExpense(${t.id})" class="p-1 hover:bg-gray-100 rounded text-sm">✏️</button>
+        <button onclick="deleteExpense(${t.id})" class="p-1 hover:bg-gray-100 rounded text-sm">🗑️</button>
       </div>
     </div>
   </div>`;
