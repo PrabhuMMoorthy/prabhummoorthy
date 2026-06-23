@@ -22,243 +22,134 @@ body{font-family:'Segoe UI',sans-serif;background:#f1f5f9;transition: background
 select,input,textarea{outline:none;}
 .view-pill{display:inline-flex;align-items:center;padding:3px 12px;border-radius:999px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,0.25);color:rgba(255,255,255,0.7);transition:all 0.15s;}
 .view-pill.active{background:rgba(255,255,255,0.2);color:#fff;border-color:rgba(255,255,255,0.6);box-shadow: 0 1px 2px rgba(0,0,0,0.05);}
+.no-select{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
 
-/* ─── COMPACT DARK MODE OVERRIDES ─── */
-body.dark {
-  background-color: #0f172a !important;
-  color: #f8fafc !important;
-}
-body.dark header {
-  background-color: #1e1b4b !important; /* Dark Indigo Header */
-}
-body.dark .bg-white {
-  background-color: #1e293b !important; /* Dark Slate Cards */
-  color: #f8fafc !important;
-}
-body.dark .bg-gray-50 {
-  background-color: #0f172a !important;
-}
-body.dark .text-gray-700, 
-body.dark .text-gray-800,
-body.dark h2,
-body.dark p.font-medium {
-  color: #e2e8f0 !important;
-}
-body.dark .text-gray-600, 
-body.dark .text-gray-500 {
-  color: #94a3b8 !important;
-}
-body.dark .text-gray-400 {
-  color: #64748b !important;
-}
-body.dark .border-gray-50,
-body.dark .border-gray-100,
-body.dark .border-gray-200,
-body.dark .border-b {
-  border-color: #334155 !important;
-}
-body.dark nav {
-  background-color: #1e293b !important;
-  border-top-color: #334155 !important;
-}
-body.dark select,
-body.dark input,
-body.dark textarea {
-  background-color: #0f172a !important;
-  color: #f8fafc !important;
-  border-color: #334155 !important;
-}
-body.dark #import-modal .bg-white {
-  background-color: #1e293b !important;
-}
-body.dark #import-modal .bg-yellow-50 {
-  background-color: #2c2514 !important;
-  color: #fef08a !important;
-  border-color: #453b17 !important;
-}
-body.dark .settings-section button {
-  background-color: #1e293b !important;
-  color: #f8fafc !important;
-}
-body.dark .settings-section button:hover {
-  background-color: #334155 !important;
-}
-body.dark .settings-section > div {
-  background-color: #0f172a !important;
-}
-body.dark #rule-engine-drawer {
-  background-color: #0f172a !important;
-  color: #f8fafc !important;
-}
-body.dark th {
-  background-color: #1e293b !important;
-  color: #94a3b8 !important;
-}
-body.dark .modal-bg > div {
-  background-color: #1e293b !important;
-  color: #f8fafc !important;
-}
+body.dark {background-color: #0f172a !important;color: #f8fafc !important;}
+body.dark header {background-color: #1e1b4b !important;}
+body.dark .bg-white {background-color: #1e293b !important;color: #f8fafc !important;}
+body.dark .bg-gray-50 {background-color: #0f172a !important;}
+body.dark .text-gray-700, body.dark .text-gray-800, body.dark h2, body.dark p.font-medium {color: #e2e8f0 !important;}
+body.dark .text-gray-600, body.dark .text-gray-500 {color: #94a3b8 !important;}
+body.dark .text-gray-400 {color: #64748b !important;}
+body.dark .border-gray-50, body.dark .border-gray-100, body.dark .border-gray-200, body.dark .border-b {border-color: #334155 !important;}
+body.dark nav {background-color: #1e293b !important;border-top-color: #334155 !important;}
+body.dark select, body.dark input, body.dark textarea {background-color: #0f172a !important;color: #f8fafc !important;border-color: #334155 !important;}
+body.dark #import-modal .bg-white {background-color: #1e293b !important;}
+body.dark #import-modal .bg-yellow-50 {background-color: #2c2514 !important;color: #fef08a !important;border-color: #453b17 !important;}
+body.dark .settings-section button {background-color: #1e293b !important;color: #f8fafc !important;}
+body.dark .settings-section button:hover {background-color: #334155 !important;}
+body.dark .settings-section > div {background-color: #0f172a !important;}
+body.dark #rule-engine-drawer {background-color: #0f172a !important;color: #f8fafc !important;}
+body.dark th {background-color: #1e293b !important;color: #94a3b8 !important;}
+body.dark .modal-bg > div {background-color: #1e293b !important;color: #f8fafc !important;}
 </style>
 <script>
-  // Immediate theme script execution to prevent white color flashing on layout reload
   (function() {
-    if (localStorage.getItem('theme') === 'dark') {
-      document.documentElement.classList.add('dark');
-    }
+    if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
   })();
-
   window.addEventListener('DOMContentLoaded', () => {
-    if (localStorage.getItem('theme') === 'dark') {
-      document.body.classList.add('dark');
-    }
+    if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
     updateThemeToggleUI();
   });
-
   function toggleTheme() {
     const isDark = document.body.classList.toggle('dark');
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
     updateThemeToggleUI();
   }
-
   function updateThemeToggleUI() {
     const isDark = document.body.classList.contains('dark');
-    const moonIcon = document.getElementById('theme-icon-moon');
-    const sunIcon = document.getElementById('theme-icon-sun');
-    if (moonIcon && sunIcon) {
-      if (isDark) {
-        moonIcon.classList.add('hidden');
-        sunIcon.classList.remove('hidden');
-      } else {
-        sunIcon.classList.add('hidden');
-        moonIcon.classList.remove('hidden');
-      }
-    }
+    const m = document.getElementById('theme-icon-moon'), s = document.getElementById('theme-icon-sun');
+    if(m && s){ isDark ? (m.classList.add('hidden'), s.classList.remove('hidden')) : (s.classList.add('hidden'), m.classList.remove('hidden')); }
   }
 </script>
 </head>
-<body class="max-w-lg mx-auto min-h-screen flex flex-col">
+<body class="max-w-lg mx-auto min-h-screen flex flex-col relative">
 
 <header class="bg-indigo-600 text-white px-4 pt-6 pb-4 sticky top-0 z-20 shadow-md transition-colors duration-200">
   <div class="flex justify-between items-center mb-3">
     <h1 class="text-xl font-bold tracking-tight" id="hdr-title">Dashboard</h1>
     <div class="flex items-center gap-2">
-      <button onclick="toggleTheme()" id="theme-toggle-btn" class="w-9 h-9 flex items-center justify-center rounded-full bg-indigo-700 hover:bg-indigo-800 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors flex-shrink-0" title="Toggle UI Theme">
-        <svg id="theme-icon-moon" class="w-5 h-5 text-indigo-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
-        </svg>
-        <svg id="theme-icon-sun" class="w-5 h-5 text-yellow-300 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M14.25 12a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
-        </svg>
+      <button onclick="toggleTheme()" id="theme-toggle-btn" class="w-9 h-9 flex items-center justify-center rounded-full bg-indigo-700 hover:bg-indigo-800 transition-colors flex-shrink-0">
+        <svg id="theme-icon-moon" class="w-5 h-5 text-indigo-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+        <svg id="theme-icon-sun" class="w-5 h-5 text-yellow-300 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M14.25 12a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/></svg>
       </button>
-
-      <button onclick="showPage('settings')" id="hdr-settings-btn" class="w-9 h-9 flex items-center justify-center rounded-full bg-indigo-700 hover:bg-indigo-800 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors flex-shrink-0">
+      <button onclick="showPage('settings')" id="hdr-settings-btn" class="w-9 h-9 flex items-center justify-center rounded-full bg-indigo-700 hover:bg-indigo-800 transition-colors flex-shrink-0">
         <svg class="w-5 h-5 text-indigo-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
       </button>
     </div>
   </div>
-
   <div class="flex items-center justify-between gap-2 border-t border-indigo-500 border-opacity-20 pt-3" id="hdr-view-controls">
     <div class="flex items-center gap-1">
       <button onclick="setDashboardView('month')" id="vpill-month" class="view-pill active">Month</button>
       <button onclick="setDashboardView('year')"  id="vpill-year"  class="view-pill">Year</button>
       <button onclick="setDashboardView('all')"   id="vpill-all"   class="view-pill">All Time</button>
     </div>
-    
-    <div id="month-nav" class="flex items-center gap-1.5 bg-indigo-700 dark:bg-slate-800 px-2 py-1 rounded-lg">
-      <button onclick="changeDashboardMonth(-1)" class="hover:text-indigo-200 px-1 text-xs font-bold transition-colors">◀</button>
+    <div id="month-nav" class="flex items-center gap-1.5 bg-indigo-700 px-2 py-1 rounded-lg">
+      <button onclick="changeDashboardMonth(-1)" class="hover:text-indigo-200 px-1 text-xs font-bold">◀</button>
       <span id="hdr-month" class="text-white text-xs font-semibold whitespace-nowrap min-w-[55px] text-center"></span>
-      <button onclick="changeDashboardMonth(1)"  class="hover:text-indigo-200 px-1 text-xs font-bold transition-colors">▶</button>
+      <button onclick="changeDashboardMonth(1)"  class="hover:text-indigo-200 px-1 text-xs font-bold">▶</button>
     </div>
-    
-    <div id="year-nav" class="flex items-center gap-1.5 bg-indigo-700 dark:bg-slate-800 px-2 py-1 rounded-lg hidden">
-      <button onclick="changeDashboardYear(-1)" class="hover:text-indigo-200 px-1 text-xs font-bold transition-colors">◀</button>
+    <div id="year-nav" class="flex items-center gap-1.5 bg-indigo-700 px-2 py-1 rounded-lg hidden">
+      <button onclick="changeDashboardYear(-1)" class="hover:text-indigo-200 px-1 text-xs font-bold">◀</button>
       <span id="hdr-year" class="text-white text-xs font-semibold whitespace-nowrap min-w-[40px] text-center"></span>
-      <button onclick="changeDashboardYear(1)"  class="hover:text-indigo-200 px-1 text-xs font-bold transition-colors">▶</button>
+      <button onclick="changeDashboardYear(1)"  class="hover:text-indigo-200 px-1 text-xs font-bold">▶</button>
     </div>
   </div>
-
   <div id="hdr-amount" class="mt-3.5 bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-3 flex justify-between items-center shadow-inner">
     <div>
-      <p class="text-indigo-200 dark:text-slate-400 text-xs font-medium uppercase tracking-wider">Total Spent</p>
+      <p class="text-indigo-200 text-xs font-medium uppercase tracking-wider">Total Spent</p>
       <p class="text-2xl font-black mt-0.5 tracking-tight" id="hdr-total">₹0</p>
     </div>
-    <div class="w-8 h-8 rounded-full bg-white bg-opacity-10 flex items-center justify-center text-indigo-200 dark:text-slate-400">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.265.483c.456.83 1.342 1.335 2.274 1.335h.082a2.27 2.27 0 002.274-2.274c0-1.002-.422-1.668-1.234-2.18l-.513-.324A4.12 4.12 0 0110.3 9.497a2.27 2.27 0 012.274-2.274h.082c.932 0 1.818.505 2.274 1.335l.265.483" />
-      </svg>
+    <div class="w-8 h-8 rounded-full bg-white bg-opacity-10 flex items-center justify-center text-indigo-200">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.265.483c.456.83 1.342 1.335 2.274 1.335h.082a2.27 2.27 0 002.274-2.274c0-1.002-.422-1.668-1.234-2.18l-.513-.324A4.12 4.12 0 0110.3 9.497a2.27 2.27 0 012.274-2.274h.082c.932 0 1.818.505 2.274 1.335l.265.483"/></svg>
     </div>
   </div>
 </header>
 
-
 <main class="flex-1 overflow-y-auto pb-20">
 
-  <!-- DASHBOARD -->
   <div id="page-dashboard" class="page p-4 space-y-4 slide-up">
-
-    <!-- Category Donut -->
     <div class="bg-white rounded-2xl p-4 shadow-sm">
       <h2 class="font-semibold text-gray-700 mb-3 text-sm" id="dash-donut-title">This Month by Category</h2>
       <div class="relative h-48"><canvas id="pie-chart"></canvas></div>
       <div id="pie-legend" class="mt-3 grid grid-cols-2 gap-1 text-xs"></div>
     </div>
-
-    <!-- Monthly Trend (12-bar) — shown in Year & All-time views -->
     <div class="bg-white rounded-2xl p-4 shadow-sm" id="dash-trend-card" style="display:none">
       <h2 class="font-semibold text-gray-700 mb-3 text-sm" id="dash-trend-title">Monthly Trend</h2>
       <div class="relative h-44"><canvas id="dash-trend-chart"></canvas></div>
     </div>
-
-    <!-- Top 5 Categories horizontal bar -->
     <div class="bg-white rounded-2xl p-4 shadow-sm">
       <h2 class="font-semibold text-gray-700 mb-3 text-sm" id="dash-top5-title">Top Categories</h2>
       <div class="relative h-44"><canvas id="dash-top5-chart"></canvas></div>
     </div>
-
   </div>
 
-  <!-- ADD -->
   <div id="page-add" class="page p-4 hidden">
     <div class="bg-white rounded-2xl p-4 shadow-sm space-y-4">
       <h2 class="font-semibold text-gray-700 text-lg" id="form-title">Add Expense</h2>
       <input type="hidden" id="edit-id"/>
-      <div>
-        <label class="text-xs text-gray-500 mb-1 block">Amount *</label>
-        <input id="f-amount" type="number" min="0" step="0.01" placeholder="0.00" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-xl font-bold text-indigo-600 bg-gray-50"/>
-      </div>
-      <div>
-        <label class="text-xs text-gray-500 mb-1 block">Date *</label>
-        <input id="f-date" type="date" class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50"/>
-      </div>
-      <div>
-        <label class="text-xs text-gray-500 mb-1 block">Category *</label>
-        <select id="f-category" onchange="loadSubcats()" class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50">
-          <option value="">Select category</option>
-        </select>
-      </div>
-      <div>
-        <label class="text-xs text-gray-500 mb-1 block">Subcategory</label>
-        <select id="f-subcat" class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50">
-          <option value="">None</option>
-        </select>
-      </div>
-      <div>
-        <label class="text-xs text-gray-500 mb-1 block">Notes</label>
-        <textarea id="f-notes" rows="2" placeholder="Optional note..." class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 resize-none"></textarea>
-      </div>
+      <div><label class="text-xs text-gray-500 mb-1 block">Amount *</label>
+        <input id="f-amount" type="number" min="0" step="0.01" placeholder="0.00" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-xl font-bold text-indigo-600 bg-gray-50"/></div>
+      <div><label class="text-xs text-gray-500 mb-1 block">Date *</label>
+        <input id="f-date" type="date" class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50"/></div>
+      <div><label class="text-xs text-gray-500 mb-1 block">Category *</label>
+        <select id="f-category" onchange="loadSubcats()" class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50"><option value="">Select category</option></select></div>
+      <div><label class="text-xs text-gray-500 mb-1 block">Subcategory</label>
+        <select id="f-subcat" class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50"><option value="">None</option></select></div>
+      <div><label class="text-xs text-gray-500 mb-1 block">Notes</label>
+        <textarea id="f-notes" rows="2" placeholder="Optional note..." class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 resize-none"></textarea></div>
       <button onclick="saveExpense()" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold text-base">Save Expense</button>
       <button onclick="cancelEdit()" id="cancel-btn" class="w-full text-gray-400 py-2 text-sm hidden">Cancel</button>
     </div>
   </div>
 
-  <!-- REPORTS -->
   <div id="page-reports" class="page p-4 space-y-4 hidden">
     <div class="bg-white rounded-2xl p-4 shadow-sm space-y-3">
       <div class="flex gap-1.5 overflow-x-auto pills-scroll py-0.5" id="r-preset-pills">
-        <button onclick="applyPillPreset('current-month')" id="btn-current-month" class="flex-shrink-0 text-xs px-3 py-1.5 rounded-full font-medium border border-indigo-600 bg-indigo-600 text-white transition-all">Current Month</button>
-        <button onclick="applyPillPreset('prev-month')"    id="btn-prev-month"    class="flex-shrink-0 text-xs px-3 py-1.5 rounded-full font-medium border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-all">◀ Prev Month</button>
-        <button onclick="applyPillPreset('last-3-months')" id="btn-last-3-months" class="flex-shrink-0 text-xs px-3 py-1.5 rounded-full font-medium border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-all">Last 3 M</button>
-        <button onclick="applyPillPreset('custom')"        id="btn-custom"        class="flex-shrink-0 text-xs px-3 py-1.5 rounded-full font-medium border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-all">Custom</button>
+        <button onclick="applyPillPreset('current-month')" id="btn-current-month" class="flex-shrink-0 text-xs px-3 py-1.5 rounded-full font-medium border border-indigo-600 bg-indigo-600 text-white">Current Month</button>
+        <button onclick="applyPillPreset('prev-month')"    id="btn-prev-month"    class="flex-shrink-0 text-xs px-3 py-1.5 rounded-full font-medium border border-gray-200 bg-white text-gray-600">◀ Prev Month</button>
+        <button onclick="applyPillPreset('last-3-months')" id="btn-last-3-months" class="flex-shrink-0 text-xs px-3 py-1.5 rounded-full font-medium border border-gray-200 bg-white text-gray-600">Last 3 M</button>
+        <button onclick="applyPillPreset('custom')"        id="btn-custom"        class="flex-shrink-0 text-xs px-3 py-1.5 rounded-full font-medium border border-gray-200 bg-white text-gray-600">Custom</button>
       </div>
       <div class="grid grid-cols-2 gap-2">
         <div><label class="text-xs text-gray-400 mb-0.5 block">From</label>
@@ -276,7 +167,7 @@ body.dark .modal-bg > div {
         </select>
       </div>
       <div class="relative flex items-center">
-        <input id="r-search" type="text" oninput="loadReports()" placeholder="Search transactions..." class="w-full border border-gray-100 rounded-lg pl-8 pr-3 py-1.5 text-xs bg-gray-50"/>
+        <input id="r-search" type="text" oninput="loadReports()" placeholder="Search transactions... (Long press a row to select)" class="w-full border border-gray-100 rounded-lg pl-8 pr-3 py-1.5 text-xs bg-gray-50"/>
         <span class="absolute left-2.5 text-gray-400 text-xs">🔍</span>
       </div>
     </div>
@@ -300,10 +191,12 @@ body.dark .modal-bg > div {
       <label class="w-full border border-green-400 text-green-700 py-2 rounded-xl text-sm font-medium flex items-center justify-center cursor-pointer">
         📊 Import Paytm XLSX<input type="file" accept=".xlsx,.xls" onchange="startPaytmImport(event)" class="hidden"/>
       </label>
+      <label class="w-full border border-blue-400 text-blue-700 py-2 rounded-xl text-sm font-medium flex items-center justify-center cursor-pointer">
+        🏦 Import Bank CSV<input type="file" accept=".csv" onchange="startBankCSVImport(event)" class="hidden"/>
+      </label>
     </div>
   </div>
 
-  <!-- CATEGORIES -->
   <div id="page-budget" class="page p-4 space-y-4 hidden">
     <div class="bg-white rounded-2xl p-4 shadow-sm space-y-3">
       <h2 class="font-semibold text-gray-700">Manage Categories & Subcategories</h2>
@@ -315,10 +208,8 @@ body.dark .modal-bg > div {
     </div>
   </div>
 
-  <!-- SETTINGS -->
   <div id="page-settings" class="page hidden text-sm">
     <div class="divide-y divide-gray-100">
-
       <div class="settings-section" id="section-preferences">
         <button onclick="toggleSettingsSection('preferences')" class="w-full flex items-center justify-between px-4 py-4 bg-white hover:bg-gray-50 transition-colors">
           <div class="flex items-center gap-3">
@@ -330,15 +221,12 @@ body.dark .modal-bg > div {
           <svg id="chevron-preferences" class="w-4 h-4 text-gray-400 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
         </button>
         <div id="body-preferences" class="hidden bg-gray-50 px-4 py-4 space-y-3 border-t border-gray-100">
-          <div>
-            <label class="text-xs text-gray-500 mb-1 block">Global Currency Symbol</label>
+          <div><label class="text-xs text-gray-500 mb-1 block">Global Currency Symbol</label>
             <select id="s-currency" onchange="updateCurrencySymbol()" class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-white text-sm">
               <option value="₹">₹ (INR)</option><option value="$">$ (USD)</option><option value="€">€ (EUR)</option><option value="£">£ (GBP)</option><option value="¥">¥ (JPY)</option>
-            </select>
-          </div>
+            </select></div>
         </div>
       </div>
-
       <div class="settings-section" id="section-rules">
         <button onclick="openRuleEngineDrawer()" class="w-full flex items-center justify-between px-4 py-4 bg-white hover:bg-gray-50 transition-colors">
           <div class="flex items-center gap-3">
@@ -350,7 +238,6 @@ body.dark .modal-bg > div {
           <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
         </button>
       </div>
-
       <div class="settings-section" id="section-backup">
         <button onclick="toggleSettingsSection('backup')" class="w-full flex items-center justify-between px-4 py-4 bg-white hover:bg-gray-50 transition-colors">
           <div class="flex items-center gap-3">
@@ -376,7 +263,6 @@ body.dark .modal-bg > div {
           </div>
         </div>
       </div>
-
       <div class="settings-section" id="section-delete">
         <button onclick="toggleSettingsSection('delete')" class="w-full flex items-center justify-between px-4 py-4 bg-white hover:bg-gray-50 transition-colors">
           <div class="flex items-center gap-3">
@@ -388,11 +274,10 @@ body.dark .modal-bg > div {
           <svg id="chevron-delete" class="w-4 h-4 text-gray-400 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
         </button>
         <div id="body-delete" class="hidden bg-red-50 px-4 py-4 space-y-2 border-t border-red-100">
-          <p class="text-xs text-gray-500 mb-1">Permanently erase all entries, categories, budgets and rules, and reset to defaults.</p>
-          <button onclick="factoryResetApp()" class="w-full bg-red-500 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-red-600 transition-colors">⚠️ Reset All Data</button>
+          <p class="text-xs text-gray-500 mb-1">Permanently erase all entries, categories, budgets and rules.</p>
+          <button onclick="factoryResetApp()" class="w-full bg-red-500 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-red-600">⚠️ Reset All Data</button>
         </div>
       </div>
-
     </div>
   </div>
 
@@ -415,7 +300,7 @@ body.dark .modal-bg > div {
           <select id="rule-category" onchange="loadSettingsRuleSubcats()" class="border border-gray-200 rounded-lg px-2 py-2 text-xs bg-white"><option value="">Category</option></select>
           <select id="rule-subcategory" class="border border-gray-200 rounded-lg px-2 py-2 text-xs bg-white"><option value="">Subcategory</option></select>
         </div>
-        <button onclick="addManualRule()" class="w-full bg-indigo-50 text-indigo-600 border border-indigo-200 text-xs font-semibold py-2 rounded-lg hover:bg-indigo-100 transition">➕ Add Rule</button>
+        <button onclick="addManualRule()" class="w-full bg-indigo-50 text-indigo-600 border border-indigo-200 text-xs font-semibold py-2 rounded-lg hover:bg-indigo-100">➕ Add Rule</button>
       </div>
       <div class="overflow-x-auto">
         <table class="w-full text-xs text-left border-collapse">
@@ -432,6 +317,20 @@ body.dark .modal-bg > div {
         </table>
         <div id="rules-empty-state" class="text-center p-6 text-xs text-gray-400 hidden">No rules yet. Tap "Train" to auto-generate from your transaction history.</div>
       </div>
+    </div>
+  </div>
+
+  <!-- Bulk Action Bar -->
+  <div id="bulk-action-bar" class="fixed left-0 right-0 max-w-lg mx-auto bg-indigo-700 text-white px-4 py-3 flex items-center justify-between z-30 transition-transform duration-300 transform translate-y-full hidden shadow-lg rounded-t-xl" style="bottom: 64px;">
+    <div class="flex items-center gap-3">
+      <input type="checkbox" id="bulk-select-all" onchange="toggleSelectAll(this.checked)" class="w-5 h-5 accent-white rounded"/>
+      <span id="bulk-count" class="font-semibold text-sm">0 selected</span>
+    </div>
+    <div class="flex items-center gap-4">
+      <button onclick="openBulkEditModal()" class="text-sm font-medium hover:text-indigo-200">Edit</button>
+      <button onclick="confirmBulkDelete()" class="text-sm font-medium text-red-300 hover:text-red-200">Delete</button>
+      <div class="w-px h-4 bg-indigo-500"></div>
+      <button onclick="exitBulkMode()" class="text-sm font-medium hover:text-gray-300 text-xl leading-none">&times;</button>
     </div>
   </div>
 
@@ -458,13 +357,13 @@ body.dark .modal-bg > div {
   </button>
 </nav>
 
-<!-- Paytm Import Modal -->
+<!-- Import Modal (shared for Paytm & Bank CSV) -->
 <div id="import-modal" class="fixed inset-0 modal-bg z-50 hidden" style="display:none">
   <div class="absolute inset-0" onclick="closeImportModal()"></div>
   <div class="absolute bottom-0 left-0 right-0 max-w-lg mx-auto bg-white rounded-t-3xl flex flex-col" style="height:88vh">
     <div class="px-4 pt-4 pb-2 border-b border-gray-100 flex-shrink-0">
       <div class="flex justify-between items-center mb-2">
-        <h2 class="font-bold text-gray-800 text-base" id="import-modal-title">Import Paytm Statement</h2>
+        <h2 class="font-bold text-gray-800 text-base" id="import-modal-title">Import Statement</h2>
         <button onclick="closeImportModal()" class="text-gray-400 text-xl w-8 h-8 flex items-center justify-center">✕</button>
       </div>
       <div class="flex gap-1">
@@ -475,7 +374,7 @@ body.dark .modal-bg > div {
     </div>
     <div id="import-step-1" class="flex-col flex-1 overflow-hidden" style="display:none">
       <div class="px-4 py-2 bg-yellow-50 border-b border-yellow-100 flex-shrink-0 flex items-center justify-between">
-        <p class="text-xs text-yellow-800"><strong id="tr-count">0</strong> money transfers — decide each</p>
+        <p class="text-xs text-yellow-800"><strong id="tr-count">0</strong> transfers — decide each</p>
         <button onclick="skipAllTransfers()" class="text-xs text-red-500 font-medium border border-red-200 px-2 py-1 rounded-lg">Skip All</button>
       </div>
       <div id="transfer-review-list" class="overflow-y-auto flex-1 divide-y divide-gray-100"></div>
@@ -505,7 +404,7 @@ body.dark .modal-bg > div {
   </div>
 </div>
 
-<!-- Delete modal -->
+<!-- Delete Modal -->
 <div id="del-modal" class="fixed inset-0 modal-bg z-50 items-center justify-center hidden">
   <div class="bg-white rounded-2xl p-6 mx-6 shadow-xl">
     <h3 class="font-bold text-lg mb-2">Delete Expense?</h3>
@@ -517,6 +416,23 @@ body.dark .modal-bg > div {
   </div>
 </div>
 
+<!-- Bulk Edit Modal -->
+<div id="bulk-edit-modal" class="fixed inset-0 modal-bg z-50 items-center justify-center hidden">
+  <div class="bg-white rounded-2xl p-6 mx-6 shadow-xl w-full max-w-sm">
+    <h3 class="font-bold text-lg mb-4 text-gray-800">Bulk Edit Categories</h3>
+    <div class="space-y-4">
+      <div><label class="text-xs text-gray-500 mb-1 block">Category</label>
+        <select id="bulk-category" onchange="loadBulkSubcats()" class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 text-sm"></select></div>
+      <div><label class="text-xs text-gray-500 mb-1 block">Subcategory</label>
+        <select id="bulk-subcategory" class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 text-sm"><option value="">None</option></select></div>
+    </div>
+    <div class="flex gap-3 mt-6">
+      <button onclick="closeBulkEditModal()" class="flex-1 border border-gray-200 py-2.5 rounded-xl text-gray-600 font-medium">Cancel</button>
+      <button onclick="saveBulkEdit()" class="flex-1 bg-indigo-600 text-white py-2.5 rounded-xl font-semibold">Save</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast" class="fixed bottom-24 left-1/2 bg-gray-800 text-white text-sm px-5 py-2 rounded-full shadow-lg opacity-0 transition-opacity z-50 pointer-events-none whitespace-nowrap" style="transform:translateX(-50%)"></div>
 
 <script>
@@ -524,15 +440,26 @@ body.dark .modal-bg > div {
 const db = new Dexie('ExpenseDB');
 db.version(1).stores({ transactions:'++id,date,category', categories:'++id,name', budgets:'++id,month' });
 db.version(2).stores({ transactions:'++id,date,category', categories:'++id,name', budgets:'++id,month', importRules:'++id,&keyword,category,subcategory,type' });
+db.version(3).stores({ transactions:'++id,date,category', categories:'++id,name', budgets:'++id,month', importRules:'++id,&keyword,category,subcategory,type' }).upgrade(async tx => {
+  // Seed Investments category if missing
+  const existing = await tx.table('categories').where('name').equalsIgnoreCase('Investments').first();
+  if (!existing) await tx.table('categories').add({name:'Investments', subcategories:['Gold','Stocks','Bonds']});
+  // Add Loan EMI to Bills if missing
+  const bills = await tx.table('categories').where('name').equalsIgnoreCase('Bills').first();
+  if (bills && !bills.subcategories.includes('Loan EMI')) {
+    await tx.table('categories').update(bills.id, {subcategories:[...bills.subcategories,'Loan EMI']});
+  }
+});
 
 const DEFAULT_CATS = [
   {name:'Food',subcategories:['Groceries','Restaurant','Snacks']},
   {name:'Transport',subcategories:['Fuel','Auto/Cab','Bus/Train','Metro']},
-  {name:'Bills',subcategories:['Electricity','Water','Internet','Phone']},
+  {name:'Bills',subcategories:['Electricity','Water','Internet','Phone','Loan EMI']},
   {name:'Shopping',subcategories:['Clothing','Electronics','Home']},
   {name:'Health',subcategories:['Medicine','Doctor','Gym']},
   {name:'Education',subcategories:['School','Books','Coaching','Fees']},
   {name:'Entertainment',subcategories:['Movies','Games','Subscriptions']},
+  {name:'Investments',subcategories:['Gold','Stocks','Bonds']},
   {name:'Others',subcategories:['Miscellaneous','Financial Services']},
 ];
 
@@ -549,11 +476,108 @@ const TAG_MAP = {
   '#💵 Money Transfer':{category:'Others',subcategory:''},
 };
 const SKIP_TAGS = ['Self-Transfer','Money Received'];
-
 const SYSTEM_COLORS = ['#6366f1','#f59e0b','#10b981','#f43f5e','#3b82f6','#8b5cf6','#ec4899','#14b8a6','#f97316','#06b6d4','#84cc16','#a855f7','#64748b','#b45309','#047857','#1d4ed8','#be123c'];
 
+// ─── Bank CSV Smart Categorisation Rules ───
+// Priority order matters — more specific patterns first (e.g. Swiggy Instamart before Swiggy)
+const BANK_KEYWORD_RULES = [
+  // ── Food › Groceries ──
+  {p:'swiggy instamart',  cat:'Food',         sub:'Groceries'},
+  {p:'instamart',         cat:'Food',         sub:'Groceries'},
+  {p:'blinkit',           cat:'Food',         sub:'Groceries'},
+  {p:'blinkitswiggy',     cat:'Food',         sub:'Groceries'},
+  {p:'sproutz',           cat:'Food',         sub:'Groceries'},
+  {p:'swayamkrushi',      cat:'Food',         sub:'Groceries'},
+  {p:'saravana vegetable',cat:'Food',         sub:'Groceries'},
+  {p:'quality vegetable', cat:'Food',         sub:'Groceries'},
+  {p:'gnana sekar',       cat:'Food',         sub:'Groceries'},
+  {p:'pick n pack',       cat:'Food',         sub:'Groceries'},
+  {p:'avenue supermarts', cat:'Food',         sub:'Groceries'},
+  {p:'smart bazaar',      cat:'Food',         sub:'Groceries'},
+  {p:'spar hypermarkets', cat:'Food',         sub:'Groceries'},
+  {p:'spar',              cat:'Food',         sub:'Groceries'},
+  {p:'dmart',             cat:'Food',         sub:'Groceries'},
+  // ── Food › Restaurant ──
+  {p:'swiggy',            cat:'Food',         sub:'Restaurant'},
+  {p:'zomato',            cat:'Food',         sub:'Restaurant'},
+  {p:'burger',            cat:'Food',         sub:'Restaurant'},
+  {p:'parotta',           cat:'Food',         sub:'Restaurant'},
+  {p:'iyyangar bak',      cat:'Food',         sub:'Restaurant'},
+  {p:'iyyangar bake',     cat:'Food',         sub:'Restaurant'},
+  {p:'hotel',             cat:'Food',         sub:'Restaurant'},
+  // ── Health ──
+  {p:'apollo',            cat:'Health',       sub:'Medicine'},
+  {p:'tmc pharmacy',      cat:'Health',       sub:'Medicine'},
+  {p:'tmcri',             cat:'Health',       sub:'Medicine'},
+  {p:'revera dental',     cat:'Health',       sub:'Doctor'},
+  {p:'christudas',        cat:'Health',       sub:'Doctor'},
+  {p:'hospital',          cat:'Health',       sub:'Doctor'},
+  {p:'pharmacy',          cat:'Health',       sub:'Medicine'},
+  {p:'medical',           cat:'Health',       sub:'Medicine'},
+  // ── Entertainment ──
+  {p:'orbgen',            cat:'Entertainment',sub:'Movies'},
+  {p:'varadaraja cinemas',cat:'Entertainment',sub:'Movies'},
+  {p:'cinema',            cat:'Entertainment',sub:'Movies'},
+  {p:'pvr',               cat:'Entertainment',sub:'Movies'},
+  {p:'inox',              cat:'Entertainment',sub:'Movies'},
+  // ── Transport ──
+  {p:'chennai metro',     cat:'Transport',    sub:'Metro'},
+  {p:'metropolitan transport',cat:'Transport',sub:'Metro'},
+  {p:'metro rail',        cat:'Transport',    sub:'Metro'},
+  {p:'bus booking',       cat:'Transport',    sub:'Bus/Train'},
+  {p:'bus book',          cat:'Transport',    sub:'Bus/Train'},
+  {p:'express bus',       cat:'Transport',    sub:'Bus/Train'},
+  {p:'psr tours',         cat:'Transport',    sub:'Bus/Train'},
+  {p:'vgp travels',       cat:'Transport',    sub:'Bus/Train'},
+  {p:'meena travels',     cat:'Transport',    sub:'Bus/Train'},
+  {p:'srt bus',           cat:'Transport',    sub:'Bus/Train'},
+  {p:'indigo',            cat:'Transport',    sub:'Bus/Train'},
+  {p:'goibibo',           cat:'Transport',    sub:'Bus/Train'},
+  {p:'makemytrip',        cat:'Transport',    sub:'Bus/Train'},
+  {p:'irctc',             cat:'Transport',    sub:'Bus/Train'},
+  // ── Shopping › Clothing ──
+  {p:'maxfashion',        cat:'Shopping',     sub:'Clothing'},
+  {p:'maxfashio',         cat:'Shopping',     sub:'Clothing'},
+  {p:'go colors',         cat:'Shopping',     sub:'Clothing'},
+  {p:'dress circle',      cat:'Shopping',     sub:'Clothing'},
+  {p:'cotton world',      cat:'Shopping',     sub:'Clothing'},
+  {p:'easybuy',           cat:'Shopping',     sub:'Clothing'},
+  {p:'metro brands',      cat:'Shopping',     sub:'Clothing'},
+  {p:'reliance retail',   cat:'Shopping',     sub:'Clothing'},
+  {p:'ajio',              cat:'Shopping',     sub:'Clothing'},
+  // ── Shopping › Electronics/Home ──
+  {p:'mr diy',            cat:'Shopping',     sub:'Home'},
+  // ── Shopping › General ──
+  {p:'amazon',            cat:'Shopping',     sub:''},
+  {p:'flipkart',          cat:'Shopping',     sub:''},
+  {p:'meesho',            cat:'Shopping',     sub:''},
+  {p:'shoppeseva',        cat:'Shopping',     sub:''},
+  // ── Investments › Gold ──
+  {p:'grt jewellers',     cat:'Investments',  sub:'Gold'},
+  {p:'lalithaa jewellery',cat:'Investments',  sub:'Gold'},
+  {p:'lalithaa jewel',    cat:'Investments',  sub:'Gold'},
+  {p:'kushals',           cat:'Investments',  sub:'Gold'},
+  {p:'avenues grt',       cat:'Investments',  sub:'Gold'},
+  {p:'maangalya',         cat:'Investments',  sub:'Gold'},
+  {p:'jewel',             cat:'Investments',  sub:'Gold'},
+  // ── Investments › Stocks ──
+  {p:'zerodha',           cat:'Investments',  sub:'Stocks'},
+  // ── Investments › Bonds ──
+  {p:'navi finserv',      cat:'Investments',  sub:'Bonds'},
+  // ── Bills › Internet ──
+  {p:'google',            cat:'Bills',        sub:'Internet'},
+];
+
+function applyBankKeywordRules(particulars, merchant) {
+  const haystack = (particulars + ' ' + merchant).toLowerCase();
+  for (const rule of BANK_KEYWORD_RULES) {
+    if (haystack.includes(rule.p)) return {category: rule.cat, subcategory: rule.sub};
+  }
+  return null;
+}
+
 function getCategoryColor(n){
-  const cc={Food:'#f59e0b',Transport:'#3b82f6',Bills:'#ef4444',Shopping:'#ec4899',Health:'#10b981',Education:'#8b5cf6',Entertainment:'#f97316',Others:'#6b7280'};
+  const cc={Food:'#f59e0b',Transport:'#3b82f6',Bills:'#ef4444',Shopping:'#ec4899',Health:'#10b981',Education:'#8b5cf6',Entertainment:'#f97316',Investments:'#059669',Others:'#6b7280'};
   if(cc[n]) return cc[n];
   let h=0; for(let i=0;i<n.length;i++) h=n.charCodeAt(i)+((h<<5)-h);
   return SYSTEM_COLORS[Math.abs(h)%SYSTEM_COLORS.length];
@@ -563,48 +587,51 @@ let pieChart=null, dashTrendChart=null, dashTop5Chart=null, barChart=null;
 let pendingDeleteId=null, currentPage='dashboard';
 let importAuto=[], importTransfers=[], importCats=[], previewRows=[], previewFilter='';
 let reportsReferenceDate=new Date(), selectedPreset='current-month';
+let isBulkMode=false, selectedTxnIds=new Set(), longPressTimer=null, currentReportTxns=[];
+let dashView='month', dashboardDate=new Date();
 
-// ─── Dashboard view state ──────────────────────────────────────
-let dashView = 'month'; // 'month' | 'year' | 'all'
-let dashboardDate = new Date(); // used for month & year navigation
-
-function setDashboardView(v) {
-  dashView = v;
-  ['month','year','all'].forEach(p => {
-    document.getElementById('vpill-'+p).classList.toggle('active', p===v);
-  });
-  document.getElementById('month-nav').classList.toggle('hidden', v!=='month');
-  document.getElementById('year-nav').classList.toggle('hidden',  v!=='year');
+// ─── Dashboard View ───
+function setDashboardView(v){
+  dashView=v;
+  ['month','year','all'].forEach(p=>document.getElementById('vpill-'+p).classList.toggle('active',p===v));
+  document.getElementById('month-nav').classList.toggle('hidden',v!=='month');
+  document.getElementById('year-nav').classList.toggle('hidden',v!=='year');
   loadDashboard();
 }
-
-function changeDashboardMonth(dir) { dashboardDate.setMonth(dashboardDate.getMonth()+dir); loadDashboard(); }
-function changeDashboardYear(dir)  { dashboardDate.setFullYear(dashboardDate.getFullYear()+dir); loadDashboard(); }
-
-// ─── Date range helpers ───────────────────────────────────────
-function getDashRange() {
-  const y=dashboardDate.getFullYear(), m=String(dashboardDate.getMonth()+1).padStart(2,'0');
-  if(dashView==='month') return {from:`${y}-${m}-01`, to:`${y}-${m}-31`};
-  if(dashView==='year')  return {from:`${y}-01-01`,   to:`${y}-12-31`};
-  return {from:'2000-01-01', to:'2099-12-31'};
+function changeDashboardMonth(dir){dashboardDate.setMonth(dashboardDate.getMonth()+dir);loadDashboard();}
+function changeDashboardYear(dir){dashboardDate.setFullYear(dashboardDate.getFullYear()+dir);loadDashboard();}
+function getDashRange(){
+  const y=dashboardDate.getFullYear(),m=String(dashboardDate.getMonth()+1).padStart(2,'0');
+  if(dashView==='month') return {from:`${y}-${m}-01`,to:`${y}-${m}-31`};
+  if(dashView==='year')  return {from:`${y}-01-01`,to:`${y}-12-31`};
+  return {from:'2000-01-01',to:'2099-12-31'};
 }
 
-// ─── Init ─────────────────────────────────────────────────────
-async function init() {
-  const count = await db.categories.count();
-  if(!count) await db.categories.bulkAdd(DEFAULT_CATS);
+// ─── Init ───
+async function init(){
+  const count=await db.categories.count();
+  if(!count) {
+    await db.categories.bulkAdd(DEFAULT_CATS);
+  } else {
+    // For existing users: ensure Investments and Loan EMI exist (migration fallback)
+    const invEx = await db.categories.where('name').equalsIgnoreCase('Investments').first();
+    if (!invEx) await db.categories.add({name:'Investments', subcategories:['Gold','Stocks','Bonds']});
+    const bills = await db.categories.where('name').equalsIgnoreCase('Bills').first();
+    if (bills && !bills.subcategories.includes('Loan EMI')) {
+      await db.categories.update(bills.id, {subcategories:[...bills.subcategories,'Loan EMI']});
+    }
+  }
   setDefaultDates();
   applyPillPreset('current-month');
   await showPage('dashboard');
 }
-
-function setDefaultDates() {
+function setDefaultDates(){
   const now=new Date(),y=now.getFullYear(),m=String(now.getMonth()+1).padStart(2,'0'),d=String(now.getDate()).padStart(2,'0');
   document.getElementById('f-date').value=`${y}-${m}-${d}`;
 }
 
-// ─── Navigation ───────────────────────────────────────────────
-async function showPage(name) {
+// ─── Navigation ───
+async function showPage(name){
   currentPage=name;
   document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
   document.getElementById('page-'+name).classList.remove('hidden');
@@ -614,135 +641,70 @@ async function showPage(name) {
   const isDash=name==='dashboard';
   document.getElementById('hdr-amount').style.display=isDash?'':'none';
   document.getElementById('hdr-view-controls').style.display=isDash?'':'none';
-  document.getElementById('hdr-settings-btn').classList.toggle('bg-indigo-500', name==='settings');
-  document.getElementById('hdr-settings-btn').classList.toggle('bg-indigo-700', name!=='settings');
-  if(isDash)           await loadDashboard();
-  if(name==='add')     await loadCategoryDropdowns();
-  if(name==='reports') await loadReports();
-  if(name==='budget')  await loadBudget();
-  if(name==='settings')await loadSettings();
+  document.getElementById('hdr-settings-btn').classList.toggle('bg-indigo-500',name==='settings');
+  document.getElementById('hdr-settings-btn').classList.toggle('bg-indigo-700',name!=='settings');
+  if(isBulkMode&&name!=='reports') exitBulkMode();
+  if(isDash)            await loadDashboard();
+  if(name==='add')      await loadCategoryDropdowns();
+  if(name==='reports')  await loadReports();
+  if(name==='budget')   await loadBudget();
+  if(name==='settings') await loadSettings();
 }
 
-// ─── Dashboard ────────────────────────────────────────────────
-async function loadDashboard() {
-  const {from, to} = getDashRange();
-  const y = dashboardDate.getFullYear();
-
-  // Header labels
-  document.getElementById('hdr-month').textContent = dashboardDate.toLocaleString('default',{month:'long',year:'numeric'});
-  document.getElementById('hdr-year').textContent  = String(y);
-
-  const txns = await db.transactions.where('date').between(from,to,true,true).toArray();
-  const total = txns.reduce((s,t)=>s+t.amount,0);
-  document.getElementById('hdr-total').textContent = fmt(total);
-
-  // Donut title
-  const donutTitles = {month:'This Month by Category', year:`${y} by Category`, all:'All Time by Category'};
-  document.getElementById('dash-donut-title').textContent = donutTitles[dashView];
-
-  // ── Donut ──
+// ─── Dashboard ───
+async function loadDashboard(){
+  const {from,to}=getDashRange(), y=dashboardDate.getFullYear();
+  document.getElementById('hdr-month').textContent=dashboardDate.toLocaleString('default',{month:'long',year:'numeric'});
+  document.getElementById('hdr-year').textContent=String(y);
+  const txns=await db.transactions.where('date').between(from,to,true,true).toArray();
+  const total=txns.reduce((s,t)=>s+t.amount,0);
+  document.getElementById('hdr-total').textContent=fmt(total);
+  document.getElementById('dash-donut-title').textContent={month:'This Month by Category',year:`${y} by Category`,all:'All Time by Category'}[dashView];
   const catMap={};
   txns.forEach(t=>catMap[t.category]=(catMap[t.category]||0)+t.amount);
-  const cats=Object.keys(catMap), vals=cats.map(c=>catMap[c]);
-  const colors=cats.map(c=>getCategoryColor(c));
+  const cats=Object.keys(catMap),vals=cats.map(c=>catMap[c]),colors=cats.map(c=>getCategoryColor(c));
   if(pieChart) pieChart.destroy();
   if(cats.length){
-    pieChart=new Chart(document.getElementById('pie-chart'),{
-      type:'doughnut',
-      data:{labels:cats,datasets:[{data:vals,backgroundColor:colors,borderWidth:0}]},
-      options:{plugins:{legend:{display:false}},cutout:'65%',responsive:true,maintainAspectRatio:false}
-    });
-    document.getElementById('pie-legend').innerHTML=cats.map((c,i)=>`
-      <div class="flex items-center gap-1">
-        <span class="w-2.5 h-2.5 rounded-full" style="background:${colors[i]};min-width:10px"></span>
-        <span class="text-gray-600 truncate">${c}</span>
-        <span class="ml-auto font-medium">${fmt(vals[i])}</span>
-      </div>`).join('');
+    pieChart=new Chart(document.getElementById('pie-chart'),{type:'doughnut',data:{labels:cats,datasets:[{data:vals,backgroundColor:colors,borderWidth:0}]},options:{plugins:{legend:{display:false}},cutout:'65%',responsive:true,maintainAspectRatio:false}});
+    document.getElementById('pie-legend').innerHTML=cats.map((c,i)=>`<div class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full" style="background:${colors[i]};min-width:10px"></span><span class="text-gray-600 truncate">${c}</span><span class="ml-auto font-medium">${fmt(vals[i])}</span></div>`).join('');
   } else {
-    if(pieChart) pieChart.destroy();
     document.getElementById('pie-legend').innerHTML='<p class="text-gray-400 text-xs text-center col-span-2 py-4">No data for this period</p>';
   }
-
-  // ── Monthly Trend chart (Year & All-time only) ──
-  const trendCard = document.getElementById('dash-trend-card');
-  if(dashView==='month'){
-    trendCard.style.display='none';
-    if(dashTrendChart){dashTrendChart.destroy();dashTrendChart=null;}
-  } else {
+  const trendCard=document.getElementById('dash-trend-card');
+  if(dashView==='month'){trendCard.style.display='none';if(dashTrendChart){dashTrendChart.destroy();dashTrendChart=null;}}
+  else{
     trendCard.style.display='';
-    // Build month buckets
-    let months=[], totals=[];
+    let months=[],totals=[];
     if(dashView==='year'){
       document.getElementById('dash-trend-title').textContent=`${y} — Monthly Trend`;
-      for(let m=1;m<=12;m++){
-        const ms=String(m).padStart(2,'0');
-        const mt=await db.transactions.where('date').between(`${y}-${ms}-01`,`${y}-${ms}-31`,true,true).toArray();
-        months.push(new Date(y,m-1,1).toLocaleString('default',{month:'short'}));
-        totals.push(mt.reduce((s,t)=>s+t.amount,0));
-      }
+      for(let m=1;m<=12;m++){const ms=String(m).padStart(2,'0');const mt=await db.transactions.where('date').between(`${y}-${ms}-01`,`${y}-${ms}-31`,true,true).toArray();months.push(new Date(y,m-1,1).toLocaleString('default',{month:'short'}));totals.push(mt.reduce((s,t)=>s+t.amount,0));}
     } else {
       document.getElementById('dash-trend-title').textContent='All Time — Monthly Trend';
-      const all=await db.transactions.toArray();
-      const buckets={};
-      all.forEach(t=>{ const k=t.date.slice(0,7); buckets[k]=(buckets[k]||0)+t.amount; });
-      const keys=Object.keys(buckets).sort();
-      keys.forEach(k=>{ const [yy,mm]=k.split('-'); months.push(new Date(+yy,+mm-1,1).toLocaleString('default',{month:'short',year:'2-digit'})); totals.push(buckets[k]); });
+      const all=await db.transactions.toArray(),buckets={};
+      all.forEach(t=>{const k=t.date.slice(0,7);buckets[k]=(buckets[k]||0)+t.amount;});
+      Object.keys(buckets).sort().forEach(k=>{const[yy,mm]=k.split('-');months.push(new Date(+yy,+mm-1,1).toLocaleString('default',{month:'short',year:'2-digit'}));totals.push(buckets[k]);});
     }
     if(dashTrendChart) dashTrendChart.destroy();
-    const trendLabelPlugin={id:'tl',afterDatasetsDraw(chart){const{ctx}=chart;chart.data.datasets.forEach((ds,i)=>{const meta=chart.getDatasetMeta(i);meta.data.forEach((bar,idx)=>{const v=ds.data[idx];if(!v)return;ctx.save();ctx.font='bold 8px Segoe UI,sans-serif';ctx.fillStyle='#6366f1';ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText(getCurrencySymbol()+Number(v).toLocaleString('en-IN',{maximumFractionDigits:0}),bar.x,bar.y-2);ctx.restore();});});}};
-    dashTrendChart=new Chart(document.getElementById('dash-trend-chart'),{
-      type:'bar', plugins:[trendLabelPlugin],
-      data:{labels:months,datasets:[{data:totals,backgroundColor:'#6366f1',borderRadius:5,borderSkipped:false}]},
-      options:{plugins:{legend:{display:false}},scales:{y:{display:false},x:{grid:{display:false},ticks:{font:{size:9},maxRotation:0}}},layout:{padding:{top:18}},responsive:true,maintainAspectRatio:false}
-    });
+    const tlp={id:'tl',afterDatasetsDraw(chart){const{ctx}=chart;chart.data.datasets.forEach((ds,i)=>{const meta=chart.getDatasetMeta(i);meta.data.forEach((bar,idx)=>{const v=ds.data[idx];if(!v)return;ctx.save();ctx.font='bold 8px Segoe UI,sans-serif';ctx.fillStyle='#6366f1';ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText(getCurrencySymbol()+Number(v).toLocaleString('en-IN',{maximumFractionDigits:0}),bar.x,bar.y-2);ctx.restore();});});}};
+    dashTrendChart=new Chart(document.getElementById('dash-trend-chart'),{type:'bar',plugins:[tlp],data:{labels:months,datasets:[{data:totals,backgroundColor:'#6366f1',borderRadius:5,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{y:{display:false},x:{grid:{display:false},ticks:{font:{size:9},maxRotation:0}}},layout:{padding:{top:18}},responsive:true,maintainAspectRatio:false}});
   }
-
-  // ── Top 5 Categories horizontal bar ──
-  const top5Titles={month:'Top Categories — This Month', year:`Top Categories — ${y}`, all:'Top Categories — All Time'};
-  document.getElementById('dash-top5-title').textContent=top5Titles[dashView];
+  document.getElementById('dash-top5-title').textContent={month:'Top Categories — This Month',year:`Top Categories — ${y}`,all:'Top Categories — All Time'}[dashView];
   const sorted=Object.entries(catMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
   if(dashTop5Chart) dashTop5Chart.destroy();
   if(sorted.length){
-    dashTop5Chart=new Chart(document.getElementById('dash-top5-chart'),{
-      type:'bar',
-      data:{
-        labels:sorted.map(([c])=>c),
-        datasets:[{data:sorted.map(([,v])=>v),backgroundColor:sorted.map(([c])=>getCategoryColor(c)),borderRadius:5,borderSkipped:false}]
-      },
-      options:{
-        indexAxis:'y',
-        plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${fmt(ctx.raw)}`}}},
-        scales:{x:{display:false},y:{grid:{display:false},ticks:{font:{size:11},color:'#374151'}}},
-        layout:{padding:{right:60}},
-        responsive:true,maintainAspectRatio:false
-      },
-      plugins:[{id:'hbarLabels',afterDatasetsDraw(chart){
-        const{ctx}=chart;
-        chart.data.datasets.forEach((ds,i)=>{
-          const meta=chart.getDatasetMeta(i);
-          meta.data.forEach((bar,idx)=>{
-            const v=ds.data[idx];
-            ctx.save();ctx.font='bold 10px Segoe UI,sans-serif';ctx.fillStyle='#4338ca';ctx.textAlign='left';ctx.textBaseline='middle';
-            ctx.fillText(fmt(v),bar.x+6,bar.y);ctx.restore();
-          });
-        });
-      }}]
-    });
-  } else {
-    document.getElementById('dash-top5-chart').getContext('2d').clearRect(0,0,9999,9999);
+    dashTop5Chart=new Chart(document.getElementById('dash-top5-chart'),{type:'bar',data:{labels:sorted.map(([c])=>c),datasets:[{data:sorted.map(([,v])=>v),backgroundColor:sorted.map(([c])=>getCategoryColor(c)),borderRadius:5,borderSkipped:false}]},options:{indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${fmt(ctx.raw)}`}}},scales:{x:{display:false},y:{grid:{display:false},ticks:{font:{size:11},color:'#374151'}}},layout:{padding:{right:60}},responsive:true,maintainAspectRatio:false},plugins:[{id:'hbarLabels',afterDatasetsDraw(chart){const{ctx}=chart;chart.data.datasets.forEach((ds,i)=>{const meta=chart.getDatasetMeta(i);meta.data.forEach((bar,idx)=>{const v=ds.data[idx];ctx.save();ctx.font='bold 10px Segoe UI,sans-serif';ctx.fillStyle='#4338ca';ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(fmt(v),bar.x+6,bar.y);ctx.restore();});});}}]});
   }
 }
 
-// ─── Add / Edit ───────────────────────────────────────────────
-async function loadCategoryDropdowns() {
+// ─── Add / Edit ───
+async function loadCategoryDropdowns(){
   const cats=await db.categories.toArray();
   const sel=document.getElementById('f-category'),cur=sel.value;
   sel.innerHTML='<option value="">Select category</option>'+cats.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
   if(cur) sel.value=cur;
   await loadSubcats();
 }
-
-async function loadSubcats() {
+async function loadSubcats(){
   const catName=document.getElementById('f-category').value;
   const cats=await db.categories.toArray();
   const cat=cats.find(c=>c.name===catName);
@@ -750,8 +712,7 @@ async function loadSubcats() {
   sel.innerHTML='<option value="">None</option>';
   if(cat?.subcategories?.length) sel.innerHTML+=cat.subcategories.map(s=>`<option value="${s}">${s}</option>`).join('');
 }
-
-async function saveExpense() {
+async function saveExpense(){
   const amount=parseFloat(document.getElementById('f-amount').value);
   const date=document.getElementById('f-date').value;
   const category=document.getElementById('f-category').value;
@@ -764,8 +725,7 @@ async function saveExpense() {
   else{await db.transactions.add(rec);showToast('Saved!');}
   resetForm(); await showPage('dashboard');
 }
-
-function resetForm() {
+function resetForm(){
   ['f-amount','f-notes'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('f-category').value='';
   document.getElementById('f-subcat').innerHTML='<option value="">None</option>';
@@ -775,8 +735,7 @@ function resetForm() {
   const now=new Date(),y=now.getFullYear(),m=String(now.getMonth()+1).padStart(2,'0'),d=String(now.getDate()).padStart(2,'0');
   document.getElementById('f-date').value=`${y}-${m}-${d}`;
 }
-
-async function editExpense(id) {
+async function editExpense(id){
   const t=await db.transactions.get(id); if(!t) return;
   await showPage('add'); await loadCategoryDropdowns();
   document.getElementById('edit-id').value=id;
@@ -789,10 +748,9 @@ async function editExpense(id) {
   document.getElementById('form-title').textContent='Edit Expense';
   document.getElementById('cancel-btn').classList.remove('hidden');
 }
-
 function cancelEdit(){resetForm();showPage('dashboard');}
 
-// ─── Delete ───────────────────────────────────────────────────
+// ─── Delete ───
 function deleteExpense(id){pendingDeleteId=id;document.getElementById('del-modal').classList.remove('hidden');document.getElementById('del-modal').style.display='flex';}
 function closeDelModal(){pendingDeleteId=null;document.getElementById('del-modal').classList.add('hidden');document.getElementById('del-modal').style.display='';}
 async function confirmDelete(){
@@ -802,7 +760,65 @@ async function confirmDelete(){
   if(currentPage==='dashboard') await loadDashboard(); else await loadReports();
 }
 
-// ─── Reports Pill Presets ─────────────────────────────────────
+// ─── Bulk ───
+function startLongPress(id){if(isBulkMode)return;longPressTimer=setTimeout(()=>enterBulkMode(id),600);}
+function cancelLongPress(){if(longPressTimer)clearTimeout(longPressTimer);}
+function enterBulkMode(id){
+  isBulkMode=true; selectedTxnIds.clear();
+  if(id) selectedTxnIds.add(id);
+  const bar=document.getElementById('bulk-action-bar');
+  bar.classList.remove('hidden');
+  setTimeout(()=>bar.classList.remove('translate-y-full'),10);
+  updateBulkUI();
+}
+function exitBulkMode(){
+  isBulkMode=false; selectedTxnIds.clear();
+  const bar=document.getElementById('bulk-action-bar');
+  bar.classList.add('translate-y-full');
+  setTimeout(()=>bar.classList.add('hidden'),300);
+  loadReports();
+}
+function toggleBulkSelect(id){if(selectedTxnIds.has(id))selectedTxnIds.delete(id);else selectedTxnIds.add(id);updateBulkUI();}
+function toggleSelectAll(checked){if(checked)currentReportTxns.forEach(t=>selectedTxnIds.add(t.id));else selectedTxnIds.clear();updateBulkUI();}
+function updateBulkUI(){
+  document.getElementById('bulk-count').textContent=`${selectedTxnIds.size} selected`;
+  document.getElementById('bulk-select-all').checked=currentReportTxns.length>0&&selectedTxnIds.size===currentReportTxns.length;
+  document.getElementById('report-list').innerHTML=currentReportTxns.length?currentReportTxns.map(t=>txnRow(t)).join(''):'<p class="text-gray-400 text-sm text-center py-4">No transactions matched filters</p>';
+}
+async function openBulkEditModal(){
+  if(selectedTxnIds.size===0) return showToast('No transactions selected');
+  const cats=await db.categories.toArray();
+  const sel=document.getElementById('bulk-category');
+  sel.innerHTML='<option value="">Select category</option>'+cats.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
+  document.getElementById('bulk-subcategory').innerHTML='<option value="">None</option>';
+  document.getElementById('bulk-edit-modal').classList.remove('hidden');
+  document.getElementById('bulk-edit-modal').style.display='flex';
+}
+function closeBulkEditModal(){document.getElementById('bulk-edit-modal').classList.add('hidden');document.getElementById('bulk-edit-modal').style.display='';}
+async function loadBulkSubcats(){
+  const catName=document.getElementById('bulk-category').value;
+  const cats=await db.categories.toArray();
+  const cat=cats.find(c=>c.name===catName);
+  const sel=document.getElementById('bulk-subcategory');
+  sel.innerHTML='<option value="">None</option>';
+  if(cat?.subcategories?.length) sel.innerHTML+=cat.subcategories.map(s=>`<option value="${s}">${s}</option>`).join('');
+}
+async function saveBulkEdit(){
+  const category=document.getElementById('bulk-category').value;
+  const subcategory=document.getElementById('bulk-subcategory').value;
+  if(!category) return showToast('Select a category');
+  await db.transactions.where('id').anyOf(Array.from(selectedTxnIds)).modify({category,subcategory});
+  closeBulkEditModal(); exitBulkMode();
+  showToast(`Updated ${selectedTxnIds.size} transactions`);
+}
+async function confirmBulkDelete(){
+  if(selectedTxnIds.size===0) return showToast('No transactions selected');
+  if(!confirm(`Delete ${selectedTxnIds.size} transactions? Cannot be undone.`)) return;
+  await db.transactions.bulkDelete(Array.from(selectedTxnIds));
+  exitBulkMode(); showToast(`Deleted ${selectedTxnIds.size} transactions`);
+}
+
+// ─── Reports Presets ───
 function applyPillPreset(preset){
   selectedPreset=preset;
   ['current-month','prev-month','last-3-months','custom'].forEach(p=>{
@@ -813,26 +829,22 @@ function applyPillPreset(preset){
   const f=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   if(preset==='current-month'){
     reportsReferenceDate=new Date();
-    const from=new Date(reportsReferenceDate.getFullYear(),reportsReferenceDate.getMonth(),1);
-    const to=new Date(reportsReferenceDate.getFullYear(),reportsReferenceDate.getMonth()+1,0);
-    document.getElementById('r-from').value=f(from); document.getElementById('r-to').value=f(to);
+    document.getElementById('r-from').value=f(new Date(reportsReferenceDate.getFullYear(),reportsReferenceDate.getMonth(),1));
+    document.getElementById('r-to').value=f(new Date(reportsReferenceDate.getFullYear(),reportsReferenceDate.getMonth()+1,0));
     document.getElementById('btn-prev-month').textContent='◀ Prev Month';
   } else if(preset==='prev-month'){
     reportsReferenceDate.setMonth(reportsReferenceDate.getMonth()-1);
-    const from=new Date(reportsReferenceDate.getFullYear(),reportsReferenceDate.getMonth(),1);
-    const to=new Date(reportsReferenceDate.getFullYear(),reportsReferenceDate.getMonth()+1,0);
-    document.getElementById('r-from').value=f(from); document.getElementById('r-to').value=f(to);
+    document.getElementById('r-from').value=f(new Date(reportsReferenceDate.getFullYear(),reportsReferenceDate.getMonth(),1));
+    document.getElementById('r-to').value=f(new Date(reportsReferenceDate.getFullYear(),reportsReferenceDate.getMonth()+1,0));
     document.getElementById('btn-prev-month').textContent=`◀ Skip (${reportsReferenceDate.toLocaleString('default',{month:'short'})})`;
   } else if(preset==='last-3-months'){
     reportsReferenceDate=new Date();
-    const from=new Date(reportsReferenceDate.getFullYear(),reportsReferenceDate.getMonth()-2,1);
-    const to=new Date(reportsReferenceDate.getFullYear(),reportsReferenceDate.getMonth()+1,0);
-    document.getElementById('r-from').value=f(from); document.getElementById('r-to').value=f(to);
+    document.getElementById('r-from').value=f(new Date(reportsReferenceDate.getFullYear(),reportsReferenceDate.getMonth()-2,1));
+    document.getElementById('r-to').value=f(new Date(reportsReferenceDate.getFullYear(),reportsReferenceDate.getMonth()+1,0));
     document.getElementById('btn-prev-month').textContent='◀ Prev Month';
   }
   loadReports();
 }
-
 function onManualDateChange(){
   selectedPreset='custom';
   ['current-month','prev-month','last-3-months','custom'].forEach(p=>{
@@ -844,8 +856,9 @@ function onManualDateChange(){
   loadReports();
 }
 
-// ─── Reports ──────────────────────────────────────────────────
+// ─── Reports ───
 async function loadReports(){
+  if(isBulkMode) exitBulkMode();
   const cats=await db.categories.toArray();
   const rcat=document.getElementById('r-cat'),prev=rcat.value;
   rcat.innerHTML='<option value="">All Categories</option>'+cats.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
@@ -862,6 +875,7 @@ async function loadReports(){
   else if(sortType==='date-asc') txns.sort((a,b)=>a.date.localeCompare(b.date));
   else if(sortType==='amt-desc') txns.sort((a,b)=>b.amount-a.amount);
   else if(sortType==='amt-asc') txns.sort((a,b)=>a.amount-b.amount);
+  currentReportTxns=txns;
   document.getElementById('r-total').textContent=fmt(txns.reduce((s,t)=>s+t.amount,0));
   document.getElementById('report-list').innerHTML=txns.length?txns.map(t=>txnRow(t)).join(''):'<p class="text-gray-400 text-sm text-center py-4">No transactions matched filters</p>';
   const months=[],totals=[],now=new Date();
@@ -879,7 +893,7 @@ async function loadReports(){
   barChart=new Chart(document.getElementById('bar-chart'),{type:'bar',plugins:[blp],data:{labels:months,datasets:[{data:totals,backgroundColor:'#6366f1',borderRadius:6,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{y:{display:false},x:{grid:{display:false},ticks:{font:{size:10}}}},layout:{padding:{top:20}},responsive:true,maintainAspectRatio:false}});
 }
 
-// ─── Categories ───────────────────────────────────────────────
+// ─── Categories ───
 async function loadBudget(){
   const cats=await db.categories.toArray();
   document.getElementById('cat-manage-list').innerHTML=cats.map(c=>{
@@ -897,7 +911,6 @@ async function loadBudget(){
     </div>`;
   }).join('');
 }
-
 async function addCategory(){
   const name=document.getElementById('new-cat').value.trim();
   if(!name) return showToast('Enter category name');
@@ -907,29 +920,179 @@ async function addCategory(){
   document.getElementById('new-cat').value='';
   showToast('Category added!'); await loadBudget();
 }
-
-async function deleteCategory(id,name){if(!confirm(`Delete category "${name}"? This won't delete existing transactions.`))return;await db.categories.delete(id);showToast('Deleted');await loadBudget();}
-
+async function deleteCategory(id,name){if(!confirm(`Delete category "${name}"?`))return;await db.categories.delete(id);showToast('Deleted');await loadBudget();}
 async function addSubcat(catId){
   const inp=document.getElementById('newsub-'+catId);
-  const name=inp.value.trim();if(!name)return;
-  const cat=await db.categories.get(catId);if(!cat)return;
+  const name=inp.value.trim(); if(!name) return;
+  const cat=await db.categories.get(catId); if(!cat) return;
   const subs=cat.subcategories||[];
-  if(subs.includes(name))return showToast('Already exists!');
-  subs.push(name);await db.categories.update(catId,{subcategories:subs});
-  inp.value='';showToast('Subcategory added!');await loadBudget();
+  if(subs.includes(name)) return showToast('Already exists!');
+  subs.push(name); await db.categories.update(catId,{subcategories:subs});
+  inp.value=''; showToast('Subcategory added!'); await loadBudget();
 }
-
 async function deleteSubcat(catId,subName){
-  if(!confirm(`Remove subcategory "${subName}"?`))return;
-  const cat=await db.categories.get(catId);if(!cat)return;
+  if(!confirm(`Remove subcategory "${subName}"?`)) return;
+  const cat=await db.categories.get(catId); if(!cat) return;
   await db.categories.update(catId,{subcategories:(cat.subcategories||[]).filter(s=>s!==subName)});
-  showToast('Removed');await loadBudget();
+  showToast('Removed'); await loadBudget();
 }
 
-// ─── Paytm Import ─────────────────────────────────────────────
+// ─── Bank CSV Import ──────────────────────────────────────────
+// Parse a single quoted CSV line like: "22-12-2025,-,UPI/...,186.00,,354887.94,5639"
+function parseBankCSVLine(raw) {
+  // Strip surrounding quotes if present
+  let line = raw.trim();
+  if (line.startsWith('"') && line.endsWith('"')) line = line.slice(1, -1);
+  // Split by comma — simple split works since fields don't contain commas
+  return line.split(',').map(f => f.trim());
+}
+
+function extractBankMerchant(particulars) {
+  // PARTICULARS format: UPI/P2M/{ref}/{MERCHANT NAME}/desc/BANK or NEFT/ref/NAME/...
+  const parts = particulars.split('/');
+  if (parts.length >= 4) {
+    // parts[0]=UPI or NEFT, parts[1]=P2M/P2A/ref, parts[2]=ref, parts[3]=name
+    const type = parts[1].toUpperCase(); // P2M, P2A, etc
+    let name = '';
+    if (parts[0].toUpperCase() === 'UPI') {
+      name = parts[3] || '';
+    } else if (parts[0].toUpperCase() === 'NEFT') {
+      // NEFT/ref/NAME/...
+      name = parts[2] || '';
+    } else {
+      name = parts[3] || particulars;
+    }
+    return name.trim().replace(/\s+/g, ' ');
+  }
+  return particulars;
+}
+
+function isBankP2A(particulars) {
+  // P2A = person to person (UPI/P2A/...)
+  return /UPI\/P2A\//i.test(particulars);
+}
+
+function isBankNEFT(particulars) {
+  return /^NEFT\//i.test(particulars);
+}
+
+async function startBankCSVImport(e) {
+  const file = e.target.files[0]; if (!file) return; e.target.value = '';
+  try {
+    const text = await file.text();
+    const allLines = text.split('\n');
+
+    // ── Step 1: Find header row ──
+    let headerIdx = -1;
+    for (let i = 0; i < allLines.length; i++) {
+      const l = allLines[i].toUpperCase();
+      if ((l.includes('DATE') || l.includes('TRAN DATE')) && 
+          (l.includes('PARTICULARS') || l.includes('DESCRIPTION') || l.includes('NARRATION'))) {
+        headerIdx = i; break;
+      }
+    }
+    if (headerIdx === -1) return showToast('Could not detect CSV header. Unsupported format.');
+
+    const headerFields = parseBankCSVLine(allLines[headerIdx].toUpperCase());
+    const colDate = headerFields.findIndex(h => h.includes('DATE'));
+    const colPart = headerFields.findIndex(h => h.includes('PARTICULARS') || h.includes('DESCRIPTION') || h.includes('NARRATION'));
+    const colDR   = headerFields.findIndex(h => h === 'DR' || h.includes('WITHDRAWAL') || h.includes('DEBIT'));
+    const colCR   = headerFields.findIndex(h => h === 'CR' || h.includes('DEPOSIT') || h.includes('CREDIT'));
+    const colBal  = headerFields.findIndex(h => h.includes('BAL'));
+
+    if (colDate < 0 || colPart < 0 || (colDR < 0 && colCR < 0)) return showToast('Missing expected columns in CSV.');
+
+    // ── Step 1.5: Auto-Detect Expense Column via Balance Math ──
+    // Some banks map Deposits -> DR and Withdrawals -> CR. We calculate balance drops to confirm the real expense column.
+    let expenseCol = colDR >= 0 ? colDR : colCR; 
+    if (colBal >= 0 && colDR >= 0 && colCR >= 0) {
+      let prevBal = null, prevRow = null;
+      for (let i = headerIdx + 1; i < Math.min(allLines.length, headerIdx + 20); i++) {
+        const row = parseBankCSVLine(allLines[i]);
+        if (row.length <= colBal) continue;
+        const bal = parseFloat((row[colBal] || '').replace(/,/g, ''));
+        if (isNaN(bal)) continue;
+
+        if (prevBal !== null && prevRow !== null) {
+          const diff = bal - prevBal;
+          const expectedAmt = Math.abs(diff);
+          const curDR = parseFloat((row[colDR] || '').replace(/,/g, ''));
+          const curCR = parseFloat((row[colCR] || '').replace(/,/g, ''));
+          const prvDR = parseFloat((prevRow[colDR] || '').replace(/,/g, ''));
+          const prvCR = parseFloat((prevRow[colCR] || '').replace(/,/g, ''));
+
+          if (diff < -0.01) { // Chronological expense
+            if (!isNaN(curCR) && Math.abs(curCR - expectedAmt) < 0.1) { expenseCol = colCR; break; }
+            if (!isNaN(curDR) && Math.abs(curDR - expectedAmt) < 0.1) { expenseCol = colDR; break; }
+          } else if (diff > 0.01) { // Reverse-chronological expense
+            if (!isNaN(prvCR) && Math.abs(prvCR - expectedAmt) < 0.1) { expenseCol = colCR; break; }
+            if (!isNaN(prvDR) && Math.abs(prvDR - expectedAmt) < 0.1) { expenseCol = colDR; break; }
+          }
+        }
+        prevBal = bal;
+        prevRow = row;
+      }
+    }
+
+    // ── Step 2: Parse data rows ──
+    const DATE_RE = /^\d{2}[-/]\d{2}[-/]\d{4}$/; // More relaxed date check
+    importAuto = []; importTransfers = [];
+    importCats = await db.categories.toArray();
+    const rules = await db.importRules.toArray();
+
+    for (let i = headerIdx + 1; i < allLines.length; i++) {
+      const raw = allLines[i].trim();
+      if (!raw) continue;
+
+      const fields = parseBankCSVLine(raw);
+      const dateRaw = (fields[colDate] || '').trim();
+
+      if (!DATE_RE.test(dateRaw)) continue;
+
+      const particulars = (fields[colPart] || '').trim();
+      
+      // Pull amount dynamically from the detected expense column
+      const expenseRaw = (fields[expenseCol] || '').replace(/,/g, '').trim();
+      const expenseAmt = parseFloat(expenseRaw);
+
+      // Skips purely positive income (e.g. Salary, Refunds)
+      if (isNaN(expenseAmt) || expenseAmt <= 0) continue; 
+
+      const [dd, mm, yyyy] = dateRaw.split(/[-/]/);
+      const date = `${yyyy}-${mm}-${dd}`;
+      const merchant = extractBankMerchant(particulars);
+
+      let category = 'Others', subcategory = '', matched = false;
+      const nl = particulars.toLowerCase() + ' ' + merchant.toLowerCase();
+      // 1st priority: user Rule Engine
+      for (const r of rules) {
+        if (nl.includes(r.keyword.toLowerCase())) { category = r.category; subcategory = r.subcategory || ''; matched = true; break; }
+      }
+      // 2nd priority: built-in BANK_KEYWORD_RULES
+      if (!matched) {
+        const bankMatch = applyBankKeywordRules(particulars, merchant);
+        if (bankMatch) { category = bankMatch.category; subcategory = bankMatch.subcategory; matched = true; }
+      }
+      // Fallback: Others (unchanged)
+
+      const rec = { date, amount: expenseAmt, notes: merchant, category, subcategory, _include: true, _particulars: particulars };
+
+      if (isBankP2A(particulars) || isBankNEFT(particulars)) {
+        importTransfers.push(rec);
+      } else {
+        importAuto.push(rec);
+      }
+    }
+
+    if (importAuto.length === 0 && importTransfers.length === 0) return showToast('No debit transactions found in file.');
+    openImportModal();
+  } catch(err) { showToast('Error reading file'); console.error(err); }
+}
+
+
+// ─── Paytm Import ───
 async function startPaytmImport(e){
-  const file=e.target.files[0];if(!file)return;e.target.value='';
+  const file=e.target.files[0]; if(!file) return; e.target.value='';
   try{
     const buf=await file.arrayBuffer();
     const wb=XLSX.read(buf,{type:'array'});
@@ -943,41 +1106,39 @@ async function startPaytmImport(e){
       const desc=String(row['Transaction Details']||'').trim();
       const tag=String(row['Tags']||'').trim();
       const amt=parseFloat(amtRaw);
-      if(isNaN(amt)||amt>=0)continue;
-      const parts=dateRaw.split('/');if(parts.length!==3)continue;
+      if(isNaN(amt)||amt>=0) continue;
+      const parts=dateRaw.split('/'); if(parts.length!==3) continue;
       const date=`${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
-      if(SKIP_TAGS.some(s=>tag.includes(s)))continue;
+      if(SKIP_TAGS.some(s=>tag.includes(s))) continue;
       let category='Others',subcategory='',matched=false;
       const nl=desc.toLowerCase();
       for(const r of rules){if(nl.includes(r.keyword.toLowerCase())){category=r.category;subcategory=r.subcategory||'';matched=true;break;}}
       if(!matched){const mp=TAG_MAP[tag]||{category:'Others',subcategory:''};category=mp.category;subcategory=mp.subcategory;}
       const rec={date,amount:Math.abs(amt),notes:desc,category,subcategory,_include:true};
-      if(tag.includes('Money Transfer'))importTransfers.push(rec);else importAuto.push(rec);
+      if(tag.includes('Money Transfer')) importTransfers.push(rec); else importAuto.push(rec);
     }
     openImportModal();
   }catch(err){showToast('Error reading file');console.error(err);}
 }
 
+// ─── Shared Import Modal ───
 function openImportModal(){
   const modal=document.getElementById('import-modal');
   modal.style.display='flex';modal.style.flexDirection='column';modal.style.justifyContent='flex-end';
   if(importTransfers.length){renderTransferReview();showImportStep(1);}else goToPreview();
 }
-
 function closeImportModal(){
   document.getElementById('import-modal').style.display='none';
   importAuto=[];importTransfers=[];previewRows=[];previewFilter='';showPage('reports');
 }
-
 function showImportStep(n){
   [1,2,3].forEach(i=>{
     const el=document.getElementById('import-step-'+i);
-    el.style.display=i===n?'flex':'none';el.style.flexDirection=i===n?'column':'';
+    el.style.display=i===n?'flex':'none'; el.style.flexDirection=i===n?'column':'';
     document.getElementById('step-bar-'+i).style.background=i<=n?'#6366f1':'#e5e7eb';
   });
   document.getElementById('import-modal-title').textContent={1:'Review Transfers',2:'Preview All Rows',3:'Import Complete'}[n];
 }
-
 function renderTransferReview(){
   document.getElementById('tr-count').textContent=importTransfers.length;
   const catOpts=importCats.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
@@ -987,12 +1148,10 @@ function renderTransferReview(){
         <div class="flex-1 min-w-0"><p class="text-xs font-medium text-gray-800 break-words">${r.notes}</p><p class="text-xs text-gray-400">${r.date} · ${fmt(r.amount)}</p></div>
         <select onchange="importTransfers[${i}].category=this.value" class="text-xs border border-gray-200 rounded-lg px-1.5 py-1 bg-white flex-shrink-0 ${r._include?'':'opacity-30 pointer-events-none'}">${catOpts.replace(`value="${r.category}"`,`value="${r.category}" selected`)}</select>
       </div>`).join('')
-    :'<p class="text-gray-400 text-center py-8 text-sm">No money transfers found</p>';
+    :'<p class="text-gray-400 text-center py-8 text-sm">No transfers found</p>';
 }
-
 function toggleTransfer(i,checked){importTransfers[i]._include=checked;renderTransferReview();}
 function skipAllTransfers(){importTransfers.forEach(r=>r._include=false);renderTransferReview();}
-
 async function goToPreview(){
   previewFilter='';
   const candidates=[...importAuto.map(r=>({...r})),...importTransfers.filter(r=>r._include).map(r=>({...r}))];
@@ -1003,18 +1162,15 @@ async function goToPreview(){
   for(const r of candidates){
     const k=`${r.date}|${r.amount}|${(r.notes||'').trim()}`;con[k]=(con[k]||0);
     const allowed=Math.max((fC[k]||0)-(dbC[k]||0),0);
-    r._duplicate=con[k]>=allowed;r._include=!r._duplicate;con[k]++;
+    r._duplicate=con[k]>=allowed; r._include=!r._duplicate; con[k]++;
   }
-  previewRows=candidates;showImportStep(2);renderPills();renderPreviewList();
+  previewRows=candidates; showImportStep(2); renderPills(); renderPreviewList();
 }
-
 function renderPills(){
   const uc=['All',...new Set(previewRows.map(r=>r.category))];
   document.getElementById('preview-filter-pills').innerHTML=uc.map(c=>`<button onclick="setPreviewFilter('${c}')" class="flex-shrink-0 text-xs px-3 py-1 rounded-full font-medium border transition-all ${(c==='All'&&!previewFilter)||(c===previewFilter)?'bg-indigo-600 text-white border-indigo-600':'bg-white text-gray-600 border-gray-200'}">${c}</button>`).join('');
 }
-
 function setPreviewFilter(c){previewFilter=c==='All'?'':c;renderPills();renderPreviewList();}
-
 function renderPreviewList(){
   const catOpts=importCats.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
   const visible=previewFilter?previewRows.filter(r=>r.category===previewFilter):previewRows;
@@ -1033,29 +1189,26 @@ function renderPreviewList(){
     :'<p class="text-gray-400 text-center py-8 text-sm">No rows in this category</p>';
   document.getElementById('confirm-import-btn').textContent=`Import ${sel} rows`;
 }
-
 function togglePreview(i,checked){previewRows[i]._include=checked;renderPreviewList();}
 function backToTransfers(){if(importTransfers.length){renderTransferReview();showImportStep(1);}}
-
 async function confirmImport(){
   const toSave=previewRows.filter(r=>r._include);
-  if(!toSave.length)return showToast('Nothing selected to import');
-  for(const r of toSave)await db.transactions.add({date:r.date,amount:r.amount,category:r.category,subcategory:r.subcategory||'',notes:r.notes||''});
+  if(!toSave.length) return showToast('Nothing selected to import');
+  for(const r of toSave) await db.transactions.add({date:r.date,amount:r.amount,category:r.category,subcategory:r.subcategory||'',notes:r.notes||''});
   document.getElementById('import-done-msg').textContent=`${toSave.length} transactions imported!`;
   showImportStep(3);
 }
 
-// ─── CSV ──────────────────────────────────────────────────────
+// ─── CSV Export/Import ───
 async function exportCSV(){
-  const txns=await db.transactions.toArray();if(!txns.length)return showToast('No data to export');
+  const txns=await db.transactions.toArray(); if(!txns.length) return showToast('No data to export');
   const rows=txns.map(t=>[t.date,t.amount,t.category,t.subcategory||'',`"${(t.notes||'').replace(/"/g,'""')}"`].join(','));
   const blob=new Blob(['Date,Amount,Category,Subcategory,Notes\n'+rows.join('\n')],{type:'text/csv'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='expenses.csv';a.click();showToast('Exported!');
 }
-
 async function importCSV(e){
-  const file=e.target.files[0];if(!file)return;
-  const lines=(await file.text()).trim().split('\n').slice(1);let count=0;
+  const file=e.target.files[0]; if(!file) return;
+  const lines=(await file.text()).trim().split('\n').slice(1); let count=0;
   for(const line of lines){
     const [date,amount,category,subcategory,...np]=line.split(',');
     const notes=np.join(',').replace(/^"|"$/g,'').replace(/""/g,'"');
@@ -1064,57 +1217,48 @@ async function importCSV(e){
   showToast(`Imported ${count} transactions`);e.target.value='';await loadDashboard();
 }
 
-// ─── Settings ─────────────────────────────────────────────────
+// ─── Settings ───
 function getCurrencySymbol(){return localStorage.getItem('expense_currency_symbol')||'₹';}
-
 async function loadSettings(){
   document.getElementById('s-currency').value=getCurrencySymbol();
   await loadSettingsRuleDropdowns();
   await renderRulesMatrix();
 }
-
-async function updateCurrencySymbol(){
-  localStorage.setItem('expense_currency_symbol',document.getElementById('s-currency').value);
-  showToast('Currency preference updated!');
-}
-
+async function updateCurrencySymbol(){localStorage.setItem('expense_currency_symbol',document.getElementById('s-currency').value);showToast('Currency preference updated!');}
 async function exportJSONBackup(){
   const data={transactions:await db.transactions.toArray(),categories:await db.categories.toArray(),budgets:await db.budgets.toArray(),importRules:await db.importRules.toArray()};
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
   a.download=`expense_manager_backup_${new Date().toISOString().slice(0,10)}.json`;a.click();showToast('Backup JSON exported!');
 }
-
 async function importJSONBackup(e){
-  const file=e.target.files[0];if(!file)return;let ok=false;
+  const file=e.target.files[0]; if(!file) return; let ok=false;
   try{
     const p=JSON.parse(await file.text());
-    if(!p.transactions||!p.categories||!p.budgets)return showToast('Invalid backup file');
+    if(!p.transactions||!p.categories||!p.budgets) return showToast('Invalid backup file');
     if(confirm('This will overwrite all existing data. Continue?')){
       await db.transactions.clear();await db.categories.clear();await db.budgets.clear();await db.importRules.clear();
       await db.transactions.bulkAdd(p.transactions);await db.categories.bulkAdd(p.categories);await db.budgets.bulkAdd(p.budgets);
-      if(p.importRules)await db.importRules.bulkAdd(p.importRules);
+      if(p.importRules) await db.importRules.bulkAdd(p.importRules);
       showToast('Restore complete!');e.target.value='';ok=true;
     }
   }catch(err){showToast('Error reading backup');console.error(err);}
-  if(ok)await showPage('dashboard');
+  if(ok) await showPage('dashboard');
 }
-
 async function exportRulesOnly(){
-  const rules=await db.importRules.toArray();if(!rules.length)return showToast('No rules to export');
+  const rules=await db.importRules.toArray(); if(!rules.length) return showToast('No rules to export');
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({importRules:rules},null,2)],{type:'application/json'}));
-  a.download=`expense_rules_${new Date().toISOString().slice(0,10)}.json`;a.click();showToast(`Exported ${rules.length} rule${rules.length!==1?'s':''}!`);
+  a.download=`expense_rules_${new Date().toISOString().slice(0,10)}.json`;a.click();showToast(`Exported ${rules.length} rule(s)!`);
 }
-
 async function importRulesOnly(e){
-  const file=e.target.files[0];if(!file)return;e.target.value='';
+  const file=e.target.files[0]; if(!file) return; e.target.value='';
   try{
     const p=JSON.parse(await file.text());
-    if(!p.importRules||!Array.isArray(p.importRules))return showToast('Invalid rules file');
-    if(!p.importRules.length)return showToast('File contains no rules');
-    if(!confirm(`Merge ${p.importRules.length} rule(s)? Same-keyword rules will be overwritten.`))return;
+    if(!p.importRules||!Array.isArray(p.importRules)) return showToast('Invalid rules file');
+    if(!p.importRules.length) return showToast('File contains no rules');
+    if(!confirm(`Merge ${p.importRules.length} rule(s)?`)) return;
     let added=0,updated=0;
     for(const r of p.importRules){
-      if(!r.keyword||!r.category)continue;
+      if(!r.keyword||!r.category) continue;
       const ex=await db.importRules.where('keyword').equalsIgnoreCase(r.keyword).first();
       await db.importRules.put({id:ex?.id,keyword:r.keyword.toLowerCase(),category:r.category,subcategory:r.subcategory||'',type:r.type||'manual'});
       ex?updated++:added++;
@@ -1122,45 +1266,39 @@ async function importRulesOnly(e){
     showToast(`Rules merged: ${added} added, ${updated} updated`);await renderRulesMatrix();
   }catch(err){showToast('Error reading rules file');console.error(err);}
 }
-
 async function factoryResetApp(){
-  if(confirm('Reset all data to defaults? This cannot be undone.')){
+  if(confirm('Reset all data to defaults? Cannot be undone.')){
     await db.transactions.clear();await db.categories.clear();await db.budgets.clear();await db.importRules.clear();
     await db.categories.bulkAdd(DEFAULT_CATS);localStorage.removeItem('expense_currency_symbol');
     showToast('Reset complete!');await showPage('dashboard');
   }
 }
-
 function toggleSettingsSection(name){
   const body=document.getElementById('body-'+name),chev=document.getElementById('chevron-'+name);
   const open=!body.classList.contains('hidden');body.classList.toggle('hidden',open);chev.style.transform=open?'':'rotate(90deg)';
 }
-
 function openRuleEngineDrawer(){document.getElementById('rule-engine-drawer').classList.remove('hidden');loadSettingsRuleDropdowns();renderRulesMatrix();}
 function closeRuleEngineDrawer(){document.getElementById('rule-engine-drawer').classList.add('hidden');}
 
-// ─── Rule Engine ──────────────────────────────────────────────
+// ─── Rule Engine ───
 async function loadSettingsRuleDropdowns(){
   const cats=await db.categories.toArray();
   document.getElementById('rule-category').innerHTML='<option value="">Select Category</option>'+cats.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
   document.getElementById('rule-subcategory').innerHTML='<option value="">Select Subcategory</option>';
 }
-
 async function loadSettingsRuleSubcats(){
   const catName=document.getElementById('rule-category').value;
   const cats=await db.categories.toArray();const cat=cats.find(c=>c.name===catName);
   const sel=document.getElementById('rule-subcategory');sel.innerHTML='<option value="">Select Subcategory</option>';
-  if(cat?.subcategories?.length)sel.innerHTML+=cat.subcategories.map(s=>`<option value="${s}">${s}</option>`).join('');
+  if(cat?.subcategories?.length) sel.innerHTML+=cat.subcategories.map(s=>`<option value="${s}">${s}</option>`).join('');
 }
-
 function cleanMerchantText(note){
-  if(!note)return'';
+  if(!note) return '';
   return note.replace(/Paid to\s+/gi,'').replace(/Money sent to\s+/gi,'').replace(/UPI description:\s+/gi,'').replace(/Paytm Bus:\s+/gi,'')
              .replace(/\d+/g,'').replace(/\b(Private|Limited|Ltd|Pvt|Corp|Inc|Bank|Upi|District|Movie)\b.*/gi,'').replace(/[^a-zA-Z\s]/g,'').trim();
 }
-
 async function trainImportRules(){
-  const txns=await db.transactions.toArray();if(!txns.length)return showToast('No transaction history to train on.');
+  const txns=await db.transactions.toArray(); if(!txns.length) return showToast('No transaction history to train on.');
   const fMap={};
   txns.forEach(t=>{const tok=cleanMerchantText(t.notes||'').toLowerCase();if(tok.length<3)return;if(!fMap[tok])fMap[tok]={};const k=`${t.category}::${t.subcategory||''}`;fMap[tok][k]=(fMap[tok][k]||0)+1;});
   let added=0;
@@ -1175,12 +1313,11 @@ async function trainImportRules(){
   }
   showToast(`Training complete! ${added} new rules generated.`);await renderRulesMatrix();
 }
-
 async function addManualRule(){
   const kw=document.getElementById('rule-keyword').value.trim();
   const cat=document.getElementById('rule-category').value;
   const sub=document.getElementById('rule-subcategory').value;
-  if(!kw)return showToast('Enter a keyword');if(!cat)return showToast('Select a category');
+  if(!kw) return showToast('Enter a keyword'); if(!cat) return showToast('Select a category');
   try{
     const ex=await db.importRules.where('keyword').equalsIgnoreCase(kw).first();
     await db.importRules.put({id:ex?.id,keyword:kw.toLowerCase(),category:cat,subcategory:sub||'',type:'manual'});
@@ -1189,12 +1326,10 @@ async function addManualRule(){
     showToast('Rule saved!');await renderRulesMatrix();
   }catch(e){showToast('Rule with this keyword already exists.');}
 }
-
 async function deleteRule(id,keyword){
-  if(!confirm(`Delete rule "${keyword}"?`))return;
+  if(!confirm(`Delete rule "${keyword}"?`)) return;
   await db.importRules.delete(id);showToast('Rule deleted.');await renderRulesMatrix();
 }
-
 async function renderRulesMatrix(){
   const rules=await db.importRules.toArray();
   const tbody=document.getElementById('rules-table-body'),empty=document.getElementById('rules-empty-state'),sub=document.getElementById('rules-drawer-subtitle');
@@ -1202,7 +1337,7 @@ async function renderRulesMatrix(){
   empty.classList.add('hidden');
   const txns=await db.transactions.toArray();
   const mc={};for(const r of rules){const kw=r.keyword.toLowerCase();mc[r.id]=txns.filter(t=>(t.notes||'').toLowerCase().includes(kw)).length;}
-  if(sub)sub.textContent=`${rules.length} rule${rules.length!==1?'s':''} · ${txns.length} transactions`;
+  if(sub) sub.textContent=`${rules.length} rule${rules.length!==1?'s':''} · ${txns.length} transactions`;
   if(rulesSort.col){
     rules.sort((a,b)=>{
       let av,bv;
@@ -1225,18 +1360,32 @@ async function renderRulesMatrix(){
     </tr>`;
   }).join('');
 }
-
 let rulesSort={col:null,dir:1};
 function sortRulesBy(col){if(rulesSort.col===col)rulesSort.dir*=-1;else{rulesSort.col=col;rulesSort.dir=col==='matches'?-1:1;}renderRulesMatrix();}
 function updateSortIndicators(){['keyword','category','matches'].forEach(col=>{const el=document.getElementById('sort-ind-'+col);if(!el)return;if(rulesSort.col!==col){el.textContent='↕';el.className='text-gray-300';}else{el.textContent=rulesSort.dir===1?'↑':'↓';el.className='text-indigo-500';}});}
 
-// ─── Helpers ──────────────────────────────────────────────────
+// ─── Helpers ───
 function fmt(n){return getCurrencySymbol()+Number(n).toLocaleString('en-IN',{minimumFractionDigits:0,maximumFractionDigits:0});}
 
 function txnRow(t){
   const col=getCategoryColor(t.category);
   const ds=new Date(t.date+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short'});
-  return `<div class="flex items-start gap-3 py-3 border-b border-gray-50 last:border-0">
+  const isChecked=selectedTxnIds.has(t.id)?'checked':'';
+  if(isBulkMode){
+    return `<div class="flex items-center gap-3 py-3 border-b border-gray-50 last:border-0 cursor-pointer no-select" onclick="toggleBulkSelect(${t.id})">
+      <input type="checkbox" ${isChecked} class="w-5 h-5 accent-indigo-600 flex-shrink-0 pointer-events-none rounded"/>
+      <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style="background:${col}">${t.category?t.category[0]:'?'}</div>
+      <div class="flex-1 min-w-0 space-y-0.5">
+        <p class="font-medium text-gray-800 text-sm">${t.category}${t.subcategory?' · '+t.subcategory:''}</p>
+        <p class="text-xs text-gray-500 break-words leading-relaxed">${t.notes||'<span class="text-gray-300 italic">No notes</span>'}</p>
+        <p class="text-xs text-gray-400 font-medium">${ds}</p>
+      </div>
+      <span class="font-bold text-gray-800 text-sm whitespace-nowrap ml-2">${fmt(t.amount)}</span>
+    </div>`;
+  }
+  return `<div class="flex items-start gap-3 py-3 border-b border-gray-50 last:border-0 no-select"
+      onmousedown="startLongPress(${t.id})" onmouseup="cancelLongPress()" onmouseleave="cancelLongPress()"
+      ontouchstart="startLongPress(${t.id})" ontouchend="cancelLongPress()" ontouchmove="cancelLongPress()">
     <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-0.5" style="background:${col}">${t.category?t.category[0]:'?'}</div>
     <div class="flex-1 min-w-0 space-y-0.5">
       <p class="font-medium text-gray-800 text-sm">${t.category}${t.subcategory?' · '+t.subcategory:''}</p>
