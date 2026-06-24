@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#ff8a80">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>Mobile Hub — Launcher</title>
 <!-- Google Fonts: Outfit & Roboto -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1102,6 +1105,10 @@
     }, 1500);
   }
 </script>
-
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js');
+  }
+</script>
 </body>
 </html>
