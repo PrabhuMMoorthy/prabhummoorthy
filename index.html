@@ -7,729 +7,332 @@
 <meta name="theme-color" content="#ff8a80">
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>Mobile Hub — Launcher</title>
-<!-- Google Fonts: Outfit & Roboto -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    /* Sunset Bliss default colors */
-    --system-accent: #ff8a80;
-    --system-accent-container: rgba(255, 235, 235, 0.25);
-    --system-on-accent-container: #ffebee;
-    --wallpaper-bg: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
-    --widget-bg: rgba(255, 255, 255, 0.12);
-    --widget-border: rgba(255, 255, 255, 0.18);
-    --text-primary: #ffffff;
-    --text-secondary: rgba(255, 255, 255, 0.75);
-    --phone-frame-color: #1e1e1e;
+    --accent: #ff8a80;
+    --wallpaper: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
+    --widget-bg: rgba(255,255,255,0.12);
+    --widget-border: rgba(255,255,255,0.18);
+    --text: #fff;
+    --text-dim: rgba(255,255,255,0.72);
+    --frame: #1e1e1e;
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    background: #09090b;
-    color: #fff;
-    font-family: 'Roboto', sans-serif;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow-x: hidden;
-    padding: 20px;
+    background: #09090b; color: #fff; font-family: 'Roboto', sans-serif;
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    overflow-x: hidden; padding: 20px;
   }
-
-  /* ── PHONE CONTAINER / WRAPPER ── */
-  .device-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  /* PHYSICAL BUTTONS ON FRAME */
+  .device-wrapper { position: relative; display: flex; align-items: center; justify-content: center; }
   .phone-btn {
-    position: absolute;
-    background: #333;
-    border-radius: 4px;
-    cursor: pointer;
-    z-index: 5;
-    transition: transform 0.1s;
-    border: 1px solid #444;
+    position: absolute; background: #333; border-radius: 4px; cursor: pointer;
+    z-index: 5; transition: transform 0.1s; border: 1px solid #444;
   }
-  .phone-btn:active {
-    transform: scale(0.95);
-  }
-  .power-btn {
-    right: -7px;
-    top: 180px;
-    width: 6px;
-    height: 55px;
-  }
-  .vol-up {
-    left: -7px;
-    top: 140px;
-    width: 6px;
-    height: 40px;
-  }
-  .vol-down {
-    left: -7px;
-    top: 195px;
-    width: 6px;
-    height: 40px;
-  }
-
-  /* PHONE BODY FRAME */
+  .phone-btn:active { transform: scale(0.92); }
+  .power-btn { right:-7px; top:180px; width:6px; height:55px; }
+  .vol-up    { left:-7px;  top:140px; width:6px; height:40px; }
+  .vol-down  { left:-7px;  top:195px; width:6px; height:40px; }
   .phone-frame {
-    width: 375px;
-    height: 780px;
-    background: var(--phone-frame-color);
-    border-radius: 46px;
-    padding: 12px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 4px #2c2c2c, 0 0 0 10px #1a1a1a;
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    user-select: none;
+    width:375px; height:812px; background:var(--frame); border-radius:50px; padding:12px;
+    box-shadow: 0 32px 64px -16px rgba(0,0,0,0.75), 0 0 0 4px #2c2c2c, 0 0 0 10px #1a1a1a, inset 0 1px 0 rgba(255,255,255,0.06);
+    position:relative; overflow:hidden; display:flex; flex-direction:column; user-select:none;
   }
-
-  /* SCREEN CONTAINER */
   .screen {
-    width: 100%;
-    height: 100%;
-    border-radius: 36px;
-    background: var(--wallpaper-bg);
-    background-size: cover;
-    background-position: center;
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    transition: background 0.6s ease;
+    width:100%; height:100%; border-radius:40px;
+    background:var(--wallpaper); background-size:cover; background-position:center;
+    position:relative; overflow:hidden; display:flex; flex-direction:column;
+    transition:background 0.7s ease;
   }
-
-  /* NOTCH / CAMERA PUNCH HOLE */
   .notch {
-    position: absolute;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 110px;
-    height: 28px;
-    background: #000;
-    border-radius: 20px;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: width 0.3s ease, height 0.3s ease;
+    position:absolute; top:10px; left:50%; transform:translateX(-50%);
+    width:110px; height:28px; background:#000; border-radius:20px;
+    z-index:100; display:flex; align-items:center; justify-content:center;
   }
-  .notch-camera {
-    width: 12px;
-    height: 12px;
-    background: #111;
-    border-radius: 50%;
-    margin-right: 6px;
-    border: 2px solid #222;
-  }
-
-  /* STATUS BAR */
+  .notch-camera { width:12px; height:12px; background:#111; border-radius:50%; margin-right:6px; border:2px solid #222; }
   .status-bar {
-    height: 42px;
-    padding: 12px 24px 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    z-index: 90;
-    font-family: 'Outfit', sans-serif;
+    height:44px; padding:14px 22px 0; display:flex; justify-content:space-between; align-items:center;
+    font-size:0.78rem; font-weight:600; color:var(--text); z-index:90; font-family:'Outfit',sans-serif; flex-shrink:0;
   }
-  .status-left {
-    display: flex;
-    align-items: center;
-  }
-  .status-right {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .status-icon {
-    font-size: 0.85rem;
-  }
-  .battery-wrap {
-    display: flex;
-    align-items: center;
-    gap: 3px;
-  }
-  .battery-icon {
-    width: 18px;
-    height: 9px;
-    border: 1px solid var(--text-primary);
-    border-radius: 2px;
-    position: relative;
-    padding: 1px;
-  }
-  .battery-level {
-    width: 85%;
-    height: 100%;
-    background: var(--text-primary);
-    border-radius: 1px;
-  }
+  .status-right { display:flex; align-items:center; gap:6px; }
+  .battery-icon { width:18px; height:9px; border:1.5px solid #fff; border-radius:2px; padding:1px; position:relative; }
+  .battery-icon::after { content:''; position:absolute; right:-4px; top:50%; transform:translateY(-50%); width:2px; height:5px; background:#fff; border-radius:0 1px 1px 0; }
+  .battery-level { width:80%; height:100%; background:#fff; border-radius:1px; }
 
-  /* MAIN LAUNCHER CONTENT */
-  .launcher-content {
-    flex: 1;
-    padding: 20px 18px 10px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    z-index: 10;
-    overflow-y: auto;
+  /* SWIPE HINT */
+  .swipe-handle-hint {
+    position:absolute; top:0; left:0; right:0; height:50px; z-index:400; cursor:pointer;
+    display:flex; align-items:flex-end; justify-content:center; padding-bottom:6px;
   }
-  .launcher-content::-webkit-scrollbar { display: none; }
+  .swipe-pill { width:40px; height:4px; background:rgba(255,255,255,0.3); border-radius:2px; transition:background 0.2s; }
+  .swipe-handle-hint:hover .swipe-pill { background:rgba(255,255,255,0.65); }
 
-  /* WIDGETS SECTION */
-  .widgets-area {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    margin-top: 15px;
+  /* QUICK PANEL */
+  .quick-panel {
+    position:absolute; top:0; left:0; right:0; height:100%;
+    z-index:500; pointer-events:none; border-radius:40px; overflow:hidden;
   }
+  .quick-panel-bg {
+    position:absolute; top:0; left:0; right:0;
+    background:rgba(10,6,24,0.97); backdrop-filter:blur(32px); -webkit-backdrop-filter:blur(32px);
+    height:100%; transform:translateY(-100%); transition:transform 0.42s cubic-bezier(0.25,1,0.5,1); pointer-events:auto;
+  }
+  .quick-panel.open .quick-panel-bg { transform:translateY(0); }
+  .quick-panel.open { pointer-events:auto; }
+  .qp-content { padding:56px 20px 24px; height:100%; overflow-y:auto; display:flex; flex-direction:column; gap:18px; }
+  .qp-content::-webkit-scrollbar { display:none; }
+  .qp-header { display:flex; justify-content:space-between; align-items:center; }
+  .qp-title { font-family:'Outfit',sans-serif; font-size:1.3rem; font-weight:800; }
+  .qp-close {
+    width:32px; height:32px; background:rgba(255,255,255,0.12); border-radius:50%;
+    display:flex; align-items:center; justify-content:center; font-size:1rem; cursor:pointer;
+    border:1px solid rgba(255,255,255,0.18); transition:background 0.2s;
+  }
+  .qp-close:hover { background:rgba(255,255,255,0.24); }
+  .qp-toggles { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  .qp-toggle {
+    background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.1);
+    border-radius:16px; padding:12px 8px; display:flex; flex-direction:column; align-items:center; gap:6px;
+    cursor:pointer; transition:background 0.2s, transform 0.15s;
+  }
+  .qp-toggle.active { background:var(--accent); border-color:var(--accent); }
+  .qp-toggle:active { transform:scale(0.9); }
+  .qp-toggle-icon { font-size:1.15rem; }
+  .qp-toggle-label { font-size:0.58rem; font-weight:700; color:rgba(255,255,255,0.85); font-family:'Outfit',sans-serif; text-transform:uppercase; letter-spacing:0.3px; text-align:center; }
+  .qp-sliders { display:flex; flex-direction:column; gap:12px; }
+  .qp-slider-row { display:flex; align-items:center; gap:10px; }
+  .qp-slider-icon { font-size:1rem; width:22px; text-align:center; }
+  .qp-slider { flex:1; -webkit-appearance:none; height:6px; border-radius:4px; background:rgba(255,255,255,0.18); outline:none; cursor:pointer; }
+  .qp-slider::-webkit-slider-thumb { -webkit-appearance:none; width:18px; height:18px; border-radius:50%; background:var(--accent); box-shadow:0 2px 8px rgba(0,0,0,0.4); cursor:pointer; }
+  .qp-section-label { font-family:'Outfit',sans-serif; font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,0.38); margin-bottom:-8px; }
+  .wallpaper-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+  .wp-swatch { aspect-ratio:9/16; border-radius:12px; cursor:pointer; border:2.5px solid transparent; transition:transform 0.2s, border-color 0.2s; position:relative; overflow:hidden; }
+  .wp-swatch:hover { transform:scale(1.06); }
+  .wp-swatch.active { border-color:#fff; transform:scale(1.06); }
+  .wp-swatch-label { position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,0.5); font-size:0.52rem; font-weight:700; text-align:center; padding:3px 2px; font-family:'Outfit',sans-serif; text-transform:uppercase; letter-spacing:0.3px; }
+  .qp-notification { background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:12px 14px; display:flex; align-items:center; gap:12px; }
+  .notif-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0; }
+  .notif-body { flex:1; }
+  .notif-app { font-size:0.6rem; font-weight:700; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px; }
+  .notif-text { font-size:0.78rem; color:#fff; line-height:1.3; }
+  .notif-time { font-size:0.6rem; color:rgba(255,255,255,0.35); flex-shrink:0; }
 
-  /* CLOCK/WEATHER WIDGET */
+  /* LAUNCHER */
+  .launcher-content { flex:1; padding:16px 18px 8px; display:flex; flex-direction:column; gap:12px; z-index:10; overflow-y:auto; min-height:0; }
+  .launcher-content::-webkit-scrollbar { display:none; }
   .clock-widget {
-    background: var(--widget-bg);
-    border: 1px solid var(--widget-border);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-radius: 28px;
-    padding: 18px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    color: var(--text-primary);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+    background:var(--widget-bg); border:1px solid var(--widget-border);
+    backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
+    border-radius:28px; padding:16px 20px; display:flex; justify-content:space-between; align-items:center;
+    box-shadow:0 8px 32px rgba(0,0,0,0.22); flex-shrink:0;
   }
-  .widget-time-col {
-    display: flex;
-    flex-direction: column;
-  }
-  .widget-time {
-    font-size: 2.1rem;
-    font-weight: 700;
-    font-family: 'Outfit', sans-serif;
-    letter-spacing: -1px;
-    line-height: 1.1;
-  }
-  .widget-date {
-    font-size: 0.72rem;
-    font-weight: 500;
-    color: var(--text-secondary);
-    margin-top: 4px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  .widget-weather-col {
-    text-align: right;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-  }
-  .weather-temp {
-    font-size: 1.3rem;
-    font-weight: 600;
-    font-family: 'Outfit', sans-serif;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-  .weather-desc {
-    font-size: 0.68rem;
-    color: var(--text-secondary);
-    margin-top: 2px;
-  }
+  .widget-time { font-size:2rem; font-weight:800; font-family:'Outfit',sans-serif; letter-spacing:-1.5px; line-height:1.1; }
+  .widget-date { font-size:0.68rem; font-weight:500; color:var(--text-dim); margin-top:4px; text-transform:uppercase; letter-spacing:0.5px; }
+  .weather-temp { font-size:1.15rem; font-weight:700; font-family:'Outfit',sans-serif; }
+  .weather-desc { font-size:0.65rem; color:var(--text-dim); margin-top:2px; text-align:right; }
 
-  /* WALLPAPER SWITCHER WIDGET */
-  .theme-widget {
-    background: var(--widget-bg);
-    border: 1px solid var(--widget-border);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-radius: 20px;
-    padding: 10px 16px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  }
-  .theme-widget-title {
-    font-size: 0.72rem;
-    font-weight: 600;
-    font-family: 'Outfit', sans-serif;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  .color-selectors {
-    display: flex;
-    gap: 8px;
-  }
-  .color-dot {
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    cursor: pointer;
-    border: 2px solid transparent;
-    transition: transform 0.2s, border-color 0.2s;
-  }
-  .color-dot:hover {
-    transform: scale(1.15);
-  }
-  .color-dot.active {
-    border-color: #fff;
-    transform: scale(1.1);
-  }
+  .view-toggle { display:flex; background:rgba(255,255,255,0.08); border-radius:14px; padding:3px; gap:2px; flex-shrink:0; border:1px solid rgba(255,255,255,0.1); align-self:center; }
+  .view-btn { flex:1; padding:5px 12px; border-radius:11px; font-size:0.68rem; font-weight:700; font-family:'Outfit',sans-serif; cursor:pointer; border:none; background:transparent; color:rgba(255,255,255,0.45); transition:background 0.2s, color 0.2s; white-space:nowrap; }
+  .view-btn.active { background:rgba(255,255,255,0.18); color:#fff; }
 
-  /* APP GRID */
-  .apps-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    row-gap: 18px;
-    column-gap: 8px;
-    margin: 20px 0;
-  }
-  .app-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-decoration: none;
-    color: var(--text-primary);
-    cursor: pointer;
-    transition: transform 0.2s;
-  }
-  .app-item:hover {
-    transform: scale(1.06);
-  }
-  .app-icon-wrap {
-    width: 52px;
-    height: 52px;
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.6rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-    transition: border-radius 0.3s;
-    position: relative;
-    border: 1.5px solid rgba(255, 255, 255, 0.15);
-  }
-  .app-item:hover .app-icon-wrap {
-    border-radius: 20px;
-  }
-  .app-badge {
-    position: absolute;
-    top: -4px;
-    right: -4px;
-    background: #ff3b30;
-    color: #fff;
-    font-size: 0.58rem;
-    font-weight: 700;
-    padding: 2px 5px;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-  }
-  .app-title {
-    font-size: 0.65rem;
-    font-weight: 500;
-    margin-top: 6px;
-    text-align: center;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: 100%;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
-  }
+  .apps-grid { display:grid; grid-template-columns:repeat(4,1fr); row-gap:16px; column-gap:6px; }
+  .app-item { display:flex; flex-direction:column; align-items:center; text-decoration:none; color:var(--text); cursor:pointer; transition:transform 0.18s; }
+  .app-item:active { transform:scale(0.88); }
+  .app-icon-wrap { width:54px; height:54px; border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:1.65rem; box-shadow:0 4px 14px rgba(0,0,0,0.3); position:relative; border:1.5px solid rgba(255,255,255,0.14); transition:border-radius 0.25s, box-shadow 0.25s; }
+  .app-item:hover .app-icon-wrap { border-radius:22px; box-shadow:0 8px 24px rgba(0,0,0,0.42); }
+  .app-badge { position:absolute; top:-4px; right:-4px; background:#ff3b30; color:#fff; font-size:0.56rem; font-weight:700; padding:2px 5px; border-radius:10px; }
+  .app-title { font-size:0.62rem; font-weight:500; margin-top:5px; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:100%; text-shadow:0 1px 4px rgba(0,0,0,0.6); }
 
-  /* SYSTEM BOTTOM DOCK */
-  .dock {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-radius: 28px;
-    padding: 12px 14px;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    margin-top: auto;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
-  }
-  .dock .app-item {
-    transform: none;
-  }
-  .dock .app-item:hover {
-    transform: translateY(-4px);
-  }
-  .dock .app-title {
-    display: none; /* Hide titles in the dock for cleaner Android look */
-  }
+  .list-section-label { font-family:'Outfit',sans-serif; font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,0.38); padding:8px 2px 2px; }
+  .list-app-row { display:flex; align-items:center; gap:12px; padding:9px 10px; border-radius:14px; cursor:pointer; transition:background 0.15s, transform 0.15s; border:1px solid transparent; }
+  .list-app-row:hover { background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.1); }
+  .list-app-row:active { transform:scale(0.97); }
+  .list-app-icon { width:44px; height:44px; border-radius:13px; display:flex; align-items:center; justify-content:center; font-size:1.35rem; flex-shrink:0; position:relative; border:1px solid rgba(255,255,255,0.12); box-shadow:0 3px 10px rgba(0,0,0,0.3); }
+  .list-app-name { font-size:0.85rem; font-weight:500; font-family:'Outfit',sans-serif; flex:1; }
+  .list-app-badge { background:rgba(255,59,48,0.8); color:#fff; font-size:0.58rem; font-weight:700; padding:2px 6px; border-radius:8px; flex-shrink:0; }
+  .list-arrow { color:rgba(255,255,255,0.22); font-size:0.85rem; flex-shrink:0; }
 
-  /* GOOGLE SEARCH PILL */
-  .search-pill {
-    background: var(--widget-bg);
-    border: 1px solid var(--widget-border);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 24px;
-    padding: 8px 16px;
-    margin-top: 14px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: var(--text-secondary);
-    font-size: 0.8rem;
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
-  }
-  .search-input-mock {
-    flex: 1;
-    font-weight: 400;
-  }
-  .google-logo {
-    font-weight: 700;
-    font-family: 'Outfit', sans-serif;
-    background: linear-gradient(90deg, #4285F4 0%, #EA4335 25%, #FBBC05 50%, #34A853 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    font-size: 0.95rem;
-  }
+  .search-pill { background:var(--widget-bg); border:1px solid var(--widget-border); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-radius:24px; padding:9px 16px; display:flex; align-items:center; gap:10px; color:var(--text-dim); font-size:0.8rem; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,0.15); flex-shrink:0; transition:background 0.2s; }
+  .search-pill:hover { background:rgba(255,255,255,0.18); }
+  .google-logo { font-weight:800; font-family:'Outfit',sans-serif; background:linear-gradient(90deg,#4285F4 0%,#EA4335 33%,#FBBC05 66%,#34A853 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
 
-  /* APP SEARCH OVERLAY DRAWER */
-  .search-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(18, 18, 22, 0.96);
-    z-index: 120;
-    display: none;
-    flex-direction: column;
-    padding: 45px 18px 20px;
-    border-radius: 36px;
-    animation: slideUp 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
-  }
-  .search-overlay.open {
-    display: flex;
-  }
-  .search-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-  .search-input-field {
-    flex: 1;
-    background: #2a2a35;
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 20px;
-    padding: 10px 16px;
-    color: #fff;
-    outline: none;
-    font-size: 0.88rem;
-    font-family: inherit;
-  }
-  .search-input-field:focus {
-    border-color: var(--system-accent);
-  }
-  .close-search-btn {
-    background: none;
-    border: none;
-    color: #fff;
-    font-size: 1.4rem;
-    cursor: pointer;
-  }
-  .search-results {
-    flex: 1;
-    overflow-y: auto;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 15px;
-    align-content: flex-start;
-  }
+  .dock { background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); backdrop-filter:blur(22px); -webkit-backdrop-filter:blur(22px); border-radius:30px; padding:10px 12px; display:flex; justify-content:space-around; align-items:center; flex-shrink:0; box-shadow:0 12px 32px rgba(0,0,0,0.3); }
+  .dock .app-title { display:none; }
+  .dock .app-item:hover { transform:translateY(-5px); }
 
-  /* PHYSICAL VOLUME HUD SLIDER */
-  .vol-hud {
-    position: absolute;
-    right: 14px;
-    top: 140px;
-    background: rgba(26, 26, 26, 0.9);
-    border: 1px solid rgba(255,255,255,0.12);
-    width: 38px;
-    height: 140px;
-    border-radius: 20px;
-    z-index: 150;
-    padding: 12px 6px;
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-    animation: fadeInOut 0.2s ease;
-  }
-  .vol-hud.show {
-    display: flex;
-  }
-  .vol-track {
-    flex: 1;
-    width: 6px;
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 4px;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-  }
-  .vol-fill {
-    width: 100%;
-    height: 70%;
-    background: var(--system-accent);
-    border-radius: 4px;
-    transition: height 0.1s ease;
-  }
-  .vol-icon {
-    font-size: 0.8rem;
-    color: var(--text-primary);
-  }
+  /* APP DRAWER */
+  .app-drawer { position:absolute; inset:0; background:rgba(8,5,22,0.97); backdrop-filter:blur(28px); -webkit-backdrop-filter:blur(28px); z-index:300; display:flex; flex-direction:column; border-radius:40px; transform:translateY(100%); transition:transform 0.42s cubic-bezier(0.25,1,0.5,1); overflow:hidden; }
+  .app-drawer.open { transform:translateY(0); }
+  .drawer-handle { width:36px; height:4px; background:rgba(255,255,255,0.28); border-radius:2px; margin:14px auto 0; flex-shrink:0; }
+  .drawer-search-row { display:flex; align-items:center; gap:10px; padding:12px 18px 6px; flex-shrink:0; }
+  .drawer-search-input { flex:1; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.15); border-radius:16px; padding:9px 16px; color:#fff; outline:none; font-size:0.85rem; font-family:'Roboto',sans-serif; transition:border-color 0.2s; }
+  .drawer-search-input::placeholder { color:rgba(255,255,255,0.38); }
+  .drawer-search-input:focus { border-color:var(--accent); }
+  .drawer-close-btn { background:rgba(255,255,255,0.1); border:none; color:#fff; font-size:1rem; cursor:pointer; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; transition:background 0.2s; }
+  .drawer-close-btn:hover { background:rgba(255,255,255,0.22); }
+  .drawer-app-list { flex:1; overflow-y:auto; padding:4px 14px 24px; display:flex; flex-direction:column; gap:4px; }
+  .drawer-app-list::-webkit-scrollbar { display:none; }
+  .drawer-section-label { font-family:'Outfit',sans-serif; font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,0.35); padding:10px 4px 4px; }
+  .drawer-app-row { display:flex; align-items:center; gap:14px; padding:10px 12px; border-radius:16px; cursor:pointer; transition:background 0.15s, transform 0.15s; border:1px solid transparent; }
+  .drawer-app-row:hover { background:rgba(255,255,255,0.07); border-color:rgba(255,255,255,0.09); }
+  .drawer-app-row:active { transform:scale(0.97); }
+  .drawer-app-icon { width:48px; height:48px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.45rem; flex-shrink:0; position:relative; border:1px solid rgba(255,255,255,0.12); box-shadow:0 3px 10px rgba(0,0,0,0.3); }
+  .drawer-app-name { font-size:0.9rem; font-weight:500; font-family:'Outfit',sans-serif; }
+  .drawer-app-url { font-size:0.63rem; color:rgba(255,255,255,0.32); margin-top:1px; }
+  .drawer-app-badge { background:rgba(255,59,48,0.82); color:#fff; font-size:0.58rem; font-weight:700; padding:2px 7px; border-radius:8px; flex-shrink:0; }
+  .drawer-arrow { color:rgba(255,255,255,0.22); font-size:0.85rem; flex-shrink:0; }
 
-  /* PHONE SCREEN OFF STATE */
-  .screen-off-overlay {
-    position: absolute;
-    inset: 0;
-    background: #000;
-    z-index: 200;
-    display: none;
-    border-radius: 36px;
-  }
-  .screen-off-overlay.active {
-    display: block;
-  }
+  /* VOL HUD */
+  .vol-hud { position:absolute; right:14px; top:140px; background:rgba(24,22,32,0.92); border:1px solid rgba(255,255,255,0.12); width:38px; height:140px; border-radius:20px; z-index:150; padding:10px 6px; display:none; flex-direction:column; align-items:center; gap:8px; box-shadow:0 8px 24px rgba(0,0,0,0.5); }
+  .vol-hud.show { display:flex; }
+  .vol-track { flex:1; width:6px; background:rgba(255,255,255,0.15); border-radius:4px; display:flex; flex-direction:column; justify-content:flex-end; }
+  .vol-fill { width:100%; height:70%; background:var(--accent); border-radius:4px; transition:height 0.1s ease; }
+  .vol-icon { font-size:0.8rem; }
 
-  /* HOME INDICATOR BAR */
-  .home-indicator {
-    position: absolute;
-    bottom: 8px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 120px;
-    height: 5px;
-    background: rgba(255, 255, 255, 0.5);
-    border-radius: 10px;
-    z-index: 100;
-    cursor: pointer;
-  }
+  .screen-off-overlay { position:absolute; inset:0; background:#000; z-index:600; display:none; border-radius:40px; }
+  .screen-off-overlay.active { display:block; }
+  .home-indicator { position:absolute; bottom:8px; left:50%; transform:translateX(-50%); width:120px; height:5px; background:rgba(255,255,255,0.42); border-radius:10px; z-index:200; cursor:pointer; transition:background 0.2s; }
+  .home-indicator:hover { background:rgba(255,255,255,0.7); }
+  .splash-screen { position:absolute; inset:0; background:#08050f; z-index:550; display:none; flex-direction:column; align-items:center; justify-content:center; gap:20px; border-radius:40px; }
+  .splash-screen.active { display:flex; }
+  .splash-icon { width:84px; height:84px; border-radius:26px; display:flex; align-items:center; justify-content:center; font-size:2.6rem; box-shadow:0 12px 36px rgba(0,0,0,0.6); animation:splashPop 0.35s cubic-bezier(0.34,1.56,0.64,1); }
+  @keyframes splashPop { from{transform:scale(0.6);opacity:0} to{transform:scale(1);opacity:1} }
+  .splash-app-name { font-size:1.25rem; font-weight:700; font-family:'Outfit',sans-serif; }
+  .splash-loader { width:28px; height:28px; border:3px solid rgba(255,255,255,0.12); border-radius:50%; border-top-color:var(--accent); animation:spin 0.7s linear infinite; }
+  @keyframes spin { to{transform:rotate(360deg)} }
 
-  /* APP SPLASH LOADING TRANSITION SCREEN */
-  .splash-screen {
-    position: absolute;
-    inset: 0;
-    background: #111;
-    z-index: 300;
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    border-radius: 36px;
-    animation: zoomInSplash 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
-  }
-  .splash-screen.active {
-    display: flex;
-  }
-  .splash-icon {
-    width: 80px;
-    height: 80px;
-    border-radius: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2.5rem;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    color: #fff;
-  }
-  .splash-app-name {
-    font-size: 1.3rem;
-    font-weight: 700;
-    font-family: 'Outfit', sans-serif;
-    color: #fff;
-  }
-  .splash-loader {
-    width: 32px;
-    height: 32px;
-    border: 3px solid rgba(255, 255, 255, 0.1);
-    border-radius: 50%;
-    border-top-color: #fff;
-    animation: spin 0.8s linear infinite;
-    margin-top: 10px;
-  }
-
-  /* ── ANIMATIONS ── */
-  @keyframes slideUp {
-    from { transform: translateY(100%); }
-    to { transform: translateY(0); }
-  }
-  @keyframes zoomInSplash {
-    from { transform: scale(0.85); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-  }
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-
-  /* RESPONSIVE DESIGN FOR REAL PHONES */
-  @media (max-width: 600px) {
-    body {
-      padding: 0;
-      background: #000;
-    }
-    .device-wrapper {
-      width: 100vw;
-      height: 100vh;
-    }
-    .phone-frame {
-      width: 100vw;
-      height: 100vh;
-      border-radius: 0;
-      border: none;
-      box-shadow: none;
-      padding: 0;
-    }
-    .screen {
-      border-radius: 0;
-    }
-    .phone-btn {
-      display: none;
-    }
-    .splash-screen, .search-overlay {
-      border-radius: 0;
-    }
-    .status-bar {
-      padding: 14px 18px 0;
-    }
-    .launcher-content {
-      padding: 14px 16px 14px;
-    }
+  @media (max-width:600px) {
+    body { padding:0; background:#000; }
+    .device-wrapper { width:100vw; height:100dvh; }
+    .phone-frame { width:100%; height:100%; border-radius:0; border:none; box-shadow:none; padding:0; }
+    .screen,.splash-screen,.app-drawer,.quick-panel,.screen-off-overlay { border-radius:0 !important; }
+    .phone-btn { display:none; }
+    .status-bar { padding:16px 20px 0; }
+    .launcher-content { padding:12px 16px 8px; }
   }
 </style>
 </head>
 <body>
 
 <div class="device-wrapper">
-  <!-- Volume & Power Physical Buttons -->
-  <div class="phone-btn vol-up" id="btn-vol-up" onclick="changeVolume(5)"></div>
-  <div class="phone-btn vol-down" id="btn-vol-down" onclick="changeVolume(-5)"></div>
-  <div class="phone-btn power-btn" id="btn-power" onclick="togglePower()"></div>
+  <div class="phone-btn vol-up"    onclick="changeVolume(10)"></div>
+  <div class="phone-btn vol-down"  onclick="changeVolume(-10)"></div>
+  <div class="phone-btn power-btn" onclick="togglePower()"></div>
 
-  <!-- Main Mobile Frame -->
   <div class="phone-frame">
-    <!-- Screen Overlay when Sleep/Off -->
     <div class="screen-off-overlay" id="screen-off"></div>
-
-    <!-- Active Operating System Screen -->
     <div class="screen" id="screen-body">
-      
-      <!-- Camera Island (Notch) -->
-      <div class="notch" id="system-notch">
-        <div class="notch-camera"></div>
-      </div>
 
-      <!-- Top Status Bar -->
+      <div class="notch" id="system-notch"><div class="notch-camera"></div></div>
+
       <div class="status-bar">
-        <div class="status-left">
-          <span id="status-time">12:00</span>
-        </div>
+        <span id="status-time" style="font-weight:700">12:00</span>
         <div class="status-right">
-          <span class="status-icon">📶</span>
-          <span class="status-icon">📶</span>
-          <div class="battery-wrap">
-            <span style="font-size: 0.65rem; margin-right: 1px;">85%</span>
-            <div class="battery-icon">
-              <div class="battery-level"></div>
-            </div>
-          </div>
+          <span style="font-size:0.8rem">📶</span>
+          <span style="font-size:0.72rem;font-weight:500">WiFi</span>
+          <div class="battery-icon"><div class="battery-level"></div></div>
         </div>
       </div>
 
-      <!-- Volume Indicator Popover HUD -->
-      <div class="vol-hud" id="vol-hud-display">
-        <span class="vol-icon" id="vol-icon-type">🔊</span>
-        <div class="vol-track">
-          <div class="vol-fill" id="vol-hud-fill"></div>
-        </div>
+      <!-- Swipe-down area hint -->
+      <div class="swipe-handle-hint" onclick="openQuickPanel()" title="Swipe down for Quick Settings">
+        <div class="swipe-pill"></div>
       </div>
 
-      <!-- Launcher Workspace View -->
+      <div class="vol-hud" id="vol-hud">
+        <span class="vol-icon" id="vol-icon">🔊</span>
+        <div class="vol-track"><div class="vol-fill" id="vol-fill"></div></div>
+      </div>
+
+      <!-- LAUNCHER CONTENT -->
       <div class="launcher-content">
-        
-        <!-- Widgets Area -->
-        <div class="widgets-area">
-          
-          <!-- Live Clock/Date/Weather Widget -->
-          <div class="clock-widget">
-            <div class="widget-time-col">
-              <span class="widget-time" id="widget-clock">03:30 PM</span>
-              <span class="widget-date" id="widget-date">Sat, Jun 20</span>
-            </div>
-            <div class="widget-weather-col">
-              <span class="weather-temp">☀️ 28°C</span>
-              <span class="weather-desc">Mostly Sunny</span>
-            </div>
-          </div>
 
-          <!-- Dynamic Styling Color Switcher Widget -->
-          <div class="theme-widget">
-            <span class="theme-widget-title">Palette</span>
-            <div class="color-selectors" id="theme-selectors">
-              <!-- Dynamically populated theme dots -->
-            </div>
+        <div class="clock-widget">
+          <div>
+            <div class="widget-time" id="widget-clock">12:00 PM</div>
+            <div class="widget-date" id="widget-date">Wed, Jun 25</div>
           </div>
-
+          <div style="text-align:right">
+            <div class="weather-temp">☀️ 28°C</div>
+            <div class="weather-desc">Mostly Sunny</div>
+          </div>
         </div>
 
-        <!-- App Grid Launcher Icons -->
-        <div class="apps-grid" id="apps-grid-view">
-          <!-- Main grid content will be filled dynamically -->
+        <!-- View Toggle -->
+        <div class="view-toggle">
+          <button class="view-btn active" id="vbtn-grid" onclick="switchView('grid')">⊞ Grid</button>
+          <button class="view-btn" id="vbtn-list" onclick="switchView('list')">☰ All Apps</button>
         </div>
 
-        <!-- Google Mock Search Pill -->
-        <div class="search-pill" onclick="openSearchDrawer()">
+        <div id="apps-grid-view" class="apps-grid"></div>
+        <div id="apps-list-view" style="display:none;flex-direction:column;gap:4px;"></div>
+
+        <div class="search-pill" onclick="openDrawer()">
           <span class="google-logo">G</span>
-          <div class="search-input-mock">Search apps...</div>
-          <span style="font-size: 0.8rem;">🎙️</span>
+          <div style="flex:1;color:rgba(255,255,255,0.45)">Search all apps…</div>
+          <span>🎙️</span>
         </div>
 
-        <!-- Bottom System Dock (Quick Launch) -->
-        <div class="dock" id="dock-view">
-          <!-- Dock icons will be loaded here -->
-        </div>
-
+        <div class="dock" id="dock-view"></div>
       </div>
 
-      <!-- App Launcher Drawer (Search Overlay) -->
-      <div class="search-overlay" id="search-drawer">
-        <div class="search-header">
-          <input type="text" class="search-input-field" id="search-field" placeholder="Search applications..." oninput="filterAppsSearch()">
-          <button class="close-search-btn" onclick="closeSearchDrawer()">✕</button>
+      <!-- APP DRAWER (slides from bottom) -->
+      <div class="app-drawer" id="app-drawer">
+        <div class="drawer-handle"></div>
+        <div class="drawer-search-row">
+          <input type="text" class="drawer-search-input" id="drawer-search" placeholder="🔍  Find an app…" oninput="filterDrawer()">
+          <button class="drawer-close-btn" onclick="closeDrawer()">✕</button>
         </div>
-        <div class="search-results" id="search-results-grid"></div>
+        <div class="drawer-app-list" id="drawer-list"></div>
       </div>
 
-      <!-- Physical Home Indicator Bar -->
+      <!-- QUICK SETTINGS PANEL (slides from top) -->
+      <div class="quick-panel" id="quick-panel">
+        <div class="quick-panel-bg">
+          <div class="qp-content">
+            <div class="qp-header">
+              <span class="qp-title">Quick Settings</span>
+              <div class="qp-close" onclick="closeQuickPanel()">✕</div>
+            </div>
+
+            <div class="qp-toggles">
+              <div class="qp-toggle active" id="toggle-wifi"  onclick="toggleQP('wifi')"><span class="qp-toggle-icon">📶</span><span class="qp-toggle-label">Wi-Fi</span></div>
+              <div class="qp-toggle active" id="toggle-bt"    onclick="toggleQP('bt')"><span class="qp-toggle-icon">🔵</span><span class="qp-toggle-label">BT</span></div>
+              <div class="qp-toggle"        id="toggle-dnd"   onclick="toggleQP('dnd')"><span class="qp-toggle-icon">🔕</span><span class="qp-toggle-label">DND</span></div>
+              <div class="qp-toggle"        id="toggle-fly"   onclick="toggleQP('fly')"><span class="qp-toggle-icon">✈️</span><span class="qp-toggle-label">Flight</span></div>
+              <div class="qp-toggle active" id="toggle-rot"   onclick="toggleQP('rot')"><span class="qp-toggle-icon">🔄</span><span class="qp-toggle-label">Rotate</span></div>
+              <div class="qp-toggle"        id="toggle-flash" onclick="toggleQP('flash')"><span class="qp-toggle-icon">🔦</span><span class="qp-toggle-label">Torch</span></div>
+              <div class="qp-toggle active" id="toggle-loc"   onclick="toggleQP('loc')"><span class="qp-toggle-icon">📍</span><span class="qp-toggle-label">Location</span></div>
+              <div class="qp-toggle"        id="toggle-eye"   onclick="toggleQP('eye')"><span class="qp-toggle-icon">🌙</span><span class="qp-toggle-label">Eye Care</span></div>
+            </div>
+
+            <div class="qp-sliders">
+              <div class="qp-slider-row">
+                <span class="qp-slider-icon">☀️</span>
+                <input type="range" class="qp-slider" min="0" max="100" value="75">
+              </div>
+              <div class="qp-slider-row">
+                <span class="qp-slider-icon">🔊</span>
+                <input type="range" class="qp-slider" min="0" max="100" value="70" id="vol-slider" oninput="syncVolSlider(this.value)">
+              </div>
+            </div>
+
+            <div class="qp-section-label">Wallpaper</div>
+            <div class="wallpaper-grid" id="wp-grid"></div>
+
+            <div class="qp-section-label">Notifications</div>
+            <div id="notif-area" style="display:flex;flex-direction:column;gap:8px;padding-bottom:20px"></div>
+          </div>
+        </div>
+      </div>
+
       <div class="home-indicator" onclick="goHome()"></div>
 
-      <!-- Dynamic Splash Screen Loading Overlay -->
       <div class="splash-screen" id="app-splash">
-        <div class="splash-icon" id="splash-app-icon">🤖</div>
-        <span class="splash-app-name" id="splash-app-title">Loading...</span>
+        <div class="splash-icon" id="splash-icon">🤖</div>
+        <span class="splash-app-name" id="splash-name">Loading…</span>
         <div class="splash-loader"></div>
       </div>
 
@@ -738,373 +341,264 @@
 </div>
 
 <script>
-  // ── APP REGISTRY (DATA MODEL) ──
-  const applications = [
-    {
-      id: 'youtube',
-      name: 'YouTube',
-      icon: '📺',
-      url: 'my-youtube.html',
-      badge: null,
-      docked: true,
-      color: '#ff3b30'
-    },
-    {
-      id: 'loan',
-      name: 'Loan Planner',
-      icon: '💰',
-      url: 'loan.html',
-      badge: null,
-      docked: true,
-      color: '#34c759'
-    },
-    {
-      id: 'notepad',
-      name: 'CodeEdit Pro',
-      icon: '🗒️',
-      url: 'notepad.html',
-      badge: 'PRO',
-      docked: true,
-      color: '#10b981'
-    },
-    {
-      id: 'chat',
-      name: 'P2P Share',
-      icon: '⚡',
-      url: 'chat.html',
-      badge: 'NEW',
-      docked: true,
-      color: '#3b82f6'
-    },
-    {
-      id: 'expense',
-      name: 'Expense Tracker',
-      icon: '💸',
-      url: 'expense.html',
-      badge: null,
-      docked: false,
-      color: '#ff6b6b'
-    },
-    {
-      id: 'quotes',
-      name: 'Quote Maker',
-      icon: '✏️',
-      url: 'quotes.html',
-      badge: null,
-      docked: false,
-      color: '#a855f7'
-    },
-    {
-      id: 'venmurasu',
-      name: 'Venmurasu',
-      icon: '✍️',
-      url: 'vq-venmurasu_html.html',
-      badge: 'NEW',
-      docked: false,
-      color: '#e2b13c'
-    },
-    {
-      id: 'comparator',
-      name: 'Comparator',
-      icon: '⇆',
-      url: 'comparator.html',
-      badge: null,
-      docked: false,
-      color: '#607d8b'
-    },
-    {
-      id: 'venmurasu-legacy',
-      name: 'Legacy Read',
-      icon: '📖',
-      url: 'venmurasu-quote-reader.html',
-      badge: 'OLD',
-      docked: false,
-      color: '#8d6e63'
-    }
-  ];
+const applications = [
+  { id:'youtube',          name:'YouTube',       icon:'📺', url:'my-youtube.html',             badge:null,  docked:true,  color:'#ff3b30' },
+  { id:'loan',             name:'Loan Planner',  icon:'💰', url:'loan.html',                   badge:null,  docked:true,  color:'#34c759' },
+  { id:'notepad',          name:'CodeEdit Pro',  icon:'🗒️', url:'notepad.html',                badge:'PRO', docked:true,  color:'#10b981' },
+  { id:'chat',             name:'P2P Share',     icon:'⚡', url:'chat.html',                   badge:'NEW', docked:true,  color:'#3b82f6' },
+  { id:'expense',          name:'Expenses',      icon:'💸', url:'expense.html',                badge:null,  docked:false, color:'#ff6b6b' },
+  { id:'quotes',           name:'Quote Maker',   icon:'✏️', url:'quotes.html',                 badge:null,  docked:false, color:'#a855f7' },
+  { id:'venmurasu',        name:'Venmurasu',     icon:'✍️', url:'vq-venmurasu_html.html',      badge:'NEW', docked:false, color:'#e2b13c' },
+  { id:'comparator',       name:'Comparator',    icon:'⇆',  url:'comparator.html',             badge:null,  docked:false, color:'#607d8b' },
+  { id:'venmurasu-legacy', name:'Legacy Read',   icon:'📖', url:'venmurasu-quote-reader.html', badge:'OLD', docked:false, color:'#8d6e63' }
+];
 
-  // ── THEME ENGINE (DYNAMIC MATERIAL YOU STYLES) ──
-  const themes = [
-    {
-      id: 'sunset',
-      color: '#ff8a80',
-      background: '#f5576c',
-      accent: '#ff8a80',
-      accentContainer: 'rgba(255, 235, 235, 0.25)',
-      onAccentContainer: '#ffebee',
-      wallpaper: 'linear-gradient(135deg, #f5576c 0%, #f093fb 100%)'
-    },
-    {
-      id: 'ocean',
-      color: '#80d8ff',
-      background: '#243b55',
-      accent: '#80d8ff',
-      accentContainer: 'rgba(224, 247, 250, 0.22)',
-      onAccentContainer: '#e0f7fa',
-      wallpaper: 'linear-gradient(135deg, #141e30 0%, #243b55 100%)'
-    },
-    {
-      id: 'forest',
-      color: '#b9f6ca',
-      background: '#134e5e',
-      accent: '#b9f6ca',
-      accentContainer: 'rgba(232, 245, 233, 0.22)',
-      onAccentContainer: '#e8f5e9',
-      wallpaper: 'linear-gradient(135deg, #134e5e 0%, #71b280 100%)'
-    },
-    {
-      id: 'cyber',
-      color: '#ea80fc',
-      background: '#15092a',
-      accent: '#ea80fc',
-      accentContainer: 'rgba(243, 229, 245, 0.22)',
-      onAccentContainer: '#f3e5f5',
-      wallpaper: 'linear-gradient(135deg, #09090e 0%, #15092a 50%, #2b0b4a 100%)'
-    }
-  ];
+const wallpapers = [
+  { label:'Sunset',  bg:'linear-gradient(135deg,#f5576c 0%,#f093fb 100%)',   swatch:'linear-gradient(135deg,#f5576c,#f093fb)',  accent:'#ff8a80' },
+  { label:'Ocean',   bg:'linear-gradient(135deg,#141e30 0%,#243b55 100%)',   swatch:'linear-gradient(135deg,#141e30,#243b55)',  accent:'#80d8ff' },
+  { label:'Forest',  bg:'linear-gradient(135deg,#134e5e 0%,#71b280 100%)',   swatch:'linear-gradient(135deg,#134e5e,#71b280)',  accent:'#b9f6ca' },
+  { label:'Cyber',   bg:'linear-gradient(135deg,#09090e 0%,#2b0b4a 100%)',   swatch:'linear-gradient(135deg,#09090e,#2b0b4a)',  accent:'#ea80fc' },
+  { label:'Aurora',  bg:'linear-gradient(135deg,#0d324d 0%,#7f5a83 50%,#0d324d 100%)', swatch:'linear-gradient(135deg,#0d324d,#7f5a83)', accent:'#c084fc' },
+  { label:'Blaze',   bg:'linear-gradient(135deg,#fc4a1a 0%,#f7b733 100%)',   swatch:'linear-gradient(135deg,#fc4a1a,#f7b733)',  accent:'#ffd54f' },
+  { label:'Mint',    bg:'linear-gradient(135deg,#00b4db 0%,#0083b0 100%)',   swatch:'linear-gradient(135deg,#00b4db,#0083b0)',  accent:'#80deea' },
+  { label:'Space',   bg:'radial-gradient(ellipse at 60% 20%,#1a1a2e 0%,#16213e 50%,#0f3460 100%)', swatch:'linear-gradient(135deg,#1a1a2e,#0f3460)', accent:'#e2e8ff' }
+];
 
-  let currentThemeIndex = parseInt(localStorage.getItem('android-launcher-theme') || '0', 10);
-  if (currentThemeIndex >= themes.length) currentThemeIndex = 0;
+const mockNotifs = [
+  { app:'P2P Share',    icon:'⚡', color:'#3b82f6', text:'New file received from Alex',      time:'2m ago' },
+  { app:'Venmurasu',   icon:'✍️', color:'#e2b13c', text:'Chapter 12 is ready to read',      time:'15m ago' },
+  { app:'Loan Planner',icon:'💰', color:'#34c759', text:'Monthly EMI reminder: ₹8,400 due', time:'1h ago' }
+];
 
-  let isPhoneOn = true;
-  let currentVolume = parseInt(localStorage.getItem('android-launcher-vol') || '70', 10);
-  let volHudTimeout = null;
+let currentWallpaper = parseInt(localStorage.getItem('hub-wp') || '0');
+let isPhoneOn = true;
+let currentVolume = parseInt(localStorage.getItem('hub-vol') || '70');
+let volHudTimeout = null;
 
-  // ── CORE INITIALIZATION ──
-  window.addEventListener('DOMContentLoaded', () => {
-    // Start Clock Loops
-    updateClock();
-    setInterval(updateClock, 1000);
+// Hide splash whenever this page is shown (including back-navigation from bfcache)
+window.addEventListener('pageshow', () => {
+  document.getElementById('app-splash').classList.remove('active');
+});
 
-    // Apply active theme
-    applyTheme(currentThemeIndex);
+window.addEventListener('DOMContentLoaded', () => {
+  updateClock();
+  setInterval(updateClock, 1000);
+  applyWallpaper(currentWallpaper);
+  renderGrid();
+  renderDock();
+  buildWallpaperGrid();
+  buildNotifications();
+});
 
-    // Populate theme selector dots
-    populateThemeSelectors();
+function updateClock() {
+  const now = new Date();
+  const h24 = now.getHours(), m = String(now.getMinutes()).padStart(2,'0');
+  document.getElementById('status-time').textContent = `${String(h24).padStart(2,'0')}:${m}`;
+  const h12 = h24 % 12 || 12;
+  document.getElementById('widget-clock').textContent = `${String(h12).padStart(2,'0')}:${m} ${h24>=12?'PM':'AM'}`;
+  document.getElementById('widget-date').textContent = now.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+}
 
-    // Render workspace app grids & docks
-    renderLauncherUI();
+function applyWallpaper(idx) {
+  currentWallpaper = idx;
+  localStorage.setItem('hub-wp', idx);
+  const wp = wallpapers[idx];
+  document.documentElement.style.setProperty('--wallpaper', wp.bg);
+  document.documentElement.style.setProperty('--accent', wp.accent);
+  document.querySelectorAll('.wp-swatch').forEach((el,i) => el.classList.toggle('active', i===idx));
+}
+
+function buildWallpaperGrid() {
+  const grid = document.getElementById('wp-grid');
+  wallpapers.forEach((wp, idx) => {
+    const div = document.createElement('div');
+    div.className = 'wp-swatch' + (idx===currentWallpaper?' active':'');
+    div.style.background = wp.swatch;
+    div.innerHTML = `<div class="wp-swatch-label">${wp.label}</div>`;
+    div.onclick = () => applyWallpaper(idx);
+    grid.appendChild(div);
   });
+}
 
-  // ── CLOCK & DATE LOGIC ──
-  function updateClock() {
-    const now = new Date();
-    
-    // Time formatted for top status bar (HH:MM format)
-    let hours24 = now.getHours();
-    let mins = String(now.getMinutes()).padStart(2, '0');
-    let timeStrStatus = `${String(hours24).padStart(2, '0')}:${mins}`;
-    document.getElementById('status-time').textContent = timeStrStatus;
+function buildNotifications() {
+  const area = document.getElementById('notif-area');
+  mockNotifs.forEach(n => {
+    const el = document.createElement('div');
+    el.className = 'qp-notification';
+    el.innerHTML = `
+      <div class="notif-icon" style="background:${n.color}22;border:1px solid ${n.color}44">${n.icon}</div>
+      <div class="notif-body"><div class="notif-app">${n.app}</div><div class="notif-text">${n.text}</div></div>
+      <div class="notif-time">${n.time}</div>`;
+    area.appendChild(el);
+  });
+}
 
-    // Time formatted for widget clock (12hr format with AM/PM)
-    let hours12 = hours24 % 12;
-    hours12 = hours12 ? hours12 : 12; // mapping 0 to 12
-    let ampm = hours24 >= 12 ? 'PM' : 'AM';
-    let timeStrWidget = `${String(hours12).padStart(2, '0')}:${mins} ${ampm}`;
-    document.getElementById('widget-clock').textContent = timeStrWidget;
+function renderGrid() {
+  const grid = document.getElementById('apps-grid-view');
+  grid.innerHTML = '';
+  applications.filter(a => !a.docked).forEach(app => grid.appendChild(createGridItem(app)));
+}
 
-    // Date formatted for widget date
-    const options = { weekday: 'short', month: 'short', day: 'numeric' };
-    let dateStr = now.toLocaleDateString('en-US', options);
-    document.getElementById('widget-date').textContent = dateStr;
+function renderDock() {
+  const dock = document.getElementById('dock-view');
+  dock.innerHTML = '';
+  applications.filter(a => a.docked).forEach(app => dock.appendChild(createGridItem(app)));
+}
+
+function renderListView() {
+  const list = document.getElementById('apps-list-view');
+  list.innerHTML = '';
+  const addSec = (title, arr) => {
+    if (!arr.length) return;
+    const lbl = document.createElement('div'); lbl.className='list-section-label'; lbl.textContent=title; list.appendChild(lbl);
+    arr.forEach(app => list.appendChild(createListRow(app)));
+  };
+  addSec('Pinned', applications.filter(a=>a.docked));
+  addSec('All Apps', applications.filter(a=>!a.docked));
+}
+
+function createGridItem(app) {
+  const item = document.createElement('div'); item.className='app-item'; item.onclick=()=>launchApp(app);
+  const wrap = document.createElement('div'); wrap.className='app-icon-wrap';
+  wrap.style.background = `linear-gradient(135deg,${app.color}bb,${app.color})`;
+  wrap.textContent = app.icon;
+  if (app.badge) { const b=document.createElement('div'); b.className='app-badge'; b.textContent=app.badge; wrap.appendChild(b); }
+  const t = document.createElement('span'); t.className='app-title'; t.textContent=app.name;
+  item.appendChild(wrap); item.appendChild(t); return item;
+}
+
+function createListRow(app) {
+  const row = document.createElement('div'); row.className='list-app-row'; row.onclick=()=>launchApp(app);
+  row.innerHTML = `
+    <div class="list-app-icon" style="background:linear-gradient(135deg,${app.color}bb,${app.color})">${app.icon}${app.badge?`<div class="app-badge" style="position:absolute;top:-3px;right:-3px">${app.badge}</div>`:''}</div>
+    <span class="list-app-name">${app.name}</span>
+    ${app.badge?`<span class="list-app-badge">${app.badge}</span>`:''}
+    <span class="list-arrow">›</span>`; return row;
+}
+
+function createDrawerRow(app) {
+  const row = document.createElement('div'); row.className='drawer-app-row'; row.onclick=()=>launchApp(app);
+  row.innerHTML = `
+    <div class="drawer-app-icon" style="background:linear-gradient(135deg,${app.color}bb,${app.color})">${app.icon}${app.badge?`<div class="app-badge" style="position:absolute;top:-3px;right:-3px">${app.badge}</div>`:''}</div>
+    <div style="flex:1"><div class="drawer-app-name">${app.name}</div><div class="drawer-app-url">${app.url}</div></div>
+    ${app.badge?`<span class="drawer-app-badge">${app.badge}</span>`:''}
+    <span class="drawer-arrow">›</span>`; return row;
+}
+
+function switchView(v) {
+  document.getElementById('vbtn-grid').classList.toggle('active',v==='grid');
+  document.getElementById('vbtn-list').classList.toggle('active',v==='list');
+  document.getElementById('apps-grid-view').style.display = v==='grid'?'grid':'none';
+  const lv = document.getElementById('apps-list-view');
+  lv.style.display = v==='list'?'flex':'none';
+  if (v==='list') renderListView();
+}
+
+function openDrawer() {
+  document.getElementById('app-drawer').classList.add('open');
+  document.getElementById('drawer-search').value = '';
+  buildDrawerList(applications);
+  setTimeout(()=>document.getElementById('drawer-search').focus(),300);
+}
+function closeDrawer() { document.getElementById('app-drawer').classList.remove('open'); lockGestures(); }
+
+function buildDrawerList(apps) {
+  const list = document.getElementById('drawer-list'); list.innerHTML='';
+  if (!apps.length) {
+    const e=document.createElement('div'); e.style.cssText='text-align:center;padding:40px 0;color:rgba(255,255,255,0.28);font-family:Outfit,sans-serif;font-size:0.9rem'; e.textContent='No apps found 😶'; list.appendChild(e); return;
   }
+  const addSec = (title, arr) => {
+    if (!arr.length) return;
+    const lbl=document.createElement('div'); lbl.className='drawer-section-label'; lbl.textContent=title; list.appendChild(lbl);
+    arr.forEach(app=>list.appendChild(createDrawerRow(app)));
+  };
+  addSec('Pinned to Dock', apps.filter(a=>a.docked));
+  addSec('All Apps', apps.filter(a=>!a.docked));
+}
 
-  // ── THEME PALETTE INJECTOR ──
-  function populateThemeSelectors() {
-    const selectorContainer = document.getElementById('theme-selectors');
-    selectorContainer.innerHTML = '';
+function filterDrawer() {
+  const q = document.getElementById('drawer-search').value.toLowerCase().trim();
+  buildDrawerList(q ? applications.filter(a=>a.name.toLowerCase().includes(q)||a.url.toLowerCase().includes(q)) : applications);
+}
 
-    themes.forEach((th, idx) => {
-      const dot = document.createElement('div');
-      dot.className = 'color-dot';
-      dot.style.background = th.background;
-      if (idx === currentThemeIndex) dot.classList.add('active');
-      
-      dot.onclick = (e) => {
-        e.stopPropagation();
-        applyTheme(idx);
-      };
-      selectorContainer.appendChild(dot);
-    });
+function openQuickPanel()  { document.getElementById('quick-panel').classList.add('open'); }
+function closeQuickPanel() { document.getElementById('quick-panel').classList.remove('open'); lockGestures(); }
+function toggleQP(id) { document.getElementById('toggle-'+id).classList.toggle('active'); }
+function syncVolSlider(val) { currentVolume=parseInt(val); localStorage.setItem('hub-vol',currentVolume); }
+
+function launchApp(app) {
+  if (!isPhoneOn) return;
+  closeDrawer(); closeQuickPanel();
+  const splash=document.getElementById('app-splash');
+  const icon=document.getElementById('splash-icon');
+  const name=document.getElementById('splash-name');
+  icon.textContent=app.icon;
+  icon.style.background=`linear-gradient(135deg,${app.color}bb,${app.color})`;
+  name.textContent=app.name;
+  splash.classList.add('active');
+  setTimeout(()=>{ window.location.href=app.url; }, 380);
+}
+
+function goHome() {
+  closeDrawer(); closeQuickPanel();
+  document.getElementById('app-splash').classList.remove('active');
+}
+
+function togglePower() {
+  isPhoneOn = !isPhoneOn;
+  document.getElementById('screen-off').classList.toggle('active',!isPhoneOn);
+}
+
+function changeVolume(delta) {
+  if (!isPhoneOn) return;
+  currentVolume = Math.max(0,Math.min(100,currentVolume+delta));
+  localStorage.setItem('hub-vol',currentVolume);
+  document.getElementById('vol-slider').value = currentVolume;
+  document.getElementById('vol-fill').style.height = currentVolume+'%';
+  document.getElementById('vol-icon').textContent = currentVolume>0?'🔊':'🔇';
+  const hud=document.getElementById('vol-hud');
+  hud.classList.add('show');
+  clearTimeout(volHudTimeout);
+  volHudTimeout=setTimeout(()=>hud.classList.remove('show'),1500);
+}
+
+// Touch swipe gestures
+let touchStartY = null;
+let touchStartX = null;
+let gestureLocked = false; // cooldown flag after programmatic close
+
+function lockGestures(ms = 400) {
+  gestureLocked = true;
+  setTimeout(() => { gestureLocked = false; }, ms);
+}
+
+// Stop touches inside the drawer and quick panel from reaching the screen handler
+document.getElementById('app-drawer').addEventListener('touchstart', e => e.stopPropagation(), {passive:true});
+document.getElementById('app-drawer').addEventListener('touchend',   e => e.stopPropagation(), {passive:true});
+document.getElementById('quick-panel').addEventListener('touchstart', e => e.stopPropagation(), {passive:true});
+document.getElementById('quick-panel').addEventListener('touchend',   e => e.stopPropagation(), {passive:true});
+
+document.getElementById('screen-body').addEventListener('touchstart', e => {
+  touchStartY = e.touches[0].clientY;
+  touchStartX = e.touches[0].clientX;
+}, {passive:true});
+
+document.getElementById('screen-body').addEventListener('touchend', e => {
+  if (touchStartY === null || gestureLocked) { touchStartY = null; return; }
+  const dy = e.changedTouches[0].clientY - touchStartY;
+  const dx = Math.abs(e.changedTouches[0].clientX - touchStartX);
+  const nearTop = touchStartY < 80;
+  // Only treat as a vertical swipe if it's more vertical than horizontal
+  if (dx > Math.abs(dy) * 0.8) { touchStartY = null; return; }
+  if (dy > 55 && nearTop) openQuickPanel();
+  else if (dy < -55) {
+    if (document.getElementById('quick-panel').classList.contains('open')) closeQuickPanel();
+    else if (!document.getElementById('app-drawer').classList.contains('open')) openDrawer();
   }
-
-  function applyTheme(themeIndex) {
-    currentThemeIndex = themeIndex;
-    localStorage.setItem('android-launcher-theme', themeIndex);
-
-    const theme = themes[themeIndex];
-    
-    // Update CSS Custom properties
-    const root = document.documentElement;
-    root.style.setProperty('--system-accent', theme.accent);
-    root.style.setProperty('--system-accent-container', theme.accentContainer);
-    root.style.setProperty('--system-on-accent-container', theme.onAccentContainer);
-    root.style.setProperty('--wallpaper-bg', theme.wallpaper);
-
-    // Update active class on selector dots
-    const dots = document.querySelectorAll('.color-dot');
-    dots.forEach((dot, idx) => {
-      if (idx === themeIndex) {
-        dot.classList.add('active');
-      } else {
-        dot.classList.remove('active');
-      }
-    });
-
-    // Animate notch (simulate Dynamic Island color matching flash)
-    const notch = document.getElementById('system-notch');
-    notch.style.background = '#2c2c35';
-    setTimeout(() => {
-      notch.style.background = '#000';
-    }, 400);
-  }
-
-  // ── LAUNCHER RENDER GRID & DOCK ──
-  function renderLauncherUI() {
-    const gridContainer = document.getElementById('apps-grid-view');
-    const dockContainer = document.getElementById('dock-view');
-    gridContainer.innerHTML = '';
-    dockContainer.innerHTML = '';
-
-    applications.forEach(app => {
-      // Create element
-      const appEl = createAppItem(app);
-
-      if (app.docked) {
-        dockContainer.appendChild(appEl);
-      } else {
-        gridContainer.appendChild(appEl);
-      }
-    });
-  }
-
-  function createAppItem(app) {
-    const item = document.createElement('div');
-    item.className = 'app-item';
-    item.onclick = () => launchApp(app);
-
-    const iconWrap = document.createElement('div');
-    iconWrap.className = 'app-icon-wrap';
-    iconWrap.style.background = `linear-gradient(135deg, ${app.color}cc 0%, ${app.color} 100%)`;
-    iconWrap.textContent = app.icon;
-
-    if (app.badge) {
-      const badge = document.createElement('div');
-      badge.className = 'app-badge';
-      badge.textContent = app.badge;
-      iconWrap.appendChild(badge);
-    }
-
-    const title = document.createElement('span');
-    title.className = 'app-title';
-    title.textContent = app.name;
-
-    item.appendChild(iconWrap);
-    item.appendChild(title);
-    return item;
-  }
-
-  // ── APP DRAWER (SEARCH OVERLAY) ──
-  function openSearchDrawer() {
-    const drawer = document.getElementById('search-drawer');
-    drawer.classList.add('open');
-    const searchField = document.getElementById('search-field');
-    searchField.value = '';
-    searchField.focus();
-    populateAllAppsInSearchGrid();
-  }
-
-  function closeSearchDrawer() {
-    const drawer = document.getElementById('search-drawer');
-    drawer.classList.remove('open');
-  }
-
-  function populateAllAppsInSearchGrid() {
-    const resultsGrid = document.getElementById('search-results-grid');
-    resultsGrid.innerHTML = '';
-
-    applications.forEach(app => {
-      resultsGrid.appendChild(createAppItem(app));
-    });
-  }
-
-  function filterAppsSearch() {
-    const searchField = document.getElementById('search-field');
-    const query = searchField.value.toLowerCase().trim();
-    const resultsGrid = document.getElementById('search-results-grid');
-    resultsGrid.innerHTML = '';
-
-    const filtered = applications.filter(app => 
-      app.name.toLowerCase().includes(query) || app.id.toLowerCase().includes(query)
-    );
-
-    filtered.forEach(app => {
-      resultsGrid.appendChild(createAppItem(app));
-    });
-  }
-
-  // ── APP LAUNCHER ──
-  function launchApp(app) {
-    if (!isPhoneOn) return;
-
-    // Show splash
-    const splashScreen = document.getElementById('app-splash');
-    const splashIcon = document.getElementById('splash-app-icon');
-    const splashTitle = document.getElementById('splash-app-title');
-    
-    splashIcon.textContent = app.icon;
-    splashTitle.textContent = app.name;
-    splashScreen.classList.add('active');
-
-    // Close search drawer if open
-    closeSearchDrawer();
-
-    // Simulate load time then navigate
-    setTimeout(() => {
-      window.location.href = app.url;
-    }, 1500);
-  }
-
-  // ── HOME INDICATOR ──
-  function goHome() {
-    closeSearchDrawer();
-    const splashScreen = document.getElementById('app-splash');
-    splashScreen.classList.remove('active');
-  }
-
-  // ── POWER BUTTON TOGGLE ──
-  function togglePower() {
-    isPhoneOn = !isPhoneOn;
-    const screenOffOverlay = document.getElementById('screen-off');
-    if (isPhoneOn) {
-      screenOffOverlay.classList.remove('active');
-    } else {
-      screenOffOverlay.classList.add('active');
-    }
-  }
-
-  // ── VOLUME CONTROLS ──
-  function changeVolume(delta) {
-    if (!isPhoneOn) return;
-
-    currentVolume = Math.max(0, Math.min(100, currentVolume + delta));
-    localStorage.setItem('android-launcher-vol', currentVolume);
-
-    // Show HUD
-    const volHud = document.getElementById('vol-hud-display');
-    const volFill = document.getElementById('vol-hud-fill');
-    const volIcon = document.getElementById('vol-icon-type');
-
-    volFill.style.height = currentVolume + '%';
-    volIcon.textContent = currentVolume > 0 ? '🔊' : '🔇';
-    
-    volHud.classList.add('show');
-    clearTimeout(volHudTimeout);
-    volHudTimeout = setTimeout(() => {
-      volHud.classList.remove('show');
-    }, 1500);
-  }
+  touchStartY = null;
+}, {passive:true});
 </script>
+
 <script>
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js');
